@@ -1,0 +1,1 @@
+crop.py inactive.png
