@@ -1,19 +1,14 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2016-03-16T22:27:34
-#
-#-------------------------------------------------
+QT += core gui widgets
 
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+CONFIG += c++11
 
 TARGET = Fonta
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        fontawindow.cpp \
+SOURCES += \
+    main.cpp\
+    fontawindow.cpp \
     fontadb.cpp \
     fontawidgets.cpp \
     types.cpp \
@@ -21,7 +16,8 @@ SOURCES += main.cpp\
     filterwizard.cpp \
     stylesheet.cpp
 
-HEADERS  += fontawindow.h \
+HEADERS += \
+    fontawindow.h \
     fontadb.h \
     panose.h \
     fontawidgets.h \
@@ -30,16 +26,18 @@ HEADERS  += fontawindow.h \
     filterwizard.h \
     stylesheet.h
 
-FORMS    += fontawindow.ui
+FORMS += \
+    fontawindow.ui
 
 RESOURCES += \
     pics.qrc
+
 build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
 }
 
-QMAKE_CXXFLAGS += -O2 -Wall -Wpedantic
-QMAKE_LFLAGS_RELEASE += -static -static-libgcc
+QMAKE_CXXFLAGS += -Ofast -Wall -Wpedantic
 
-LIBS += -lgdi32 -luser32
+DEFINES *= \
+    QT_USE_QSTRINGBUILDER
