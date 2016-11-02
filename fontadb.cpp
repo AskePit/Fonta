@@ -2,11 +2,11 @@
 
 #include <QDirIterator>
 #include <QTextCodec>
-//#include <QtConcurrent/QtConcurrentRun>
 #include <thread>
 #include <QMutex>
 #include <QElapsedTimer>
 #include <QDebug>
+#include <unordered_map>
 
 static void GetFontFiles(QStringList &out)
 {
@@ -92,8 +92,11 @@ static QMutex readTTFMutex;
 
 static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
 {
+    qDebug() << qPrintable(QFileInfo(*fileName).fileName()) << ":";
+
     QFile f(*fileName);
     if (!f.open(QIODevice::ReadOnly)) {
+        qWarning() << "Couldn't open!";
         return;
     }
 
@@ -133,6 +136,7 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
     }
 
     if(tablesCount != TTFTable::count) {
+        qWarning() << "0 tables!";
         return;
     }
 
@@ -152,6 +156,8 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
 
     f.seek(f.pos() + sizeof(TTFNameRecord)*(nameHeader.RecordsCount-1));
 
+    std::unordered_map<u16, QString>fontNames;
+
     for(int i = 0; i<nameHeader.RecordsCount; ++i) {
         f.read((char*)&nameRecord, sizeof(TTFNameRecord));
         nameRecord.NameID = swapU16(nameRecord.NameID);
@@ -160,6 +166,7 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
         if(nameRecord.NameID == 1) {
             nameRecord.PlatformID = swapU16(nameRecord.PlatformID);
             nameRecord.EncodingID = swapU16(nameRecord.EncodingID);
+            nameRecord.LanguageID = swapU16(nameRecord.LanguageID);
             nameRecord.StringLength = swapU16(nameRecord.StringLength);
             nameRecord.StringOffset = swapU16(nameRecord.StringOffset);
 
@@ -182,20 +189,25 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
             default:     fontName = QTextCodec::codecForMib(106)->toUnicode(nameBytes); break;
             }
 
-            //readTTFMutex.lock();
             if(TTFs->contains(fontName)) {
                 return;
             }
-            //readTTFMutex.unlock();
 
-            //qDebug() << nameRecord.PlatformID << nameRecord.EncodingID << fontName;
+            fontNames[nameRecord.LanguageID] = fontName;
 
-            break;
+            //break;
             f.seek(nPos);
         }
 
         f.seek(f.pos()-sizeof(TTFNameRecord)*2);
     }
+
+    if(fontNames.find(1033) != fontNames.end()) {
+        fontName = fontNames[1033];
+    } else {
+        fontName = fontNames.begin()->second;
+    }
+    qDebug() << '\t' << fontName;
 
     /////////
     // post
@@ -246,6 +258,7 @@ FontaDB::FontaDB()
     timer.start();
 
     //-- std::thread::hardware_concurrency
+    /*
     int cores = std::thread::hardware_concurrency();
     if(!cores) cores = 4;
     const int chunkN = out.size() / cores;
@@ -262,6 +275,11 @@ FontaDB::FontaDB()
 
     for(auto& f : futurs) {
         f.join();
+    }
+    */
+
+    for(int i = 0; i<out.size(); ++i) {
+        readTTF(&out[i], &TTFs);
     }
 
     qDebug() << timer.elapsed() << "milliseconds to load fonts";

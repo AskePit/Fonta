@@ -65,8 +65,6 @@ FontaWindow::FontaWindow(QWidget *parent)
     }
     ui->filterBox->addItems(filterItems);
 
-    ui->fontsList->addItems(fontaDB().families());
-
     fontFinderEdit = new FontaFilterEdit(ui->fontsList, ui->fontsListLayoutWidget);
     fontFinderEdit->setObjectName(QStringLiteral("fontFinderEdit"));
     ui->fontsListLayout->insertWidget(1, fontFinderEdit);
@@ -364,7 +362,7 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
 
         QListWidgetItem* item = new QListWidgetItem(family);
 
-        /*
+
         FullFontInfo info = fontaDB().getFullFontInfo(family);
         QString detail;
         QTextStream ss(&detail);
@@ -389,7 +387,7 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
         }
 
         item->setToolTip(detail);
-        */
+
 
         ui->fontsList->addItem(item);
     }
