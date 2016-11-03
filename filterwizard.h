@@ -2,6 +2,7 @@
 #define FILTERWIZARD_H
 
 #include <QWizard>
+#include "types.h"
 
 class FilterWizard : public QWizard
 {
@@ -37,7 +38,7 @@ private:
     QCheckBox* extSerifBox;
     QCheckBox* extSansBox;
 
-    void addGeneralBloc(QPushButton** button, QCheckBox** box, int width, int height, const QString& blockName, const QString& extBlocName);
+    void addGeneralBloc(QPushButton** button, QCheckBox** box, int width, int height, CStringRef blockName, CStringRef extBlocName);
 };
 
 
@@ -55,7 +56,7 @@ private:
     QPushButton* modern;
     QPushButton* slab;
 
-    void addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName);
+    void addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName);
 };
 
 class SerifStylePage : public QWizardPage
@@ -73,7 +74,7 @@ private:
     QPushButton* asymmetric;
     QPushButton* triangle;
 
-    void addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName);
+    void addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName);
 };
 
 class SansFamilyPage : public QWizardPage
@@ -89,7 +90,7 @@ private:
     QPushButton* geometric;
     QPushButton* humanist;
 
-    void addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName);
+    void addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName);
 };
 
 class SansStylePage : public QWizardPage
@@ -105,7 +106,7 @@ private:
     QPushButton* rounded;
     QPushButton* flarred;
 
-    void addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName);
+    void addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName);
 };
 
 class FinishPage : public QWizardPage

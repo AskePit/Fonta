@@ -6,22 +6,26 @@
 #include <QMutex>
 #include <QElapsedTimer>
 #include <QDebug>
-#include <unordered_map>
+#include <QStandardPaths>
+#include <mutex>
 
 static void GetFontFiles(QStringList &out)
 {
-    QDirIterator it("C:\\Windows\\Fonts", QStringList() << "*.ttf" << "*.otf" << "*.ttc", QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        it.next();
-        out << it.filePath();
+    const auto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
+    for(const auto &dir : fontsDirs) {
+        QDirIterator it(dir, QStringList() << "*.ttf" << "*.otf" << "*.ttc" << "*.otc" << "*.fon" , QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            out << it.filePath();
+        }
     }
 }
 
-static u16 swapU16(u16 x) {
+static inline u16 swapU16(u16 x) {
     return (x<<8) + (x>>8);
 }
 
-static u32 swapU32(u32 x) {
+static inline u32 swapU32(u32 x) {
     u16 lo = (u16)x;
     u16 hi = x>>16;
     lo = swapU16(lo);
@@ -88,13 +92,144 @@ namespace TTFTable {
     };
 }
 
-static QMutex readTTFMutex;
+// Forwards
+static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &nameBytes);
+static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaTTF> &TTFs);
+static void readTTF(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
+static void readTTC(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
+static void readFON(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
+static void readFontFile(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
+static bool readTablesMap(TTFOffsetTable tablesMap[], QFile &f);
 
-static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
+static std::mutex readTTFMutex;
+
+static void readFontFile(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
 {
-    qDebug() << qPrintable(QFileInfo(*fileName).fileName()) << ":";
+    std::function<void(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)> f;
 
-    QFile f(*fileName);
+    if(fileName.endsWith(".ttc", Qt::CaseInsensitive)) {
+        f = readTTC;
+    } else if(fileName.endsWith(".fon", Qt::CaseInsensitive)) {
+        f = readFON;
+    } else {
+        f = readTTF;
+    }
+
+    f(fileName, TTFs);
+}
+
+static void readTTC(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
+{
+    qDebug() << qPrintable(QFileInfo(fileName).fileName()) << ":";
+    QFile f(fileName);
+    if (!f.open(QIODevice::ReadOnly)) {
+        qWarning() << "Couldn't open!";
+        return;
+    }
+
+    f.seek(8);
+
+    u32 offsetTablesCount;
+    f.read((char*)&offsetTablesCount, 4);
+    offsetTablesCount = swapU32(offsetTablesCount);
+
+    std::vector<u32> offsets(offsetTablesCount);
+    for(u32 i = 0; i<offsetTablesCount; ++i) {
+        u32 &offset = offsets[i];
+        f.read((char*)&offset, 4);
+        offset = swapU32(offset);
+    }
+
+    for(u32 i = 0; i<offsetTablesCount; ++i) {
+        f.seek(offsets[i] + 4);
+
+        u16 fontTablesCount;
+        f.read((char*)&fontTablesCount, 2);
+        fontTablesCount = swapU16(fontTablesCount);
+
+        f.seek(offsets[i] + 12);
+        TTFOffsetTable tablesMap[TTFTable::count];
+        int tablesCount = 0;
+        for(int j = 0; j<fontTablesCount; ++j) {
+            tablesCount += (int)readTablesMap(tablesMap, f);
+            if(tablesCount == TTFTable::count) {
+                break;
+            }
+        }
+
+        if(tablesCount != TTFTable::count) {
+            qWarning() << "no necessary tables!";
+            return;
+        }
+
+        readFont(tablesMap, f, TTFs);
+    }
+}
+
+static void readFON(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
+{
+    qDebug() << qPrintable(QFileInfo(fileName).fileName()) << ":";
+
+    QFile f(fileName);
+    if (!f.open(QIODevice::ReadOnly)) {
+        qWarning() << "Couldn't open!";
+        return;
+    }
+
+    QByteArray ba = f.readAll();
+
+    int ibeg = ba.indexOf("FONTRES");
+    if(ibeg == -1) return;
+
+    ibeg = ba.indexOf(':', ibeg);
+    if(ibeg == -1) return;
+    ++ibeg;
+
+    int iend = ba.indexOf('\0', ibeg);
+    if(iend == -1) return;
+
+    QString s(ba.mid(ibeg, iend-ibeg));
+
+    int ipareth = s.indexOf('(');
+    int icomma = s.indexOf(',');
+
+    QString fontName;
+
+    if(icomma == -1 && ipareth != -1) {
+        s.truncate(ipareth);
+        fontName = s.trimmed();
+    } else if(icomma != -1) {
+        for(int i = icomma-1; i>=0; --i) {
+            if(!s[i].isDigit()) {
+                s.truncate(i+1);
+                fontName = s.trimmed();
+                break;
+            }
+        }
+    } else {
+        fontName = s.trimmed();
+    }
+
+    qDebug() << '\t' << fontName;
+
+    if(TTFs.contains(fontName)) {
+        TTFs[fontName].files << fileName;
+        return;
+    }
+
+    FontaTTF ttf;
+    ttf.files << fileName;
+
+    std::lock_guard<std::mutex> lock(readTTFMutex);
+    TTFs[fontName] = ttf;
+    (void)lock;
+}
+
+static void readTTF(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
+{
+    qDebug() << qPrintable(QFileInfo(fileName).fileName()) << ":";
+
+    QFile f(fileName);
     if (!f.open(QIODevice::ReadOnly)) {
         qWarning() << "Couldn't open!";
         return;
@@ -106,44 +241,55 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
 
     int tablesCount = 0;
     while(!f.atEnd()) {
-        TTFOffsetTable offsetTable;
-        f.read((char*)&offsetTable, sizeof(TTFOffsetTable));
-
-        TTFTable::type tableType = TTFTable::NO;
-
-        if(memcmp(offsetTable.TableName, "name", 4) == 0) {
-            tableType = TTFTable::NAME;
-        }
-
-        if(memcmp(offsetTable.TableName, "OS/2", 4) == 0) {
-            tableType = TTFTable::OS2;
-        }
-
-        if(memcmp(offsetTable.TableName, "post", 4) == 0) {
-            tableType = TTFTable::POST;
-        }
-
-        if(tableType != TTFTable::NO) {
-            offsetTable.Length = swapU32(offsetTable.Length);
-            offsetTable.Offset = swapU32(offsetTable.Offset);
-            tablesMap[tableType] = offsetTable;
-            ++tablesCount;
-        }
-
+        tablesCount += (int)readTablesMap(tablesMap, f);
         if(tablesCount == TTFTable::count) {
             break;
         }
     }
 
     if(tablesCount != TTFTable::count) {
-        qWarning() << "0 tables!";
+        qWarning() << "no necessary tables!";
         return;
     }
 
+    readFont(tablesMap, f, TTFs);
+}
+
+static bool readTablesMap(TTFOffsetTable tablesMap[], QFile &f)
+{
+    TTFOffsetTable offsetTable;
+    f.read((char*)&offsetTable, sizeof(TTFOffsetTable));
+
+    TTFTable::type tableType = TTFTable::NO;
+
+    if(memcmp(offsetTable.TableName, "name", 4) == 0) {
+        tableType = TTFTable::NAME;
+    }
+
+    if(memcmp(offsetTable.TableName, "OS/2", 4) == 0) {
+        tableType = TTFTable::OS2;
+    }
+
+    if(memcmp(offsetTable.TableName, "post", 4) == 0) {
+        tableType = TTFTable::POST;
+    }
+
+    if(tableType != TTFTable::NO) {
+        offsetTable.Length = swapU32(offsetTable.Length);
+        offsetTable.Offset = swapU32(offsetTable.Offset);
+        tablesMap[tableType] = offsetTable;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaTTF> &TTFs)
+{
     /////////
     // name
     ///////
-    TTFOffsetTable& nameOffsetTable = tablesMap[TTFTable::NAME];
+    TTFOffsetTable &nameOffsetTable = tablesMap[TTFTable::NAME];
     f.seek(nameOffsetTable.Offset);
 
     TTFNameHeader nameHeader;
@@ -152,11 +298,9 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
     nameHeader.StorageOffset = swapU16(nameHeader.StorageOffset);
 
     TTFNameRecord nameRecord;
+    QByteArray nameBytes;
     QString fontName;
-
-    f.seek(f.pos() + sizeof(TTFNameRecord)*(nameHeader.RecordsCount-1));
-
-    std::unordered_map<u16, QString>fontNames;
+    bool properLanguage = false;
 
     for(int i = 0; i<nameHeader.RecordsCount; ++i) {
         f.read((char*)&nameRecord, sizeof(TTFNameRecord));
@@ -166,7 +310,6 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
         if(nameRecord.NameID == 1) {
             nameRecord.PlatformID = swapU16(nameRecord.PlatformID);
             nameRecord.EncodingID = swapU16(nameRecord.EncodingID);
-            nameRecord.LanguageID = swapU16(nameRecord.LanguageID);
             nameRecord.StringLength = swapU16(nameRecord.StringLength);
             nameRecord.StringOffset = swapU16(nameRecord.StringOffset);
 
@@ -174,40 +317,45 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
             quint64 nPos = f.pos();
             f.seek(nameOffsetTable.Offset + nameHeader.StorageOffset + nameRecord.StringOffset);
 
-            QByteArray nameBytes = f.read(nameRecord.StringLength);
+            nameBytes = f.read(nameRecord.StringLength);
 
-            u16 code = (nameRecord.PlatformID<<8) + nameRecord.EncodingID;
-            switch(code) {
-            case 0x0000:
-            case 0x0003:
-            case 0x0300:
-            case 0x0302:
-            case 0x030A:
-            case 0x0301: fontName = QTextCodec::codecForMib(1013)->toUnicode(nameBytes); break;
+            properLanguage = false;
 
-            case 0x0100:
-            default:     fontName = QTextCodec::codecForMib(106)->toUnicode(nameBytes); break;
+            u8 langCode = nameRecord.LanguageID >> 8; // notice that we did not do swapU16 on it!
+            /*if(nameRecord.PlatformID == 1) {
+                properLanguage = langCode <= 9; // English, French, German, Italian, Dutch, Swedish, Spanish, Danish, Portuguese, Norwegian
+            } else*/ if(nameRecord.PlatformID == 3) {
+                properLanguage = langCode == 0x09 || // English
+                                 langCode == 0x07 || // German
+                                 langCode == 0x0C || // French
+                                 langCode == 0x0A || // Spanish
+                                 langCode == 0x3B;   // Scandinavic
             }
 
-            if(TTFs->contains(fontName)) {
-                return;
+            if(properLanguage) {
+                fontName = decodeFontName(nameRecord.PlatformID, nameRecord.EncodingID, nameBytes);
+                qDebug() << '\t' << nameRecord.PlatformID << nameRecord.EncodingID << langCode << fontName;
+                break;
             }
 
-            fontNames[nameRecord.LanguageID] = fontName;
-
-            //break;
             f.seek(nPos);
         }
-
-        f.seek(f.pos()-sizeof(TTFNameRecord)*2);
     }
 
-    if(fontNames.find(1033) != fontNames.end()) {
-        fontName = fontNames[1033];
-    } else {
-        fontName = fontNames.begin()->second;
+    if(!properLanguage) {
+        // use last record to extract font name
+        fontName = decodeFontName(nameRecord.PlatformID, nameRecord.EncodingID, nameBytes);
+        qDebug() << '\t' << "not proper!" << nameRecord.PlatformID << nameRecord.EncodingID << (nameRecord.LanguageID>>8) << fontName;
     }
-    qDebug() << '\t' << fontName;
+
+    if(TTFs.contains(fontName)) {
+        TTFs[fontName].files << f.fileName();
+        return;
+    }
+
+    FontaTTF ttf;
+    ttf.files << f.fileName();
+    //qDebug() << '\t' << fontName;
 
     /////////
     // post
@@ -218,7 +366,6 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
     TTFPostHeader postHeader;
     f.read((char*)&postHeader, sizeof(TTFPostHeader));
 
-    FontaTTF ttf;
     ttf.monospaced = !!postHeader.isFixedPitch;
 
     /////////
@@ -237,15 +384,31 @@ static void readTTF(const QString* fileName, QHash<QString, FontaTTF>* TTFs)
     ttf.familySubClass = (int)(os2Header.FamilyClass & 0xFF);
     ttf.cyrillic = !!(os2Header.UnicodeRange1 & (1<<9));
 
-    readTTFMutex.lock();
-    (*TTFs)[fontName] = ttf;
-    readTTFMutex.unlock();
+    std::lock_guard<std::mutex> lock(readTTFMutex);
+    TTFs[fontName] = ttf;
+    (void)lock;
 }
 
-static void loadTTFChunk(const QStringList &out, int from, int to, QHash<QString, FontaTTF>* TTFs)
+static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &nameBytes)
+{
+    u16 code = (platformID<<8) + encodingID;
+    switch(code) {
+        case 0x0000:
+        case 0x0003:
+        case 0x0300:
+        case 0x0302:
+        case 0x030A:
+        case 0x0301: return QTextCodec::codecForMib(1013)->toUnicode(nameBytes); break;
+
+        case 0x0100:
+        default:     return QTextCodec::codecForMib(106)->toUnicode(nameBytes); break;
+    }
+}
+
+static void loadTTFChunk(const QStringList &out, int from, int to, QHash<QString, FontaTTF> &TTFs)
 {
     for(int i = from; i<=to; ++i) {
-        readTTF(&out[i], TTFs);
+        readFontFile(out[i], TTFs);
     }
 }
 
@@ -257,7 +420,6 @@ FontaDB::FontaDB()
     QElapsedTimer timer;
     timer.start();
 
-    //-- std::thread::hardware_concurrency
     /*
     int cores = std::thread::hardware_concurrency();
     if(!cores) cores = 4;
@@ -268,7 +430,7 @@ FontaDB::FontaDB()
     int from = 0;
     int to = chunkN;
     for(int i = 0; i<cores; ++i) {
-        futurs.push_back( std::thread(loadTTFChunk, out, from, to, &TTFs) );
+        futurs.push_back( std::thread(loadTTFChunk, out, from, to, std::ref(TTFs)) );
         from = to+1;
         to = std::min(to*chunkN, out.size()-1);
     }
@@ -276,10 +438,10 @@ FontaDB::FontaDB()
     for(auto& f : futurs) {
         f.join();
     }
-    */
+*/
 
     for(int i = 0; i<out.size(); ++i) {
-        readTTF(&out[i], &TTFs);
+        readFontFile(out[i], TTFs);
     }
 
     qDebug() << timer.elapsed() << "milliseconds to load fonts";
@@ -289,7 +451,7 @@ FontaDB::FontaDB()
 FontaDB::~FontaDB()
 {}
 
-bool FontaDB::getTTF(const QString& family, FontaTTF& ttf) const {
+bool FontaDB::getTTF(CStringRef family, FontaTTF& ttf) const {
     if(!TTFs.contains(family))
         return false;
 
@@ -297,7 +459,7 @@ bool FontaDB::getTTF(const QString& family, FontaTTF& ttf) const {
     return true;
 }
 
-FullFontInfo FontaDB::getFullFontInfo(const QString& family) const
+FullFontInfo FontaDB::getFullFontInfo(CStringRef family) const
 {
     FullFontInfo fullInfo;
 
@@ -312,7 +474,7 @@ FullFontInfo FontaDB::getFullFontInfo(const QString& family) const
     return fullInfo;
 }
 
-bool FontaDB::isCyrillic(const QString& family) const
+bool FontaDB::isCyrillic(CStringRef family) const
 {
     // 1
     if(QtDB.writingSystems(family).contains(QFontDatabase::Cyrillic))
@@ -341,7 +503,7 @@ static bool _isSerif(const FontaTTF& ttf)
     // 3 TODO: font name
 }
 
-bool FontaDB::isSerif(const QString& family) const
+bool FontaDB::isSerif(CStringRef family) const
 {
     // 1
     FontaTTF ttf;
@@ -366,7 +528,7 @@ static bool _isSansSerif(const FontaTTF& ttf)
     // 3 TODO: font name
 }
 
-bool FontaDB::isSansSerif(const QString& family) const
+bool FontaDB::isSansSerif(CStringRef family) const
 {
     // 1
     FontaTTF ttf;
@@ -375,7 +537,7 @@ bool FontaDB::isSansSerif(const QString& family) const
     return _isSansSerif(ttf);
 }
 
-bool FontaDB::isMonospaced(const QString& family) const
+bool FontaDB::isMonospaced(CStringRef family) const
 {
     // 1
     if(QtDB.isFixedPitch(family))
@@ -392,7 +554,7 @@ bool FontaDB::isMonospaced(const QString& family) const
     return ttf.monospaced;
 }
 
-bool FontaDB::isScript(const QString& family) const
+bool FontaDB::isScript(CStringRef family) const
 {
     // 1
     FontaTTF ttf;
@@ -410,7 +572,7 @@ bool FontaDB::isScript(const QString& family) const
     return ttf.panose.Family == Panose::FamilyType::SCRIPT;
 }
 
-bool FontaDB::isDecorative(const QString& family) const
+bool FontaDB::isDecorative(CStringRef family) const
 {
     // 1
     FontaTTF ttf;
@@ -428,7 +590,7 @@ bool FontaDB::isDecorative(const QString& family) const
     return ttf.panose.Family == Panose::FamilyType::DECORATIVE;
 }
 
-bool FontaDB::isSymbolic(const QString& family) const
+bool FontaDB::isSymbolic(CStringRef family) const
 {
     // 1
     /*if(QtDB.writingSystems(family).contains(QFontDatabase::Symbol))
@@ -452,7 +614,7 @@ bool FontaDB::isSymbolic(const QString& family) const
 
 
 
-bool FontaDB::isOldStyle(const QString& family) const
+bool FontaDB::isOldStyle(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -463,7 +625,7 @@ bool FontaDB::isOldStyle(const QString& family) const
     return ttf.familySubClass != 5 && ttf.familySubClass != 6 && ttf.familySubClass != 7;
 }
 
-bool FontaDB::isTransitional(const QString& family) const
+bool FontaDB::isTransitional(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -474,7 +636,7 @@ bool FontaDB::isTransitional(const QString& family) const
        ||  ttf.familyClass == FamilyClass::FREEFORM_SERIF;
 }
 
-bool FontaDB::isModern(const QString& family) const
+bool FontaDB::isModern(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -482,7 +644,7 @@ bool FontaDB::isModern(const QString& family) const
     return ttf.familyClass == FamilyClass::MODERN_SERIF;
 }
 
-bool FontaDB::isSlab(const QString& family) const
+bool FontaDB::isSlab(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -491,7 +653,7 @@ bool FontaDB::isSlab(const QString& family) const
        || (ttf.familyClass == FamilyClass::CLARENDON_SERIF && (ttf.familySubClass != 2 && ttf.familySubClass != 3 && ttf.familySubClass != 4));
 }
 
-bool FontaDB::isCoveSerif(const QString& family) const
+bool FontaDB::isCoveSerif(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -506,7 +668,7 @@ bool FontaDB::isCoveSerif(const QString& family) const
         && ttf.panose.SerifStyle <= Panose::SerifStyle::OBTUSE_SQUARE_COVE;
 }
 
-bool FontaDB::isSquareSerif(const QString& family) const
+bool FontaDB::isSquareSerif(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -521,7 +683,7 @@ bool FontaDB::isSquareSerif(const QString& family) const
         || ttf.panose.SerifStyle == Panose::SerifStyle::THIN;
 }
 
-bool FontaDB::isBoneSerif(const QString& family) const
+bool FontaDB::isBoneSerif(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -535,7 +697,7 @@ bool FontaDB::isBoneSerif(const QString& family) const
     return ttf.panose.SerifStyle == Panose::SerifStyle::OVAL;
 }
 
-bool FontaDB::isAsymmetricSerif(const QString& family) const
+bool FontaDB::isAsymmetricSerif(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -549,7 +711,7 @@ bool FontaDB::isAsymmetricSerif(const QString& family) const
     return ttf.panose.SerifStyle == Panose::SerifStyle::ASYMMETRICAL;
 }
 
-bool FontaDB::isTriangleSerif(const QString& family) const
+bool FontaDB::isTriangleSerif(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -564,7 +726,7 @@ bool FontaDB::isTriangleSerif(const QString& family) const
 }
 
 
-bool FontaDB::isGrotesque(const QString& family) const
+bool FontaDB::isGrotesque(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -577,7 +739,7 @@ bool FontaDB::isGrotesque(const QString& family) const
           || ttf.familySubClass == 10);
 }
 
-bool FontaDB::isGeometric(const QString& family) const
+bool FontaDB::isGeometric(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -587,7 +749,7 @@ bool FontaDB::isGeometric(const QString& family) const
           || ttf.familySubClass == 4);
 }
 
-bool FontaDB::isHumanist(const QString& family) const
+bool FontaDB::isHumanist(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -597,7 +759,7 @@ bool FontaDB::isHumanist(const QString& family) const
 }
 
 
-bool FontaDB::isNormalSans(const QString& family) const
+bool FontaDB::isNormalSans(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -613,7 +775,7 @@ bool FontaDB::isNormalSans(const QString& family) const
         || ttf.panose.SerifStyle == Panose::SerifStyle::PERPENDICULAR_SANS;
 }
 
-bool FontaDB::isRoundedSans(const QString& family) const
+bool FontaDB::isRoundedSans(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;
@@ -627,7 +789,7 @@ bool FontaDB::isRoundedSans(const QString& family) const
     return ttf.panose.SerifStyle == Panose::SerifStyle::ROUNDED;
 }
 
-bool FontaDB::isFlarredSans(const QString& family) const
+bool FontaDB::isFlarredSans(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) return false;

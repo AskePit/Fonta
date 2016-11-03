@@ -49,6 +49,7 @@ struct FontaTTF {
     bool cyrillic;
     bool monospaced;
     Panose panose;
+    QStringList files;
 
     FontaTTF()
         : familyClass(FamilyClass::NO)
@@ -86,39 +87,39 @@ public:
     ~FontaDB();
 
     QStringList families() const { return QtDB.families(); }
-    QStringList styles(const QString& family) const { return QtDB.styles(family); }
-    QFont font(const QString& family, const QString& style, int pointSize) const { return QtDB.font(family, style, pointSize); }
+    QStringList styles(CStringRef family) const { return QtDB.styles(family); }
+    QFont font(CStringRef family, CStringRef style, int pointSize) const { return QtDB.font(family, style, pointSize); }
 
-    bool isAnyFont(const QString& family) const { (void)family; return true; }
-    bool isCyrillic(const QString& family) const;
-    bool isSerif(const QString& family) const;
-    bool isSansSerif(const QString& family) const;
-    bool isMonospaced(const QString& family) const;
-    bool isScript(const QString& family) const;
-    bool isDecorative(const QString& family) const;
-    bool isSymbolic(const QString& family) const;
+    bool isAnyFont(CStringRef family) const { (void)family; return true; }
+    bool isCyrillic(CStringRef family) const;
+    bool isSerif(CStringRef family) const;
+    bool isSansSerif(CStringRef family) const;
+    bool isMonospaced(CStringRef family) const;
+    bool isScript(CStringRef family) const;
+    bool isDecorative(CStringRef family) const;
+    bool isSymbolic(CStringRef family) const;
 
-    bool isOldStyle(const QString& family) const;
-    bool isTransitional(const QString& family) const;
-    bool isModern(const QString& family) const;
-    bool isSlab(const QString& family) const;
+    bool isOldStyle(CStringRef family) const;
+    bool isTransitional(CStringRef family) const;
+    bool isModern(CStringRef family) const;
+    bool isSlab(CStringRef family) const;
 
-    bool isCoveSerif(const QString& family) const;
-    bool isSquareSerif(const QString& family) const;
-    bool isBoneSerif(const QString& family) const;
-    bool isAsymmetricSerif(const QString& family) const;
-    bool isTriangleSerif(const QString& family) const;
+    bool isCoveSerif(CStringRef family) const;
+    bool isSquareSerif(CStringRef family) const;
+    bool isBoneSerif(CStringRef family) const;
+    bool isAsymmetricSerif(CStringRef family) const;
+    bool isTriangleSerif(CStringRef family) const;
 
-    bool isGrotesque(const QString& family) const;
-    bool isGeometric(const QString& family) const;
-    bool isHumanist(const QString& family) const;
+    bool isGrotesque(CStringRef family) const;
+    bool isGeometric(CStringRef family) const;
+    bool isHumanist(CStringRef family) const;
 
-    bool isNormalSans(const QString& family) const;
-    bool isRoundedSans(const QString& family) const;
-    bool isFlarredSans(const QString& family) const;
+    bool isNormalSans(CStringRef family) const;
+    bool isRoundedSans(CStringRef family) const;
+    bool isFlarredSans(CStringRef family) const;
 
-    bool getTTF(const QString& family, FontaTTF& ttf) const;
-    FullFontInfo getFullFontInfo(const QString& family) const;
+    bool getTTF(CStringRef family, FontaTTF& ttf) const;
+    FullFontInfo getFullFontInfo(CStringRef family) const;
 
     QFontDatabase& getQtDB() { return QtDB; }
 

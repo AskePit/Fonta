@@ -99,10 +99,10 @@ public:
     int tracking() const { return m_tracking; }
 
     void setId(int id) { m_id = id; }
-    void setFontFamily(const QString& family);
+    void setFontFamily(CStringRef family);
     void setFontSize(float size);
-    void setFontStyle(const QString& style);
-    void setPreferableFontStyle(const QString& style);
+    void setFontStyle(CStringRef style);
+    void setPreferableFontStyle(CStringRef style);
     void alignText(Qt::Alignment alignment);
     void setLeading(float val);
     void setTracking(int val);
@@ -150,8 +150,8 @@ public:
 
     int id() const { return m_id; }
     void setId(int id) { m_id = id; }
-    const QString& name() const { return m_name; }
-    void rename(const QString& name) { m_name = name; }
+    CStringRef name() const { return m_name; }
+    void rename(CStringRef name) { m_name = name; }
     FontaField* currField() const { return m_currField; }
     void setCurrField(FontaField* field) { m_currField = field; }
 
@@ -165,7 +165,7 @@ public:
     void load(const QJsonObject &json);
 
 private:
-    void loadSample(const QString &jsonTxt);
+    void loadSample(CStringRef jsonTxt);
 
 private slots:
     void on_currentFieldChanged(FontaField* field);

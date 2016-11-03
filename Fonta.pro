@@ -37,7 +37,7 @@ build_all:!build_pass {
     CONFIG += release
 }
 
-QMAKE_CXXFLAGS += -Ofast -Wall -Wpedantic
+QMAKE_CXXFLAGS += -O3
 
 DEFINES *= \
     QT_USE_QSTRINGBUILDER

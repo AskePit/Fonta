@@ -21,8 +21,8 @@ class Sampler
 public:
     static void initSamples();
 
-    static const QString& getName();
-    static const QString& getText();
+    static CStringRef getName();
+    static CStringRef getText();
     static void loadSample(FontaWorkArea& area);
 
 private:

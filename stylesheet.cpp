@@ -2,13 +2,13 @@
 
 #include <QObject>
 
-StyleSheet::StyleSheet(const QString& className)
+StyleSheet::StyleSheet(CStringRef className)
     : className(className)
     , changed(false)
 {
 }
 
-const QString& StyleSheet::get() const
+CStringRef StyleSheet::get() const
 {
     if(!changed) {
         return sheet;
@@ -30,25 +30,25 @@ const QString& StyleSheet::get() const
     return sheet;
 }
 
-const QString StyleSheet::operator[](const QString& key) const
+const QString StyleSheet::operator[](CStringRef key) const
 {
     return attributes.value(key, "");
 }
 
 
-void StyleSheet::set(const QString& key, const QString& val, const QString& unit)
+void StyleSheet::set(CStringRef key, CStringRef val, CStringRef unit)
 {
     attributes[key] = val + unit;
     changed = true;
 }
 
-void StyleSheet::set(const QString& key, int val, const QString& unit)
+void StyleSheet::set(CStringRef key, int val, CStringRef unit)
 {
     attributes[key] = QString::number(val) + unit;
     changed = true;
 }
 
-void StyleSheet::set(const QString& key, float val, const QString& unit)
+void StyleSheet::set(CStringRef key, float val, CStringRef unit)
 {
     attributes[key] = QString::number(val) + unit;
     changed = true;
@@ -65,7 +65,7 @@ static QString to2Hex(int val) {
     return hex;
 }
 
-void StyleSheet::set(const QString& key, int r, int g, int b)
+void StyleSheet::set(CStringRef key, int r, int g, int b)
 {
     attributes[key] = QString("#") + to2Hex(r) + to2Hex(g) + to2Hex(b);
     changed = true;

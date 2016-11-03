@@ -1,6 +1,8 @@
 #ifndef STYLESHEET_H
 #define STYLESHEET_H
 
+#include "types.h"
+
 #include <QString>
 #include <QHash>
 #include <QColor>
@@ -10,15 +12,15 @@ class QObject;
 class StyleSheet
 {
 public:
-    StyleSheet(const QString& className);
+    StyleSheet(CStringRef className);
 
-    const QString& get() const;
-    const QString operator[](const QString& key) const;
+    CStringRef get() const;
+    const QString operator[](CStringRef key) const;
 
-    void set(const QString& key, const QString& val, const QString& unit = "");
-    void set(const QString& key, int val, const QString& unit = "");
-    void set(const QString& key, float val, const QString& unit = "");
-    void set(const QString& key, int r, int g, int b);
+    void set(CStringRef key, CStringRef val, CStringRef unit = "");
+    void set(CStringRef key, int val, CStringRef unit = "");
+    void set(CStringRef key, float val, CStringRef unit = "");
+    void set(CStringRef key, int r, int g, int b);
 
 private:
     QString className;

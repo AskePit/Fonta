@@ -14,9 +14,11 @@
 #include <QDesktopWidget>
 #include <QColorDialog>
 
+#include <QDebug>
+
 const Version FontaWindow::versionNumber = Version(0, 4, 2);
 
-void FontaWindow::initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, const QString& iconPath)
+void FontaWindow::initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, CStringRef iconPath)
 {
     button = new QPushButton();
     button->setMinimumSize(QSize(size, size));
@@ -263,7 +265,7 @@ void FontaWindow::on_removeFieldButton_clicked()
 void FontaWindow::on_currentFieldChanged(FontaField* field)
 {
     currField = field;
-    const QString& family = currField->fontFamily();
+    CStringRef family = currField->fontFamily();
 
     // show family
     fontFinderEdit->setText(family);
@@ -341,7 +343,7 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
 
     ui->fontsList->clear();
 
-    bool (FontaDB::*goodFont)(const QString&) const;
+    bool (FontaDB::*goodFont)(CStringRef) const;
     switch(index) {
         default:
         case FilterMode::ALL:        goodFont = &FontaDB::isAnyFont; break;
@@ -354,7 +356,7 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
         case FilterMode::SYMBOLIC:   goodFont = &FontaDB::isSymbolic; break;
     }
 
-    for (const QString &family : fontaDB().families()) {
+    for (CStringRef family : fontaDB().families()) {
 
         if(!(fontaDB().*goodFont)(family)) {
             continue;
@@ -380,6 +382,9 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
             ss << pad << "Panose: " << info.fontaTFF.panose.getNumberAsString() << "\n";
             if(info.fontaTFF.cyrillic) ss << pad << "Cyrillic\n";
             if(info.fontaTFF.monospaced) ss << pad << "Monospaced";
+            ss << pad << "Files: " << info.fontaTFF.files.join(' ');
+        } else {
+            qWarning() << family << qPrintable("doesn't have TTF");
         }
 
         if(detail.endsWith('\n') ) {
@@ -393,7 +398,7 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
     }
 }
 
-void FontaWindow::on_styleBox_activated(const QString &style)
+void FontaWindow::on_styleBox_activated(CStringRef style)
 {
     currField->setPreferableFontStyle(style);
 }
@@ -408,7 +413,7 @@ void FontaWindow::on_leadingBox_edited()
     on_leadingBox_activated(ui->leadingBox->lineEdit()->text());
 }
 
-void FontaWindow::on_leadingBox_activated(const QString &arg1)
+void FontaWindow::on_leadingBox_activated(CStringRef arg1)
 {
     //int val = strtol(arg1.toStdString().c_str(), nullptr, 10);
 
@@ -425,13 +430,13 @@ void FontaWindow::on_trackingBox_edited()
     on_trackingBox_activated(ui->trackingBox->lineEdit()->text());
 }
 
-void FontaWindow::on_trackingBox_activated(const QString &arg1)
+void FontaWindow::on_trackingBox_activated(CStringRef arg1)
 {
     int val = strtol(arg1.toStdString().c_str(), nullptr, 10);
     currField->setTracking(val);
 }
 
-void FontaWindow::save(const QString& fileName) const
+void FontaWindow::save(CStringRef fileName) const
 {
     QJsonObject json;
 
@@ -473,7 +478,7 @@ void FontaWindow::on_actionSave_as_triggered()
     }
 }
 
-void FontaWindow::load(const QString& fileName)
+void FontaWindow::load(CStringRef fileName)
 {
     QFile loadFile(fileName);
 
@@ -523,7 +528,7 @@ void FontaWindow::on_actionSave_triggered()
     }
 }
 
-void FontaWindow::setCurrentProjectFile(const QString& filename)
+void FontaWindow::setCurrentProjectFile(CStringRef filename)
 {
     currentProjectFile = filename;
     QFileInfo fileInfo(filename);

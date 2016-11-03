@@ -40,36 +40,40 @@ FilterWizard::FilterWizard(QWidget *parent)
 
 void FilterWizard::accept()
 {
-    bool serif = field("serif").toBool();
-    bool sans = field("sans").toBool();
-    bool script = field("script").toBool();
-    bool display = field("display").toBool();
-    bool symbolic = field("symbolic").toBool();
+#define declBool(X) bool X = field(#X).toBool()
 
-    bool extSerif = field("extSerif").toBool();
-    bool extSans = field("extSans").toBool();
+    declBool(serif);
+    declBool(sans);
+    declBool(script);
+    declBool(display);
+    declBool(symbolic);
 
-    bool oldstyle = field("oldstyle").toBool();
-    bool transitional = field("transitional").toBool();
-    bool modern = field("modern").toBool();
-    bool slab = field("slab").toBool();
+    declBool(extSerif);
+    declBool(extSans);
 
-    bool cove = field("cove").toBool();
-    bool square = field("square").toBool();
-    bool bone = field("bone").toBool();
-    bool asymmetric = field("asymmetric").toBool();
-    bool triangle = field("triangle").toBool();
+    declBool(oldstyle);
+    declBool(transitional);
+    declBool(modern);
+    declBool(slab);
 
-    bool grotesque = field("grotesque").toBool();
-    bool geometric = field("geometric").toBool();
-    bool humanist = field("humanist").toBool();
+    declBool(cove);
+    declBool(square);
+    declBool(bone);
+    declBool(asymmetric);
+    declBool(triangle);
 
-    bool normal = field("normal").toBool();
-    bool rounded = field("rounded").toBool();
-    bool flarred = field("flarred").toBool();
+    declBool(grotesque);
+    declBool(geometric);
+    declBool(humanist);
 
-    bool monospaced = field("monospaced").toBool();
-    bool cyrillic = field("cyrillic").toBool();
+    declBool(normal);
+    declBool(rounded);
+    declBool(flarred);
+
+    declBool(monospaced);
+    declBool(cyrillic);
+
+#undef declBool
 
     if(!serif && !sans && !script && !display && !symbolic) {
         serif = sans = script = display = symbolic = true;
@@ -94,7 +98,7 @@ void FilterWizard::accept()
     FontaDB& db = fontaDB();
 
     QStringList l;
-    for (const QString &f : db.families()) {
+    for (CStringRef f : db.families()) {
         if(monospaced && !db.isMonospaced(f)) { continue; }
         if(cyrillic && !db.isCyrillic(f)) { continue; }
 
@@ -177,7 +181,7 @@ void FilterWizard::accept()
     QDialog::accept();
 }
 
-void GeneralPage::addGeneralBloc(QPushButton** button, QCheckBox** box, int width, int height, const QString& blockName, const QString& extBlocName)
+void GeneralPage::addGeneralBloc(QPushButton** button, QCheckBox** box, int width, int height, CStringRef blockName, CStringRef extBlocName)
 {
     *button = new QPushButton();
     (*button)->setCheckable(true);
@@ -279,7 +283,7 @@ int GeneralPage::nextId() const
     return FilterWizard::Page_Finish;
 }
 
-void SerifFamilyPage::addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName)
+void SerifFamilyPage::addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName)
 {
     *button = new QPushButton();
     (*button)->setCheckable(true);
@@ -338,7 +342,7 @@ int SerifFamilyPage::nextId() const
     return FilterWizard::Page_SerifStyle;
 }
 
-void SerifStylePage::addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName)
+void SerifStylePage::addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName)
 {
     *button = new QPushButton();
     (*button)->setCheckable(true);
@@ -406,7 +410,7 @@ int SerifStylePage::nextId() const
     return FilterWizard::Page_Finish;
 }
 
-void SansFamilyPage::addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName)
+void SansFamilyPage::addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName)
 {
     *button = new QPushButton();
     (*button)->setCheckable(true);
@@ -463,7 +467,7 @@ int SansFamilyPage::nextId() const
     return FilterWizard::Page_SansStyle;
 }
 
-void SansStylePage::addGeneralBloc(QPushButton** button, int width, int height, const QString& blockName)
+void SansStylePage::addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName)
 {
     *button = new QPushButton();
     (*button)->setCheckable(true);

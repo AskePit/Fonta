@@ -118,15 +118,15 @@ private:
 
     QPushButton *addTabButton;
 
-    void initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, const QString& iconPath);
+    void initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, CStringRef iconPath);
 
-    void save(const QString& fileName) const;
-    void load(const QString& fileName);
+    void save(CStringRef fileName) const;
+    void load(CStringRef fileName);
 
     void clearWorkAreas();
 
     QString currentProjectFile;
-    void setCurrentProjectFile(const QString& filename);
+    void setCurrentProjectFile(CStringRef filename);
     void resetCurrentProjectFile();
 
     void makeFieldConnected(FontaField* textEdit);

@@ -154,13 +154,13 @@ static int getPoolsValue(QSet<int>& pool, int length)
     }
 }
 
-const QString& Sampler::getName()
+CStringRef Sampler::getName()
 {
     int i = getPoolsValue(namesPool, names.length());
     return names.at(i);
 }
 
-const QString& Sampler::getText()
+CStringRef Sampler::getText()
 {
     int i = getPoolsValue(textsPool, texts.length());
     return texts.at(i);

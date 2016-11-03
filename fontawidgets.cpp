@@ -176,7 +176,7 @@ void FontaField::focusInEvent(QFocusEvent* e)
     emit(focussed(this));
 }
 
-void FontaField::setFontFamily(const QString& family)
+void FontaField::setFontFamily(CStringRef family)
 {
     if(font().family() == family) {
         return;
@@ -188,7 +188,7 @@ void FontaField::setFontFamily(const QString& family)
 
     const QStringList& s = fontaDB().styles(family);
 
-    const QString& prefStyle = preferableFontStyle();
+    CStringRef prefStyle = preferableFontStyle();
     bool found = s.contains(prefStyle);
     if(found) {
         setFontStyle(prefStyle);
@@ -224,7 +224,7 @@ void FontaField::setFontSize(float size)
     qDebug() << styleSheet();*/
 }
 
-void FontaField::setFontStyle(const QString& style)
+void FontaField::setFontStyle(CStringRef style)
 {
     const QFont& f = font();
 
@@ -237,7 +237,7 @@ void FontaField::setFontStyle(const QString& style)
     m_fontStyle = style;
 }
 
-void FontaField::setPreferableFontStyle(const QString& style)
+void FontaField::setPreferableFontStyle(CStringRef style)
 {
     m_preferableFontStyle = style;
     setFontStyle(style);
@@ -444,7 +444,7 @@ void FontaWorkArea::save(QJsonObject &json) const
     json["sizes"] = sizesArr;
 }
 
-void FontaWorkArea::loadSample(const QString &jsonTxt)
+void FontaWorkArea::loadSample(CStringRef jsonTxt)
 {
     clear();
 
@@ -535,7 +535,7 @@ void FontaFilterEdit::suppose(QChar typed)
     for(int i = 0; i < listWidget->count(); ++i)
     {
         QListWidgetItem* item = listWidget->item(i);
-        const QString& fontName = item->text();
+        CStringRef fontName = item->text();
 
         if(fontName.startsWith(match, Qt::CaseInsensitive)) {
             setText(fontName);
@@ -573,8 +573,8 @@ void FontaComboBox::wheelEvent(QWheelEvent* e)
             continue;
         }
 
-        const QString& iStr = itemText(i);
-        const QString& i1Str = itemText(i+1);
+        CStringRef iStr = itemText(i);
+        CStringRef i1Str = itemText(i+1);
         int iVal = strtol(iStr.toStdString().c_str(), nullptr, 10);
         int i1Val = strtol(i1Str.toStdString().c_str(), nullptr, 10);
 
