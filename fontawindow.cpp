@@ -39,6 +39,9 @@ FontaWindow::FontaWindow(QWidget *parent)
     ui->setupUi(this);
     ui->fontsListSplitter->setSizes(QList<int>() << 110 << 200);
 
+    ui->fontsList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->fontsList, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showFontListContextMenu(const QPoint &)));
+
     connect(ui->sizeBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_sizeBox_edited()));
     connect(ui->leadingBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_leadingBox_edited()));
     connect(ui->trackingBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_trackingBox_edited()));
@@ -112,6 +115,23 @@ void FontaWindow::onTabsMove(int from, int to)
     workAreas.insert(to, toMove);
 }
 
+void FontaWindow::showFontListContextMenu(const QPoint &point)
+{
+    if (point.isNull()) {
+        return;
+    }
+
+    QString text = ui->fontsList->itemAt(point)->text();
+
+    QMenu menu(this);
+
+    QAction remove("Uninstall font", this);
+    connect(&remove, &QAction::triggered, this, [=](){ uninstallFont(text); });
+    menu.addAction(&remove);
+
+    menu.exec(ui->fontsList->mapToGlobal(point));
+}
+
 void FontaWindow::showTabsContextMenu(const QPoint &point)
 {
     if (point.isNull()) {
@@ -134,6 +154,31 @@ void FontaWindow::showTabsContextMenu(const QPoint &point)
     menu.addAction(&remove);
 
     menu.exec(ui->tabWidget->tabBar()->mapToGlobal(point));
+}
+
+void FontaWindow::uninstallFont(const QString &fontName)
+{
+    const auto &l = fontaDB().linkedFonts(fontName);
+
+    QMessageBox msgBox;
+
+    if(l.isEmpty()) {
+        msgBox.setText("Uninstall " + fontName + " font?");
+    } else {
+        msgBox.setText("Removal of " + fontName + " font will cause deletion of following fonts:\n\n" + l.join("\n") + "\n\nSure?");
+    }
+
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+
+    if (ret != QMessageBox::Ok) {
+        return;
+    } else {
+        return;
+    }
+
+    qDebug() << fontName;
 }
 
 void FontaWindow::addTab(bool empty)
@@ -174,7 +219,7 @@ void FontaWindow::promptedCloseTab(int i)
     QMessageBox msgBox;
     msgBox.setText("Delete " + workAreas[i]->name() + " tab.\nSure?");
     msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Save);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
     int ret = msgBox.exec();
 
     if (ret == QMessageBox::Ok) {
@@ -418,8 +463,6 @@ void FontaWindow::on_leadingBox_edited()
 
 void FontaWindow::on_leadingBox_activated(CStringRef arg1)
 {
-    //int val = strtol(arg1.toStdString().c_str(), nullptr, 10);
-
     float val = inf();
     if(arg1 != "Auto") {
         val = strtof(arg1.toStdString().c_str(), nullptr);

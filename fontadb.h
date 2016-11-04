@@ -99,6 +99,7 @@ public:
     QStringList families() const { return QtDB.families(); }
     QStringList styles(CStringRef family) const { return QtDB.styles(family); }
     QFont font(CStringRef family, CStringRef style, int pointSize) const { return QtDB.font(family, style, pointSize); }
+    QStringList linkedFonts(CStringRef &family);
 
     bool isAnyFont(CStringRef family) const { (void)family; return true; }
     bool isCyrillic(CStringRef family) const;

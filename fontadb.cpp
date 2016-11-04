@@ -483,6 +483,16 @@ FontaDB::FontaDB()
 FontaDB::~FontaDB()
 {}
 
+QStringList FontaDB::linkedFonts(CStringRef &family)
+{
+    FontaTTF ttf;
+    if(!getTTF(family, ttf)) {
+        return QStringList();
+    }
+
+    return ttf.linkedFonts.toList();
+}
+
 bool FontaDB::getTTF(CStringRef family, FontaTTF& ttf) const {
     if(!TTFs.contains(family))
         return false;

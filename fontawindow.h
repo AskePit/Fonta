@@ -84,6 +84,9 @@ private slots:
     void closeOtherTabs();
     void renameTab(int id);
 
+    void showFontListContextMenu(const QPoint &point);
+    void uninstallFont(const QString &fontName);
+
     void on_actionSave_as_triggered();
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
