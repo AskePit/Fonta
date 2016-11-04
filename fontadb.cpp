@@ -202,13 +202,27 @@ static void readFON(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
         for(int i = icomma-1; i>=0; --i) {
             if(!s[i].isDigit()) {
                 s.truncate(i+1);
-                fontName = s.trimmed();
                 break;
             }
         }
-    } else {
-        fontName = s.trimmed();
     }
+
+    int i = s.indexOf("Font for ");
+    if(i != -1) {
+        s.truncate(i);
+    }
+
+    i = s.indexOf(" Font ");
+    if(i != -1) {
+        s.truncate(i);
+    }
+
+    i = s.indexOf(" for ");
+    if(i != -1) {
+        s.truncate(i);
+    }
+
+    fontName = s.trimmed();
 
     qDebug() << '\t' << fontName;
 
@@ -298,6 +312,7 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaT
     nameHeader.StorageOffset = swapU16(nameHeader.StorageOffset);
 
     TTFNameRecord nameRecord;
+    TTFNameRecord lastNameRecord;
     QByteArray nameBytes;
     QString fontName;
     bool properLanguage = false;
@@ -312,6 +327,7 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaT
             nameRecord.EncodingID = swapU16(nameRecord.EncodingID);
             nameRecord.StringLength = swapU16(nameRecord.StringLength);
             nameRecord.StringOffset = swapU16(nameRecord.StringOffset);
+            lastNameRecord = nameRecord;
 
             // save file position, so we can return to continue with search
             quint64 nPos = f.pos();
@@ -344,8 +360,8 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaT
 
     if(!properLanguage) {
         // use last record to extract font name
-        fontName = decodeFontName(nameRecord.PlatformID, nameRecord.EncodingID, nameBytes);
-        qDebug() << '\t' << "not proper!" << nameRecord.PlatformID << nameRecord.EncodingID << (nameRecord.LanguageID>>8) << fontName;
+        fontName = decodeFontName(lastNameRecord.PlatformID, lastNameRecord.EncodingID, nameBytes);
+        qDebug() << '\t' << "not proper!" << lastNameRecord.PlatformID << lastNameRecord.EncodingID << (lastNameRecord.LanguageID>>8) << fontName;
     }
 
     if(TTFs.contains(fontName)) {
