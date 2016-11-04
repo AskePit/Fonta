@@ -12,7 +12,7 @@
 static void GetFontFiles(QStringList &out)
 {
     const auto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
-    for(const auto &dir : fontsDirs) {
+    for(cauto dir : fontsDirs) {
         QDirIterator it(dir, QStringList() << "*.ttf" << "*.otf" << "*.ttc" << "*.otc" << "*.fon" , QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             it.next();
@@ -94,39 +94,42 @@ namespace TTFTable {
 
 // Forwards
 static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &nameBytes);
-static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaTTF> &TTFs);
-static void readTTF(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
-static void readTTC(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
-static void readFON(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
-static void readFontFile(CStringRef fileName, QHash<QString, FontaTTF> &TTFs);
-static bool readTablesMap(TTFOffsetTable tablesMap[], QFile &f);
+static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
+static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
+static void readTTC(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
+static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
+static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2Fonts);
+static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[]);
 
 static std::mutex readTTFMutex;
 
-static void readFontFile(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
+static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
-    std::function<void(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)> f;
-
-    if(fileName.endsWith(".ttc", Qt::CaseInsensitive)) {
-        f = readTTC;
-    } else if(fileName.endsWith(".fon", Qt::CaseInsensitive)) {
-        f = readFON;
-    } else {
-        f = readTTF;
-    }
-
-    f(fileName, TTFs);
-}
-
-static void readTTC(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
-{
+#ifdef FONTA_DETAILED_DEBUG
     qDebug() << qPrintable(QFileInfo(fileName).fileName()) << ":";
+#endif
+
     QFile f(fileName);
     if (!f.open(QIODevice::ReadOnly)) {
         qWarning() << "Couldn't open!";
         return;
     }
 
+    std::function<void(QFile &, QHash<QString, FontaTTF> &, File2FontsMap &)> func;
+
+    if(fileName.endsWith(".ttc", Qt::CaseInsensitive)) {
+        func = readTTC;
+    } else if(fileName.endsWith(".fon", Qt::CaseInsensitive)) {
+        func = readFON;
+    } else {
+        func = readTTF;
+    }
+
+    func(f, TTFs, File2Fonts);
+}
+
+static void readTTC(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
+{
     f.seek(8);
 
     u32 offsetTablesCount;
@@ -151,7 +154,7 @@ static void readTTC(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
         TTFOffsetTable tablesMap[TTFTable::count];
         int tablesCount = 0;
         for(int j = 0; j<fontTablesCount; ++j) {
-            tablesCount += (int)readTablesMap(tablesMap, f);
+            tablesCount += (int)readTablesMap(f, tablesMap);
             if(tablesCount == TTFTable::count) {
                 break;
             }
@@ -162,20 +165,12 @@ static void readTTC(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
             return;
         }
 
-        readFont(tablesMap, f, TTFs);
+        readFont(tablesMap, f, TTFs, File2Fonts);
     }
 }
 
-static void readFON(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
+static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
-    qDebug() << qPrintable(QFileInfo(fileName).fileName()) << ":";
-
-    QFile f(fileName);
-    if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << "Couldn't open!";
-        return;
-    }
-
     QByteArray ba = f.readAll();
 
     int ibeg = ba.indexOf("FONTRES");
@@ -224,10 +219,16 @@ static void readFON(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
 
     fontName = s.trimmed();
 
+#ifdef FONTA_DETAILED_DEBUG
     qDebug() << '\t' << fontName;
+#endif
+
+    CStringRef fileName = f.fileName();
+
+    File2Fonts[fileName] << fontName;
 
     if(TTFs.contains(fontName)) {
-        TTFs[fontName].files << fileName;
+        TTFs[fontName].files << f.fileName();
         return;
     }
 
@@ -239,23 +240,15 @@ static void readFON(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
     (void)lock;
 }
 
-static void readTTF(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
+static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
-    qDebug() << qPrintable(QFileInfo(fileName).fileName()) << ":";
-
-    QFile f(fileName);
-    if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << "Couldn't open!";
-        return;
-    }
-
     f.seek(12);
 
     TTFOffsetTable tablesMap[TTFTable::count];
 
     int tablesCount = 0;
     while(!f.atEnd()) {
-        tablesCount += (int)readTablesMap(tablesMap, f);
+        tablesCount += (int)readTablesMap(f, tablesMap);
         if(tablesCount == TTFTable::count) {
             break;
         }
@@ -266,10 +259,10 @@ static void readTTF(CStringRef fileName, QHash<QString, FontaTTF> &TTFs)
         return;
     }
 
-    readFont(tablesMap, f, TTFs);
+    readFont(tablesMap, f, TTFs, File2Fonts);
 }
 
-static bool readTablesMap(TTFOffsetTable tablesMap[], QFile &f)
+static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
 {
     TTFOffsetTable offsetTable;
     f.read((char*)&offsetTable, sizeof(TTFOffsetTable));
@@ -298,7 +291,7 @@ static bool readTablesMap(TTFOffsetTable tablesMap[], QFile &f)
     }
 }
 
-static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaTTF> &TTFs)
+static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
     /////////
     // name
@@ -315,7 +308,7 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaT
     TTFNameRecord lastNameRecord;
     QByteArray nameBytes;
     QString fontName;
-    bool properLanguage = false;
+    bool properLanguage = false; // english-like language
 
     for(int i = 0; i<nameHeader.RecordsCount; ++i) {
         f.read((char*)&nameRecord, sizeof(TTFNameRecord));
@@ -327,7 +320,6 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaT
             nameRecord.EncodingID = swapU16(nameRecord.EncodingID);
             nameRecord.StringLength = swapU16(nameRecord.StringLength);
             nameRecord.StringOffset = swapU16(nameRecord.StringOffset);
-            lastNameRecord = nameRecord;
 
             // save file position, so we can return to continue with search
             quint64 nPos = f.pos();
@@ -350,8 +342,12 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaT
 
             if(properLanguage) {
                 fontName = decodeFontName(nameRecord.PlatformID, nameRecord.EncodingID, nameBytes);
+#ifdef FONTA_DETAILED_DEBUG
                 qDebug() << '\t' << nameRecord.PlatformID << nameRecord.EncodingID << langCode << fontName;
+#endif
                 break;
+            } else {
+                lastNameRecord = nameRecord;
             }
 
             f.seek(nPos);
@@ -361,16 +357,22 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, QHash<QString, FontaT
     if(!properLanguage) {
         // use last record to extract font name
         fontName = decodeFontName(lastNameRecord.PlatformID, lastNameRecord.EncodingID, nameBytes);
+#ifdef FONTA_DETAILED_DEBUG
         qDebug() << '\t' << "not proper!" << lastNameRecord.PlatformID << lastNameRecord.EncodingID << (lastNameRecord.LanguageID>>8) << fontName;
+#endif
     }
 
+    CStringRef fileName = f.fileName();
+
+    File2Fonts[fileName] << fontName;
+
     if(TTFs.contains(fontName)) {
-        TTFs[fontName].files << f.fileName();
+        TTFs[fontName].files << fileName;
         return;
     }
 
     FontaTTF ttf;
-    ttf.files << f.fileName();
+    ttf.files << fileName;
     //qDebug() << '\t' << fontName;
 
     /////////
@@ -421,22 +423,26 @@ static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &
     }
 }
 
-static void loadTTFChunk(const QStringList &out, int from, int to, QHash<QString, FontaTTF> &TTFs)
+#ifndef FONTA_DETAILED_DEBUG
+static void loadTTFChunk(const QStringList &out, int from, int to, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
     for(int i = from; i<=to; ++i) {
-        readFontFile(out[i], TTFs);
+        readFontFile(out[i], TTFs, File2Fonts);
     }
 }
+#endif
 
 FontaDB::FontaDB()
 {
     QStringList out;
     GetFontFiles(out);
 
+#ifdef FONTA_MEASURES
     QElapsedTimer timer;
     timer.start();
+#endif
 
-    /*
+#ifndef FONTA_DETAILED_DEBUG
     int cores = std::thread::hardware_concurrency();
     if(!cores) cores = 4;
     const int chunkN = out.size() / cores;
@@ -446,7 +452,7 @@ FontaDB::FontaDB()
     int from = 0;
     int to = chunkN;
     for(int i = 0; i<cores; ++i) {
-        futurs.push_back( std::thread(loadTTFChunk, out, from, to, std::ref(TTFs)) );
+        futurs.push_back( std::thread(loadTTFChunk, std::ref(out), from, to, std::ref(TTFs), std::ref(File2Fonts)) );
         from = to+1;
         to = std::min(to*chunkN, out.size()-1);
     }
@@ -454,14 +460,24 @@ FontaDB::FontaDB()
     for(auto& f : futurs) {
         f.join();
     }
-*/
-
+#else
     for(int i = 0; i<out.size(); ++i) {
-        readFontFile(out[i], TTFs);
+        readFontFile(out[i], TTFs, File2Fonts);
+    }
+#endif
+
+    for(cauto fontName : TTFs.keys()) {
+        auto &TTF = TTFs[fontName];
+        for(cauto f : TTF.files) {
+            TTF.linkedFonts.unite(File2Fonts[f]);
+        }
+        TTF.linkedFonts.remove(fontName); // remove itself
     }
 
+#ifdef FONTA_MEASURES
     qDebug() << timer.elapsed() << "milliseconds to load fonts";
     qDebug() << TTFs.size() << "fonts loaded";
+#endif
 }
 
 FontaDB::~FontaDB()

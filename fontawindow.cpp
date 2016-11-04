@@ -364,7 +364,7 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
 
         QListWidgetItem* item = new QListWidgetItem(family);
 
-
+#ifdef FONTA_DETAILED_DEBUG
         FullFontInfo info = fontaDB().getFullFontInfo(family);
         QString detail;
         QTextStream ss(&detail);
@@ -381,8 +381,11 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
             ss << pad << "Family Sub: " << info.fontaTFF.familySubClass << "\n";
             ss << pad << "Panose: " << info.fontaTFF.panose.getNumberAsString() << "\n";
             if(info.fontaTFF.cyrillic) ss << pad << "Cyrillic\n";
-            if(info.fontaTFF.monospaced) ss << pad << "Monospaced";
-            ss << pad << "Files: " << info.fontaTFF.files.join(' ');
+            if(info.fontaTFF.monospaced) ss << pad << "Monospaced\n";
+            ss << pad << "Files: " << info.fontaTFF.files.toList().join(' ') << "\n";
+            if(!info.fontaTFF.linkedFonts.isEmpty()) {
+                ss << pad << "Linked fonts: " << info.fontaTFF.linkedFonts.toList().join(' ');
+            }
         } else {
             qWarning() << family << qPrintable("doesn't have TTF");
         }
@@ -392,7 +395,7 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
         }
 
         item->setToolTip(detail);
-
+#endif
 
         ui->fontsList->addItem(item);
     }

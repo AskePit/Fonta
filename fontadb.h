@@ -3,6 +3,8 @@
 
 #include <QFontDatabase>
 #include <QString>
+#include <QMultiHash>
+#include <QSet>
 #include <QHash>
 #include "panose.h"
 
@@ -49,7 +51,12 @@ struct FontaTTF {
     bool cyrillic;
     bool monospaced;
     Panose panose;
-    QStringList files;
+
+    // these fields are needed for resolving and control font dependencies while removing font from PC
+    // when we delete file we should remove all related files
+    // also user should be awared of related fonts which can be removed/reduced while removing particular font
+    QSet<QString> files;       // files where this font is defined
+    QSet<QString> linkedFonts; // fonts located in the same files with this font
 
     FontaTTF()
         : familyClass(FamilyClass::NO)
@@ -70,6 +77,9 @@ struct FullFontInfo {
     QtFontInfo qtInfo;
     bool TTFExists;
 };
+
+using TTFMap = QHash<QString, FontaTTF>;
+using File2FontsMap = QHash<QString, QSet<QString>>;
 
 class FontaDB
 {
@@ -125,7 +135,8 @@ public:
 
 private:
     QFontDatabase QtDB;
-    QHash<QString, FontaTTF> TTFs;
+    TTFMap TTFs;
+    File2FontsMap File2Fonts;
 };
 
 inline FontaDB& fontaDB() { return FontaDB::getInstance(); }

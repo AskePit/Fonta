@@ -17,6 +17,7 @@ typedef int32_t i32;
 typedef int64_t i64;
 
 using CStringRef = const QString&;
+#define cauto const auto&
 
 struct Version {
     int major;
