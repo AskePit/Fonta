@@ -7,16 +7,24 @@
 #include <QElapsedTimer>
 #include <QDebug>
 #include <QStandardPaths>
+#include <QSettings>
 #include <mutex>
 
 static void GetFontFiles(QStringList &out)
 {
-    const auto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
+    cauto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
     for(cauto dir : fontsDirs) {
         QDirIterator it(dir, QStringList() << "*.ttf" << "*.otf" << "*.ttc" << "*.otc" << "*.fon" , QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             it.next();
-            out << it.filePath();
+            QString fileName = it.filePath();
+
+            // if file is planned tobe deleted - do not include it to list of font files
+            QSettings fontaReg("PitM", "Fonta");
+            QStringList filesToDelete = fontaReg.value("FilesToDelete").toStringList();
+            if(!filesToDelete.contains(fileName)) {
+                out << it.filePath();
+            }
         }
     }
 }
@@ -56,6 +64,9 @@ struct TTFNameRecord {
     u16 NameID;
     u16 StringLength;
     u16 StringOffset; //from start of storage area
+
+    TTFNameRecord() : PlatformID(1), EncodingID(0), LanguageID(0), NameID(1), StringLength(0), StringOffset(0)
+    {}
 };
 
 struct TTFPostHeader {
@@ -424,6 +435,7 @@ static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &
 }
 
 #ifndef FONTA_DETAILED_DEBUG
+
 static void loadTTFChunk(const QStringList &out, int from, int to, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
     for(int i = from; i<=to; ++i) {
@@ -434,6 +446,33 @@ static void loadTTFChunk(const QStringList &out, int from, int to, TTFMap &TTFs,
 
 FontaDB::FontaDB()
 {
+    // QFontDatabase seems to use all font files from C:/Windows/Fonts.
+    // It's impossible todelete any file while programm is running.
+    // Solution: read files to be deleted from registry at Fonta
+    // startup exactly before QFontDatabase creation and try to delete them.
+    {
+        QSettings fontaReg("PitM", "Fonta");
+        QStringList filesToDelete = fontaReg.value("FilesToDelete").toStringList();
+        for(int i = 0; i<filesToDelete.count(); ++i) {
+            CStringRef f = filesToDelete[i];
+
+            QFile file(f);
+            bool ok = true;
+            ok &= file.setPermissions(QFile::ReadOther | QFile::WriteOther);
+            ok &= file.remove();
+
+            if(ok) {
+                filesToDelete.removeAt(i);
+                --i;
+            }
+        }
+
+        // files that couldn't be deleted go back to registry
+        fontaReg.setValue("FilesToDelete", filesToDelete);
+    }
+
+    QtDB = new QFontDatabase;
+
     QStringList out;
     GetFontFiles(out);
 
@@ -466,6 +505,7 @@ FontaDB::FontaDB()
     }
 #endif
 
+    // analyse fonts on common files
     for(cauto fontName : TTFs.keys()) {
         auto &TTF = TTFs[fontName];
         for(cauto f : TTF.files) {
@@ -481,9 +521,22 @@ FontaDB::FontaDB()
 }
 
 FontaDB::~FontaDB()
-{}
+{
+    delete QtDB;
+}
 
-QStringList FontaDB::linkedFonts(CStringRef &family)
+QStringList FontaDB::families() const
+{
+    QStringList fonts = QtDB->families();
+    QStringList uninstalledList = uninstalled();
+    for(cauto f : uninstalledList) {
+        fonts.removeAll(f);
+    }
+
+    return fonts;
+}
+
+QStringList FontaDB::linkedFonts(CStringRef family) const
 {
     FontaTTF ttf;
     if(!getTTF(family, ttf)) {
@@ -491,6 +544,64 @@ QStringList FontaDB::linkedFonts(CStringRef &family)
     }
 
     return ttf.linkedFonts.toList();
+}
+
+QStringList FontaDB::fontFiles(CStringRef family) const
+{
+    FontaTTF ttf;
+    if(!getTTF(family, ttf)) {
+        return QStringList();
+    }
+
+    return ttf.files.toList();
+}
+
+void FontaDB::uninstall(CStringRef family)
+{
+    /*
+     * To uninstall font:
+     *
+     * 1. Remove appropriate record in HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts registry
+     * 2. Write uninstalled fonts to HKEY_LOCAL_MACHINE\FontaUninstalledFonts registry.
+     *    Fonts listed here should not appear in Fonta's fonts list. After reboot fonts'll be removed completely
+     *    and HKEY_LOCAL_MACHINE\FontaUninstalledFonts field'll be deleted automatically. (as every field at HKEY_LOCAL_MACHINE's root)
+     * 3. Write uninstalled fonts' file paths at PitM\Fonta\FilesToDelete user's registry.
+     *    This info'll be used at program startup when files are avaliable for deleting (see FontaDB constructor).
+     */
+
+    QSettings fontsReg("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts", QSettings::NativeFormat);
+    cauto files = fontaDB().fontFiles(family); // "C:/Windows/Fonts/arial.ttf"
+
+    for(CStringRef f : files) {
+        cauto regKeys = fontsReg.allKeys(); // "Arial (TrueType)"="arial.ttf"
+
+        QFileInfo info(f);
+        const QString name = info.fileName();
+
+        for(CStringRef key : regKeys) {
+            const QString value = fontsReg.value(key).toString();
+            if(QString::compare(name, value, Qt::CaseInsensitive) == 0) {
+                fontsReg.remove(key);
+            }
+        }
+    }
+
+
+    QStringList uninstalledList = uninstalled();
+    uninstalledList << family;
+    uninstalledList << linkedFonts(family);
+
+    QSettings uninstalledReg("HKEY_LOCAL_MACHINE", QSettings::NativeFormat);
+    uninstalledReg.setValue("FontaUninstalledFonts", uninstalledList);
+
+    QSettings fontaReg("PitM", "Fonta");
+    fontaReg.setValue("FilesToDelete", files);
+}
+
+QStringList FontaDB::uninstalled() const
+{
+    QSettings uninstalledReg("HKEY_LOCAL_MACHINE", QSettings::NativeFormat);
+    return uninstalledReg.value("FontaUninstalledFonts", QStringList()).toStringList();
 }
 
 bool FontaDB::getTTF(CStringRef family, FontaTTF& ttf) const {
@@ -509,9 +620,9 @@ FullFontInfo FontaDB::getFullFontInfo(CStringRef family) const
     fullInfo.TTFExists = getTTF(family, ttf);
     fullInfo.fontaTFF = ttf;
 
-    fullInfo.qtInfo.cyrillic = QtDB.writingSystems(family).contains(QFontDatabase::Cyrillic);
-    fullInfo.qtInfo.symbolic = QtDB.writingSystems(family).contains(QFontDatabase::Symbol);
-    fullInfo.qtInfo.monospaced = QtDB.isFixedPitch(family);
+    fullInfo.qtInfo.cyrillic = QtDB->writingSystems(family).contains(QFontDatabase::Cyrillic);
+    fullInfo.qtInfo.symbolic = QtDB->writingSystems(family).contains(QFontDatabase::Symbol);
+    fullInfo.qtInfo.monospaced = QtDB->isFixedPitch(family);
 
     return fullInfo;
 }
@@ -519,7 +630,7 @@ FullFontInfo FontaDB::getFullFontInfo(CStringRef family) const
 bool FontaDB::isCyrillic(CStringRef family) const
 {
     // 1
-    if(QtDB.writingSystems(family).contains(QFontDatabase::Cyrillic))
+    if(QtDB->writingSystems(family).contains(QFontDatabase::Cyrillic))
         return true;
 
     // 2
@@ -582,7 +693,7 @@ bool FontaDB::isSansSerif(CStringRef family) const
 bool FontaDB::isMonospaced(CStringRef family) const
 {
     // 1
-    if(QtDB.isFixedPitch(family))
+    if(QtDB->isFixedPitch(family))
         return true;
 
     // 2
@@ -844,4 +955,3 @@ bool FontaDB::isFlarredSans(CStringRef family) const
 
     return ttf.panose.SerifStyle == Panose::SerifStyle::FLARED;
 }
-

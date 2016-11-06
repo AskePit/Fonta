@@ -11,10 +11,31 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QMessageBox>
 #include <fontadb.h>
 #include <iostream>
 
 #include <qdebug.h>
+
+int callQuestionDialog(CStringRef message)
+{
+    QMessageBox msgBox;
+    msgBox.setText(message);
+
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    return msgBox.exec();
+}
+
+void callInfoDialog(CStringRef message)
+{
+    QMessageBox msgBox;
+    msgBox.setText(message);
+
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+}
 
 About::About(const Version& version, QWidget *parent) :
     QDialog(parent)

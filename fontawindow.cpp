@@ -10,9 +10,10 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QDesktopWidget>
 #include <QColorDialog>
+#include <QSettings>
+#include <QMessageBox>
 
 #include <QDebug>
 
@@ -37,6 +38,7 @@ FontaWindow::FontaWindow(QWidget *parent)
     , currentProjectFile("")
 {
     ui->setupUi(this);
+
     ui->fontsListSplitter->setSizes(QList<int>() << 110 << 200);
 
     ui->fontsList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -158,27 +160,20 @@ void FontaWindow::showTabsContextMenu(const QPoint &point)
 
 void FontaWindow::uninstallFont(const QString &fontName)
 {
-    const auto &l = fontaDB().linkedFonts(fontName);
+    cauto linked = fontaDB().linkedFonts(fontName);
 
-    QMessageBox msgBox;
+    QString dialogMessage = linked.isEmpty() ?
+                       QString("Uninstall " + fontName + " font?") :
+                       QString("Removal of " + fontName + " font will cause deletion of following fonts:\n\n" + linked.join("\n") + "\n\nSure?");
 
-    if(l.isEmpty()) {
-        msgBox.setText("Uninstall " + fontName + " font?");
-    } else {
-        msgBox.setText("Removal of " + fontName + " font will cause deletion of following fonts:\n\n" + l.join("\n") + "\n\nSure?");
-    }
+    int ret = callQuestionDialog(dialogMessage);
 
-    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Cancel);
-    int ret = msgBox.exec();
-
-    if (ret != QMessageBox::Ok) {
-        return;
-    } else {
+    if (ret == QMessageBox::Ok) {
+        fontaDB().uninstall(fontName);
+        on_filterBox_currentIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
+        callInfoDialog("Font(s) uninstalled!\nReboot your PC for changes to take effect");
         return;
     }
-
-    qDebug() << fontName;
 }
 
 void FontaWindow::addTab(bool empty)
@@ -216,11 +211,7 @@ void FontaWindow::addTab(bool empty)
 
 void FontaWindow::promptedCloseTab(int i)
 {
-    QMessageBox msgBox;
-    msgBox.setText("Delete " + workAreas[i]->name() + " tab.\nSure?");
-    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Cancel);
-    int ret = msgBox.exec();
+    int ret = callQuestionDialog("Delete " + workAreas[i]->name() + " tab.\nSure?");
 
     if (ret == QMessageBox::Ok) {
         closeTab(i);
@@ -245,11 +236,7 @@ void FontaWindow::closeTab(int id)
 
 void FontaWindow::closeOtherTabs()
 {
-    QMessageBox msgBox;
-    msgBox.setText("Delete all tabs except " + currWorkArea->name() + "\nSure?");
-    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Save);
-    int ret = msgBox.exec();
+    int ret = callQuestionDialog("Delete all tabs except " + currWorkArea->name() + "\nSure?");
 
     if (ret != QMessageBox::Ok) {
         return;

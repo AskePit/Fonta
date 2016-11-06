@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <limits>
 
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -36,5 +37,6 @@ inline float pt2px(float pt) { return pt*getDPI()/72.; }
 inline float inf() { return std::numeric_limits<float>::infinity(); }
 
 #define decl_constexpr(x) constexpr decltype(x) x
+
 
 #endif // TYPES_H

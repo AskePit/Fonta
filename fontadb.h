@@ -89,17 +89,21 @@ private:
     void operator=(FontaDB const&);
 
 public:
-    static FontaDB& getInstance()
+    static FontaDB &getInstance()
     {
         static FontaDB instance;
         return instance;
     }
     ~FontaDB();
 
-    QStringList families() const { return QtDB.families(); }
-    QStringList styles(CStringRef family) const { return QtDB.styles(family); }
-    QFont font(CStringRef family, CStringRef style, int pointSize) const { return QtDB.font(family, style, pointSize); }
-    QStringList linkedFonts(CStringRef &family);
+    QStringList families() const;
+    QStringList styles(CStringRef family) const { return QtDB->styles(family); }
+    QFont font(CStringRef family, CStringRef style, int pointSize) const { return QtDB->font(family, style, pointSize); }
+    QStringList linkedFonts(CStringRef family) const;
+    QStringList fontFiles(CStringRef family) const;
+
+    void uninstall(CStringRef family);
+    QStringList uninstalled() const;
 
     bool isAnyFont(CStringRef family) const { (void)family; return true; }
     bool isCyrillic(CStringRef family) const;
@@ -132,10 +136,10 @@ public:
     bool getTTF(CStringRef family, FontaTTF& ttf) const;
     FullFontInfo getFullFontInfo(CStringRef family) const;
 
-    QFontDatabase& getQtDB() { return QtDB; }
+    QFontDatabase& getQtDB() { return *QtDB; }
 
 private:
-    QFontDatabase QtDB;
+    QFontDatabase *QtDB;
     TTFMap TTFs;
     File2FontsMap File2Fonts;
 };

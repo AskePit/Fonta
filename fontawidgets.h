@@ -14,6 +14,9 @@ class QHBoxLayout;
 class QSpacerItem;
 class QLabel;
 
+int callQuestionDialog(CStringRef message);
+void callInfoDialog(CStringRef message);
+
 class About : public QDialog
 {
     Q_OBJECT

@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 
+
 Version::Version(int major, int minor, int build)
     : major(major)
     , minor(minor)
