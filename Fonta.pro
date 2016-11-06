@@ -29,8 +29,14 @@ HEADERS += \
 FORMS += \
     fontawindow.ui
 
+RESOURCES_DIR = resources
+
 RESOURCES += \
-    pics.qrc
+    $${RESOURCES_DIR}/pics.qrc
+
+RC_FILE += \
+    $${RESOURCES_DIR}/AdminManifest.rc
+    $${RESOURCES_DIR}/version.rc
 
 build_all:!build_pass {
     CONFIG -= build_all
@@ -43,3 +49,4 @@ DEFINES *= \
     QT_USE_QSTRINGBUILDER \
     FONTA_DETAILED_DEBUG \
     FONTA_MEASURES
+
