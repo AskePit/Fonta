@@ -82,8 +82,7 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
                                            "QTabBar::close-button {image: url(:/pic/closeTab.png); }"
                                            "QTabBar::close-button:hover {image: url(:/pic/closeTabHover.png); }"
                                            );
-    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(promptedCloseTab(int)));
-    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(changeAddTabButtonGeometry()));
+    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(closeTabPrompted(int)));
     connect(ui->tabWidget->tabBar(), SIGNAL(tabBarDoubleClicked(int)), this, SLOT(renameTab(int)));
     connect(ui->tabWidget->tabBar(), SIGNAL(tabMoved(int,int)), this, SLOT(onTabsMove(int, int)));
     connect(ui->tabWidget->tabBar(), SIGNAL(customContextMenuRequested(QPoint)), SLOT(showTabsContextMenu(const QPoint &)));
@@ -91,7 +90,6 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     addTabButton = new QPushButton(ui->tabWidget->tabBar());
     connect(addTabButton, SIGNAL(clicked(bool)), this, SLOT(addTab()));
     connect(addTabButton, SIGNAL(clicked(bool)), this, SLOT(changeAddTabButtonGeometry()));
-    changeAddTabButtonGeometry();
 
     if(fileToOpen.isEmpty()) {
         addTab();
@@ -217,15 +215,26 @@ void FontaWindow::addTab(bool empty)
     if(ui->tabWidget->count() > 1) {
         ui->tabWidget->setTabsClosable(true);
     }
+
+    changeAddTabButtonGeometry();
+
+    if(workAreas.count() > 1) {
+        ui->actionClose_Tab->setEnabled(true);
+        ui->actionClose_other_Tabs->setEnabled(true);
+        ui->actionNext_Tab->setEnabled(true);
+        ui->actionPrevious_Tab->setEnabled(true);
+    }
 }
 
-void FontaWindow::promptedCloseTab(int i)
+void FontaWindow::closeTabPrompted(int i)
 {
     int ret = callQuestionDialog("Delete " + workAreas[i]->name() + " tab.\nSure?");
 
     if (ret == QMessageBox::Ok) {
         closeTab(i);
     }
+
+    changeAddTabButtonGeometry();
 }
 
 void FontaWindow::closeTab(int id)
@@ -241,6 +250,13 @@ void FontaWindow::closeTab(int id)
 
     if(ui->tabWidget->count() == 1) {
         ui->tabWidget->setTabsClosable(false);
+    }
+
+    if(workAreas.count() <= 1) {
+        ui->actionClose_Tab->setDisabled(true);
+        ui->actionClose_other_Tabs->setDisabled(true);
+        ui->actionNext_Tab->setDisabled(true);
+        ui->actionPrevious_Tab->setDisabled(true);
     }
 }
 
@@ -260,6 +276,8 @@ void FontaWindow::closeOtherTabs()
             --i;
         }
     }
+
+    changeAddTabButtonGeometry();
 }
 
 void FontaWindow::renameTab(int id)
@@ -562,7 +580,6 @@ void FontaWindow::openFile(CStringRef filename)
 {
     load(filename);
     setCurrentProjectFile(filename);
-    changeAddTabButtonGeometry();
 
     QFileInfo info(filename);
     QSettings fontaReg("PitM", "Fonta");
@@ -620,7 +637,6 @@ void FontaWindow::on_actionNew_triggered()
     resetCurrentProjectFile();
     clearWorkAreas();
     addTab();
-    changeAddTabButtonGeometry();
 }
 
 void FontaWindow::updateAddRemoveButtons()
@@ -693,4 +709,36 @@ void FontaWindow::on_textColorButton_clicked()
         currField->sheet().set("color", c.red(), c.green(), c.blue());
         currField->applySheet();
     }
+}
+
+void FontaWindow::on_actionNew_Tab_triggered()
+{
+    addTab();
+}
+
+void FontaWindow::on_actionClose_Tab_triggered()
+{
+    if(workAreas.count() > 1) {
+        closeTabPrompted(currWorkArea->id());
+    }
+}
+
+void FontaWindow::on_actionClose_other_Tabs_triggered()
+{
+    if(workAreas.count() > 1) {
+        closeOtherTabs();
+    }
+}
+
+void FontaWindow::on_actionNext_Tab_triggered()
+{
+    int id = currWorkArea->id();
+    if(id != workAreas.count()-1) {
+        ++id;
+    } else {
+        id = 0;
+    }
+
+    currWorkArea = workAreas[id];
+    ui->tabWidget->setCurrentIndex(id);
 }

@@ -79,7 +79,7 @@ private slots:
 
     void showTabsContextMenu(const QPoint &point);
     void addTab(bool empty = false);
-    void promptedCloseTab(int i);
+    void closeTabPrompted(int i);
     void closeTab(int i);
     void closeOtherTabs();
     void renameTab(int id);
@@ -100,6 +100,14 @@ private slots:
 
     void on_backColorButton_clicked();
     void on_textColorButton_clicked();
+
+    void on_actionNew_Tab_triggered();
+
+    void on_actionClose_Tab_triggered();
+
+    void on_actionClose_other_Tabs_triggered();
+
+    void on_actionNext_Tab_triggered();
 
 protected:
     void resizeEvent(QResizeEvent* event);
