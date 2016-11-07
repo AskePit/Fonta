@@ -96,12 +96,61 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     } else {
         openFile(fileToOpen);
     }
+
+    loadGeometry();
+}
+
+FontaWindow::~FontaWindow()
+{
+    saveGeometry();
+    delete ui;
 }
 
 void FontaWindow::resizeEvent(QResizeEvent* event)
 {
     QMainWindow::resizeEvent(event);
     changeAddTabButtonGeometry();
+}
+
+void FontaWindow::saveGeometry()
+{
+    QSettings settings("PitM", "Fonta");
+
+    settings.beginGroup("FontaWindow");
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
+
+    cauto sizes = ui->fontsListSplitter->sizes();
+    settings.setValue("fontsSplitterSizes0", sizes[0]);
+    settings.setValue("fontsSplitterSizes1", sizes[1]);
+    settings.endGroup();
+}
+
+void FontaWindow::loadGeometry()
+{
+    QSettings settings("PitM", "Fonta");
+
+    settings.beginGroup("FontaWindow");
+    QSize size = settings.value("size", QSize()).toSize();
+    QPoint pos = settings.value("pos", QPoint()).toPoint();
+    int fontsSplitterSizes0 = settings.value("fontsSplitterSizes0", -1).toInt();
+    int fontsSplitterSizes1 = settings.value("fontsSplitterSizes1", -1).toInt();
+
+    if(size.isValid()) {
+        resize(size);
+    }
+
+    if(!pos.isNull()) {
+        move(pos);
+    }
+
+    QList<int> sizes;
+    if(fontsSplitterSizes0 != -1 && fontsSplitterSizes1 != -1) {
+        sizes << fontsSplitterSizes0 << fontsSplitterSizes1;
+        ui->fontsListSplitter->setSizes(sizes);
+    }
+
+    settings.endGroup();
 }
 
 void FontaWindow::changeAddTabButtonGeometry()
@@ -285,11 +334,6 @@ void FontaWindow::renameTab(int id)
     RenameTabEdit* edit = new RenameTabEdit(ui->tabWidget, workAreas[id], ui->tabWidget->tabBar());
     connect(edit, SIGNAL(applied()), this, SLOT(changeAddTabButtonGeometry()));
     edit->show();
-}
-
-FontaWindow::~FontaWindow()
-{
-    delete ui;
 }
 
 void FontaWindow::makeFieldConnected(FontaField* field) {
@@ -541,7 +585,7 @@ void FontaWindow::on_actionSave_as_triggered()
         setCurrentProjectFile(filename);
 
         QFileInfo info(filename);
-        fontaReg.setValue("OpenSaveFilePath", info.filePath());
+        fontaReg.setValue("OpenSaveFilePath", info.path());
     }
 }
 

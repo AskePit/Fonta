@@ -102,11 +102,8 @@ private slots:
     void on_textColorButton_clicked();
 
     void on_actionNew_Tab_triggered();
-
     void on_actionClose_Tab_triggered();
-
     void on_actionClose_other_Tabs_triggered();
-
     void on_actionNext_Tab_triggered();
 
 protected:
@@ -128,6 +125,9 @@ private:
     QPushButton *topJustifyButton;
 
     QPushButton *addTabButton;
+
+    void saveGeometry();
+    void loadGeometry();
 
     void initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, CStringRef iconPath);
 
