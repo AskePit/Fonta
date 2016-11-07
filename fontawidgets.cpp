@@ -227,22 +227,6 @@ void FontaField::setFontSize(float size)
     newFont.setLetterSpacing(QFont::AbsoluteSpacing, px);
 
     setFont(newFont);
-
-    /*QTextCursor cursor(textCursor());
-    cursor.movePosition(QTextCursor::Start);
-    cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
-    setTextCursor(cursor);
-    setTextBackgroundColor(Qt::gray);
-    cursor = textCursor();
-    cursor.clearSelection();
-    setTextCursor(cursor);*/
-
-    /*setAutoFillBackground(true);
-    QPalette p = palette();
-    p.setColor(backgroundRole(), QColor(255, 0, 0));
-    setPalette(p);
-    setAutoFillBackground(true);
-    qDebug() << styleSheet();*/
 }
 
 void FontaField::setFontStyle(CStringRef style)
@@ -280,7 +264,7 @@ void FontaField::alignTextHorizontally(Qt::Alignment alignment)
     cursor.mergeBlockFormat(format);
 }
 
-void FontaField::setLeading(/*int percent*/float val)
+void FontaField::setLeading(float val)
 {
     m_leading = val;
 
@@ -368,8 +352,6 @@ void FontaWorkArea::createSample()
 {
     Sampler::loadSample(*this);
 
-    m_fields[0]->sheet().set("padding-top", "30px");
-    m_fields[0]->applySheet();
     m_fields[0]->setFocus();
     m_currField = m_fields[0];
 }
@@ -384,16 +366,6 @@ FontaField* FontaWorkArea::addField()
     FontaField* field = new FontaField(this);
 
     int id = m_fields.length();
-    if(id == 0) {
-        field->sheet().set("padding-top", "30px");
-        field->applySheet();
-    } else if(id == 1) {
-        m_fields[id-1]->sheet().set("padding-top", "30px");
-        m_fields[id-1]->applySheet();
-    } else {
-        m_fields[id-1]->sheet().set("padding-top", "0px");
-        m_fields[id-1]->applySheet();
-    }
 
     field->setId(id);
     m_fields.push_back(field);
@@ -409,14 +381,6 @@ void FontaWorkArea::popField()
 {
     delete m_fields.last()->surfaceWidget();
     m_fields.pop_back();
-
-    if(m_fields.size() == 1) {
-        m_fields[0]->sheet().set("padding-top", "30px");
-        m_fields[0]->applySheet();
-    } else if(m_fields.size() > 1) {
-        m_fields[m_fields.size()-1]->sheet().set("padding-top", "0px");
-        m_fields[m_fields.size()-1]->applySheet();
-    }
 }
 
 FontaField* FontaWorkArea::operator[](int i)

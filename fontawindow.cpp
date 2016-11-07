@@ -181,15 +181,21 @@ void FontaWindow::addTab(bool empty)
     int id = workAreas.length();
 
     QWidget* tab = new QWidget();
-    QHBoxLayout* horizontalLayout = new QHBoxLayout(tab);
+    QVBoxLayout* horizontalLayout = new QVBoxLayout(tab);
     horizontalLayout->setSpacing(0);
-    horizontalLayout->setContentsMargins(11, 11, 11, 11);
     horizontalLayout->setContentsMargins(0, 0, 0, 0);
     currWorkArea = new FontaWorkArea(id, tab, Sampler::getName());
 
     if(!empty) {
         currWorkArea->createSample();
     }
+
+    QWidget *topMargin = new QWidget(tab);
+    topMargin->setMinimumHeight(30);
+    topMargin->setMaximumHeight(30);
+    topMargin->setStyleSheet("background-color:white;");
+
+    horizontalLayout->addWidget(topMargin);
     horizontalLayout->addWidget(currWorkArea);
     ui->tabWidget->addTab(tab, currWorkArea->name());
 
