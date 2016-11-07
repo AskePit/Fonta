@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>pic/logo.png</file>
         <file>pic/center.png</file>
         <file>pic/closeTab.png</file>
         <file>pic/closeTabHover.png</file>
