@@ -508,12 +508,18 @@ void FontaWindow::save(CStringRef fileName) const
 
 void FontaWindow::on_actionSave_as_triggered()
 {
+    QSettings fontaReg("PitM", "Fonta");
+    QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
+
     QString filename =
-            QFileDialog::getSaveFileName(this, "Save Fonta", QDir::homePath(), "Fonta files (*.fonta)");
+            QFileDialog::getSaveFileName(this, "Save Fonta", saveFilePath, "Fonta files (*.fonta)");
 
     if(!filename.isNull()) {
         save(filename);
         setCurrentProjectFile(filename);
+
+        QFileInfo info(filename);
+        fontaReg.setValue("OpenSaveFilePath", info.filePath());
     }
 }
 
@@ -550,15 +556,20 @@ void FontaWindow::load(CStringRef fileName)
 
 void FontaWindow::on_actionOpen_triggered()
 {
+    QSettings fontaReg("PitM", "Fonta");
+    QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
+
     QString filename =
-            QFileDialog::getOpenFileName(this, "Open Fonta", QDir::homePath(), "Fonta files (*.fonta)");
+            QFileDialog::getOpenFileName(this, "Open Fonta", saveFilePath, "Fonta files (*.fonta)");
 
     if(!filename.isNull()) {
         load(filename);
-    }
+        setCurrentProjectFile(filename);
+        changeAddTabButtonGeometry();
 
-    setCurrentProjectFile(filename);
-    changeAddTabButtonGeometry();
+        QFileInfo info(filename);
+        fontaReg.setValue("OpenSaveFilePath", info.filePath());
+    }
 }
 
 void FontaWindow::on_actionSave_triggered()
