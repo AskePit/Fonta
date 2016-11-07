@@ -10,6 +10,8 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     QApplication a(argc, argv);
+    a.setWindowIcon(QIcon(":/pic/logo.png"));
+
     Sampler::initSamples();
     FontaWindow w;
     w.show();
