@@ -537,6 +537,9 @@ void FontaWindow::load(CStringRef fileName)
 
     int workAreaId = json["currWorkArea"].toInt(0);
     ui->tabWidget->setCurrentIndex(workAreaId);
+
+    currField = currWorkArea->currField();
+    currField->setFocus();
 }
 
 void FontaWindow::on_actionOpen_triggered()

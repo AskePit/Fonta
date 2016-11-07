@@ -223,7 +223,7 @@ public:
 
 protected:
     void wheelEvent(QWheelEvent* e);
-    void focusOutEvent(QFocusEvent* e){(void)e;}
+    //void focusOutEvent(QFocusEvent* e){(void)e;}
 };
 
 #endif // FONTAWIDGETS_H

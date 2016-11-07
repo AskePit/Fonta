@@ -340,6 +340,7 @@ void FontaField::load(const QJsonObject &json)
     setText(json["text"].toString("The quick brown fox jumped over the lazy dog"));
     alignText(static_cast<Qt::Alignment>(json["alignment"].toInt(1)));
     setLeading(json["leading"].toDouble(inf()));
+    setTracking(json["tracking"].toInt(0));
 
     sheet().set("color", json["textColor"].toString());
     sheet().set("background-color", json["backgroundColor"].toString());
@@ -505,7 +506,7 @@ void FontaWorkArea::load(const QJsonObject &json)
 
     if(m_fields.length()) {
         int fieldId = json["currField"].toInt(0);
-        m_fields.at(fieldId)->setFocus();
+        m_currField = m_fields.at(fieldId);
     }
 
     QJsonArray sizes = json["sizes"].toArray();
