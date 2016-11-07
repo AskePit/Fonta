@@ -50,7 +50,7 @@ class FontaWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FontaWindow(QWidget *parent = 0);
+    explicit FontaWindow(CStringRef fileToOpen = QString(), QWidget *parent = 0);
     ~FontaWindow();
 
     static const Version versionNumber;
@@ -125,6 +125,8 @@ private:
 
     void save(CStringRef fileName) const;
     void load(CStringRef fileName);
+
+    void openFile(CStringRef fileName);
 
     void clearWorkAreas();
 

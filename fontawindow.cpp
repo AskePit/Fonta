@@ -31,7 +31,7 @@ void FontaWindow::initAlignButton(QPushButton*& button, int size, QButtonGroup* 
     buttonGroup->addButton(button);
 }
 
-FontaWindow::FontaWindow(QWidget *parent)
+FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::FontaWindow)
     , aboutDialog(NULL)
@@ -88,12 +88,16 @@ FontaWindow::FontaWindow(QWidget *parent)
     connect(ui->tabWidget->tabBar(), SIGNAL(tabMoved(int,int)), this, SLOT(onTabsMove(int, int)));
     connect(ui->tabWidget->tabBar(), SIGNAL(customContextMenuRequested(QPoint)), SLOT(showTabsContextMenu(const QPoint &)));
 
-    addTab();
-
     addTabButton = new QPushButton(ui->tabWidget->tabBar());
     connect(addTabButton, SIGNAL(clicked(bool)), this, SLOT(addTab()));
     connect(addTabButton, SIGNAL(clicked(bool)), this, SLOT(changeAddTabButtonGeometry()));
     changeAddTabButtonGeometry();
+
+    if(fileToOpen.isEmpty()) {
+        addTab();
+    } else {
+        openFile(fileToOpen);
+    }
 }
 
 void FontaWindow::resizeEvent(QResizeEvent* event)
@@ -554,6 +558,17 @@ void FontaWindow::load(CStringRef fileName)
     currField->setFocus();
 }
 
+void FontaWindow::openFile(CStringRef filename)
+{
+    load(filename);
+    setCurrentProjectFile(filename);
+    changeAddTabButtonGeometry();
+
+    QFileInfo info(filename);
+    QSettings fontaReg("PitM", "Fonta");
+    fontaReg.setValue("OpenSaveFilePath", info.filePath());
+}
+
 void FontaWindow::on_actionOpen_triggered()
 {
     QSettings fontaReg("PitM", "Fonta");
@@ -563,12 +578,7 @@ void FontaWindow::on_actionOpen_triggered()
             QFileDialog::getOpenFileName(this, "Open Fonta", saveFilePath, "Fonta files (*.fonta)");
 
     if(!filename.isNull()) {
-        load(filename);
-        setCurrentProjectFile(filename);
-        changeAddTabButtonGeometry();
-
-        QFileInfo info(filename);
-        fontaReg.setValue("OpenSaveFilePath", info.filePath());
+        openFile(filename);
     }
 }
 
