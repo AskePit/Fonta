@@ -113,6 +113,7 @@ static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2
 static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[]);
 
 static std::mutex readTTFMutex;
+static std::mutex readFile2Fonts;
 
 static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
@@ -236,7 +237,11 @@ static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 
     CStringRef fileName = f.fileName();
 
-    File2Fonts[fileName] << fontName;
+    {
+        std::lock_guard<std::mutex> lock(readFile2Fonts);
+        File2Fonts[fileName] << fontName;
+        (void)lock;
+    }
 
     if(TTFs.contains(fontName)) {
         TTFs[fontName].files << f.fileName();
@@ -246,9 +251,11 @@ static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
     FontaTTF ttf;
     ttf.files << fileName;
 
-    std::lock_guard<std::mutex> lock(readTTFMutex);
-    TTFs[fontName] = ttf;
-    (void)lock;
+    {
+        std::lock_guard<std::mutex> lock(readTTFMutex);
+        TTFs[fontName] = ttf;
+        (void)lock;
+    }
 }
 
 static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
@@ -375,7 +382,11 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
 
     CStringRef fileName = f.fileName();
 
-    File2Fonts[fileName] << fontName;
+    {
+        std::lock_guard<std::mutex> lock(readFile2Fonts);
+        File2Fonts[fileName] << fontName;
+        (void)lock;
+    }
 
     if(TTFs.contains(fontName)) {
         TTFs[fontName].files << fileName;
@@ -489,11 +500,11 @@ FontaDB::FontaDB()
     std::vector<std::thread> futurs;
 
     int from = 0;
-    int to = chunkN;
+    int to = std::min(chunkN, out.size()-1);
     for(int i = 0; i<cores; ++i) {
         futurs.push_back( std::thread(loadTTFChunk, std::ref(out), from, to, std::ref(TTFs), std::ref(File2Fonts)) );
         from = to+1;
-        to = std::min(to*chunkN, out.size()-1);
+        to = std::min(to+chunkN, out.size()-1);
     }
 
     for(auto& f : futurs) {

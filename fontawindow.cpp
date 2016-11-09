@@ -17,7 +17,7 @@
 
 #include <QDebug>
 
-const Version FontaWindow::versionNumber = Version(0, 4, 2);
+const Version FontaWindow::versionNumber = Version(0, 5, 2);
 
 void FontaWindow::initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, CStringRef iconPath)
 {

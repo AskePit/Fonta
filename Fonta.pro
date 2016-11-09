@@ -1,6 +1,6 @@
 QT += core gui widgets
 
-CONFIG += c++11
+CONFIG += c++11 #console
 
 TARGET = Fonta
 TEMPLATE = app
@@ -47,6 +47,6 @@ QMAKE_CXXFLAGS += -O3
 
 DEFINES *= \
     QT_USE_QSTRINGBUILDER \
-    FONTA_DETAILED_DEBUG \
-    FONTA_MEASURES
+    #FONTA_DETAILED_DEBUG \
+    #FONTA_MEASURES
 
