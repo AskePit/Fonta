@@ -23,6 +23,8 @@ public:
 
     static CStringRef getName();
     static CStringRef getText();
+    static CStringRef getRusText();
+    static CStringRef getTextForFamily(CStringRef family);
     static void loadSample(FontaWorkArea& area);
 
 private:
@@ -37,6 +39,7 @@ private:
 
     static QSet<int> namesPool;
     static QSet<int> textsPool;
+    static QSet<int> textsRusPool;
     static QSet<int> samplesPool;
 };
 

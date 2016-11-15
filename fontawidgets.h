@@ -111,6 +111,7 @@ public:
     void setTracking(int val);
     StyleSheet& sheet() const { return m_sheet; }
     void applySheet() { setStyleSheet(m_sheet.get()); }
+    void setSamples(CStringRef latin, CStringRef rus) { m_latinText = latin; m_rusText = rus; }
 
     void save(QJsonObject &json) const;
     void load(const QJsonObject &json);
@@ -122,6 +123,7 @@ signals:
 
 protected:
     void focusInEvent(QFocusEvent* e);
+    void keyPressEvent(QKeyEvent *k);
 
 private:
     QString m_fontStyle;
@@ -131,6 +133,10 @@ private:
     float m_leading;
     int m_tracking;
     mutable StyleSheet m_sheet;
+
+    QString m_latinText;
+    QString m_rusText;
+    bool m_userChangedText;
 
     QWidget* m_surfaceWidget;
     QHBoxLayout* m_surfaceLayout;

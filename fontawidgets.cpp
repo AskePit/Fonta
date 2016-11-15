@@ -160,13 +160,13 @@ FontaField::FontaField(QWidget* parent)
     , m_leading(inf())
     , m_tracking(0)
     , m_sheet("QTextEdit")
+    , m_userChangedText(false)
 {
     setFrameShape(QFrame::Box);
     setFrameShadow(QFrame::Plain);
     setLineWidth(showBorders ? 1 : 0);
     setAcceptRichText(false);
     setFont(QFont("Arial", 10));
-    setText(Sampler::getText());
     setLeading(m_leading);
     alignText(Qt::AlignLeft);
 
@@ -197,10 +197,34 @@ void FontaField::focusInEvent(QFocusEvent* e)
     emit(focussed(this));
 }
 
+void FontaField::keyPressEvent(QKeyEvent *k)
+{
+    Q_UNUSED(k);
+
+    // all printable keys
+    if(k->modifiers() != Qt::ControlModifier
+    && k->modifiers() != Qt::AltModifier
+    && k->key() >= Qt::Key_Space
+    && k->key() <= Qt::Key_ydiaeresis) {
+        m_userChangedText = true;
+    }
+    QTextEdit::keyPressEvent(k);
+}
+
 void FontaField::setFontFamily(CStringRef family)
 {
     if(font().family() == family) {
         return;
+    }
+
+    if(!m_userChangedText) {
+        bool cyr = fontaDB().isCyrillic(family);
+
+        if(cyr) {
+            setText(m_rusText);
+        } else {
+            setText(m_latinText);
+        }
     }
 
     QFont newFont(font());

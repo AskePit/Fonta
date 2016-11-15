@@ -105,7 +105,7 @@ const QVector<Sample> Sampler::preSamples = {
     },
     {
         "Impact", 26,
-        "Arial Narrow", 13
+        "Arial Narrow", 12
     },
 };
 
@@ -123,6 +123,7 @@ void Sampler::initSamples()
 QVector<Sample> Sampler::samples;
 QSet<int> Sampler::namesPool;
 QSet<int> Sampler::textsPool;
+QSet<int> Sampler::textsRusPool;
 QSet<int> Sampler::samplesPool;
 
 static int getPoolsValue(QSet<int>& pool, int length)
@@ -166,6 +167,21 @@ CStringRef Sampler::getText()
     return texts.at(i);
 }
 
+CStringRef Sampler::getRusText()
+{
+    int i = getPoolsValue(textsRusPool, textsRus.length());
+    return textsRus.at(i);
+}
+
+CStringRef Sampler::getTextForFamily(CStringRef family)
+{
+    if(fontaDB().isCyrillic(family)) {
+        return getRusText();
+    } else {
+        return getText();
+    }
+}
+
 void Sampler::loadSample(FontaWorkArea& area)
 {
     int i = getPoolsValue(samplesPool, samples.length());
@@ -174,13 +190,18 @@ void Sampler::loadSample(FontaWorkArea& area)
     area.addField();
     area.addField();
 
+    auto &field1 = *area.m_fields[0];
+    auto &field2 = *area.m_fields[1];
+
     area.setSizes(QList<int>() << 120 << 100);
 
-    area.m_fields[0]->setPreferableFontStyle("Normal");
-    area.m_fields[0]->setFontFamily(sample.family1);
-    area.m_fields[0]->setFontSize(sample.size1);
+    field1.setPreferableFontStyle("Normal");
+    field1.setFontSize(sample.size1);
+    field1.setSamples(getText(), getRusText());
+    field1.setFontFamily(sample.family1);
 
-    area.m_fields[1]->setPreferableFontStyle("Normal");
-    area.m_fields[1]->setFontFamily(sample.family2);
-    area.m_fields[1]->setFontSize(sample.size2);
+    field2.setPreferableFontStyle("Normal");
+    field2.setFontSize(sample.size2);
+    field2.setSamples(getText(), getRusText());
+    field2.setFontFamily(sample.family2);
 }
