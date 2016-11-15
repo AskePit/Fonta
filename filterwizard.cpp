@@ -26,7 +26,7 @@ FilterWizard::FilterWizard(QWidget *parent)
     setStartId(Page_General);
     setWizardStyle(ModernStyle);
 
-    setWindowTitle("Filter Wizard");
+    setWindowTitle(tr("Filter Wizard"));
 
     QRect parentG = dynamic_cast<FontaWindow*>(parent)->geometry();
     int wid = 423;
@@ -258,7 +258,7 @@ GeneralPage::GeneralPage(QWidget *parent)
     layout->addLayout(hor1Layout);
     layout->addLayout(hor2Layout);
 
-    QLabel* descr = new QLabel("\nChoose font categories. For advanced filtering toogle the checkbox.");
+    QLabel* descr = new QLabel(tr("\nChoose font categories. For advanced filtering toogle the checkbox."));
     descr->setStyleSheet("qproperty-alignment: AlignCenter;");
     layout->addWidget(descr);
 
@@ -329,7 +329,7 @@ SerifFamilyPage::SerifFamilyPage(QWidget *parent)
     layout->addLayout(hor1Layout);
     layout->addLayout(hor2Layout);
 
-    QLabel* descr = new QLabel("\nChoose serif family.");
+    QLabel* descr = new QLabel(tr("\nChoose serif family."));
     descr->setStyleSheet("qproperty-alignment: AlignCenter;");
     layout->addWidget(descr);
 
@@ -454,7 +454,7 @@ SansFamilyPage::SansFamilyPage(QWidget *parent)
     layout->addLayout(hor1Layout);
     layout->addLayout(hor2Layout);
 
-    QLabel* descr = new QLabel("\nChoose sans family.");
+    QLabel* descr = new QLabel(tr("\nChoose sans family."));
     descr->setStyleSheet("qproperty-alignment: AlignCenter;");
     layout->addWidget(descr);
 
@@ -511,7 +511,7 @@ SansStylePage::SansStylePage(QWidget *parent)
     layout->addLayout(hor1Layout);
     layout->addLayout(hor2Layout);
 
-    QLabel* descr = new QLabel("\nChoose sans style.");
+    QLabel* descr = new QLabel(tr("\nChoose sans style."));
     descr->setStyleSheet("qproperty-alignment: AlignCenter;");
     layout->addWidget(descr);
 
@@ -528,13 +528,13 @@ int SansStylePage::nextId() const
 FinishPage::FinishPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle("Last step...");
+    setTitle(tr("Last step..."));
     setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
 
-    QLabel* topLabel = new QLabel("Specify additional options if you wish.\nHope you'll be satisfied with results!");
+    QLabel* topLabel = new QLabel(tr("Specify additional options if you wish.\nHope you'll be satisfied with results!"));
 
-    cyrillicBox = new QCheckBox("Cyrillic support");
-    monospacedBox = new QCheckBox("Monospaced");
+    cyrillicBox = new QCheckBox(tr("Cyrillic support"));
+    monospacedBox = new QCheckBox(tr("Monospaced"));
 
     registerField("cyrillic", cyrillicBox);
     registerField("monospaced", monospacedBox);

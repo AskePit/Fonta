@@ -175,7 +175,7 @@ void FontaWindow::showFontListContextMenu(const QPoint &point)
 
     QMenu menu(this);
 
-    QAction remove("Uninstall font", this);
+    QAction remove(tr("Uninstall font"), this);
     connect(&remove, &QAction::triggered, this, [=](){ uninstallFont(text); });
     menu.addAction(&remove);
 
@@ -198,7 +198,7 @@ void FontaWindow::showTabsContextMenu(const QPoint &point)
 
     QMenu menu(this);
 
-    QAction remove("Close Other Tabs", this);
+    QAction remove(tr("Close Other Tabs"), this);
     connect(&remove, &QAction::triggered, this, &FontaWindow::closeOtherTabs);
     connect(&remove, &QAction::triggered, this, &FontaWindow::changeAddTabButtonGeometry);
     menu.addAction(&remove);
@@ -211,15 +211,15 @@ void FontaWindow::uninstallFont(const QString &fontName)
     cauto linked = fontaDB().linkedFonts(fontName);
 
     QString dialogMessage = linked.isEmpty() ?
-                       QString("Uninstall " + fontName + " font?") :
-                       QString("Removal of " + fontName + " font will cause deletion of following fonts:\n\n" + linked.join("\n") + "\n\nSure?");
+                       tr("Uninstall %1 font?").arg(fontName) :
+                       tr("Removal of %1 font will cause deletion of following fonts:\n\n%2\n\nSure?").arg(fontName, linked.join("\n"));
 
     int ret = callQuestionDialog(dialogMessage);
 
     if (ret == QMessageBox::Ok) {
         fontaDB().uninstall(fontName);
         on_filterBox_currentIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
-        callInfoDialog("Font(s) uninstalled!\nReboot your PC for changes to take effect");
+        callInfoDialog(tr("Font(s) uninstalled!\nReboot your PC for changes to take effect"));
         return;
     }
 }
@@ -274,7 +274,7 @@ void FontaWindow::addTab(bool empty)
 
 void FontaWindow::closeTabPrompted(int i)
 {
-    int ret = callQuestionDialog("Delete " + workAreas[i]->name() + " tab.\nSure?");
+    int ret = callQuestionDialog(tr("Delete %1 tab.\nSure?").arg(workAreas[i]->name()));
 
     if (ret == QMessageBox::Ok) {
         closeTab(i);
@@ -308,7 +308,7 @@ void FontaWindow::closeTab(int id)
 
 void FontaWindow::closeOtherTabs()
 {
-    int ret = callQuestionDialog("Delete all tabs except " + currWorkArea->name() + "\nSure?");
+    int ret = callQuestionDialog(tr("Delete all tabs except %1\nSure?").arg(currWorkArea->name()));
 
     if (ret != QMessageBox::Ok) {
         return;
@@ -570,7 +570,7 @@ void FontaWindow::on_actionSave_as_triggered()
     QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
 
     QString filename =
-            QFileDialog::getSaveFileName(this, "Save Fonta", saveFilePath, "Fonta files (*.fonta)");
+            QFileDialog::getSaveFileName(this, tr("Save Fonta"), saveFilePath, tr("Fonta files (*.fonta)"));
 
     if(!filename.isNull()) {
         save(filename);
@@ -628,7 +628,7 @@ void FontaWindow::on_actionOpen_triggered()
     QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
 
     QString filename =
-            QFileDialog::getOpenFileName(this, "Open Fonta", saveFilePath, "Fonta files (*.fonta)");
+            QFileDialog::getOpenFileName(this, tr("Open Fonta"), saveFilePath, tr("Fonta files (*.fonta)"));
 
     if(!filename.isNull()) {
         openFile(filename);
@@ -648,13 +648,13 @@ void FontaWindow::setCurrentProjectFile(CStringRef filename)
 {
     currentProjectFile = filename;
     QFileInfo fileInfo(filename);
-    setWindowTitle("Fonta - " + fileInfo.fileName());
+    setWindowTitle(tr("Fonta - %1").arg(fileInfo.fileName()));
 }
 
 void FontaWindow::resetCurrentProjectFile()
 {
     currentProjectFile.clear();
-    setWindowTitle("Fonta");
+    setWindowTitle(tr("Fonta"));
 }
 
 void FontaWindow::clearWorkAreas()
@@ -781,7 +781,7 @@ void FontaWindow::on_actionNext_Tab_triggered()
 
 void FontaWindow::on_actionFonts_Cleaner_triggered()
 {
-    int ret = callQuestionDialog("Do you want to uninstall all non-latin and non-cyrillic fonts?\nSymbolic fonts won't be removed.");
+    int ret = callQuestionDialog(tr("Do you want to uninstall all non-latin and non-cyrillic fonts?\nSymbolic fonts won't be removed."));
 
     if (ret == QMessageBox::Cancel) {
         return;
@@ -814,8 +814,8 @@ void FontaWindow::on_actionFonts_Cleaner_triggered()
 
     if(removed) {
         on_filterBox_currentIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
-        callInfoDialog(QString::number(removed) + " font(s) uninstalled!\nReboot your PC for changes to take effect");
+        callInfoDialog(tr("%1 font(s) uninstalled!\nReboot your PC for changes to take effect").arg(QString::number(removed)));
     } else {
-        callInfoDialog("There is no fonts to uninstall!");
+        callInfoDialog(tr("There is no fonts to uninstall!"));
     }
 }

@@ -77,9 +77,9 @@ About::About(const Version& version, QWidget *parent) :
     verticalLayout->addItem(verticalSpacer);
 
 
-    setWindowTitle("About");
-    label->setText("Fonta v. " + version.str);
-    pushButton->setText("OK");
+    setWindowTitle(tr("About"));
+    label->setText(tr("Fonta v. %1").arg(version.str));
+    pushButton->setText(tr("OK"));
 
     QMetaObject::connectSlotsByName(this);
 }
