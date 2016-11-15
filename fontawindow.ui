@@ -1000,8 +1000,15 @@
     <addaction name="actionNext_Tab"/>
     <addaction name="actionPrevious_Tab"/>
    </widget>
+   <widget class="QMenu" name="menuAdvanced">
+    <property name="title">
+     <string>Advanced</string>
+    </property>
+    <addaction name="actionFonts_Cleaner"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTabs"/>
+   <addaction name="menuAdvanced"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -1086,6 +1093,11 @@
    </property>
    <property name="text">
     <string>Close Other Tabs...</string>
+   </property>
+  </action>
+  <action name="actionFonts_Cleaner">
+   <property name="text">
+    <string>Fonts Cleaner...</string>
    </property>
   </action>
  </widget>

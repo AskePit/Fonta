@@ -778,3 +778,44 @@ void FontaWindow::on_actionNext_Tab_triggered()
     currWorkArea = workAreas[id];
     ui->tabWidget->setCurrentIndex(id);
 }
+
+void FontaWindow::on_actionFonts_Cleaner_triggered()
+{
+    int ret = callQuestionDialog("Do you want to uninstall all non-latin and non-cyrillic fonts?\nSymbolic fonts won't be removed.");
+
+    if (ret == QMessageBox::Cancel) {
+        return;
+    }
+
+    QStringList families = fontaDB().families();
+    int i = 0;
+    int removed = 0;
+    while(1) {
+        if(i >= families.length()) {
+            break;
+        }
+
+        CStringRef family = families[i];
+        if(!fontaDB().isNotLatinOrCyrillic(family)) {
+            ++i;
+            continue;
+        } else {
+            qDebug() << family;
+
+            fontaDB().uninstall(family);
+            families = fontaDB().families();
+            i = 0;
+            ++removed;
+            if(removed > 10000) { // in case of unproper deletion
+                break;
+            }
+        }
+    }
+
+    if(removed) {
+        on_filterBox_currentIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
+        callInfoDialog(QString::number(removed) + " font(s) uninstalled!\nReboot your PC for changes to take effect");
+    } else {
+        callInfoDialog("There is no fonts to uninstall!");
+    }
+}

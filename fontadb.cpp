@@ -422,7 +422,13 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
     ttf.panose = os2Header.panose;
     ttf.familyClass = (FamilyClass::type)(os2Header.FamilyClass >> 8);
     ttf.familySubClass = (int)(os2Header.FamilyClass & 0xFF);
-    ttf.cyrillic = !!(os2Header.UnicodeRange1 & (1<<9));
+
+
+    cauto langBit = [&os2Header](int bit) {
+        return !!(os2Header.UnicodeRange1 & (1<<bit));
+    };
+    ttf.latin = langBit(0) || langBit(1) || langBit(2) || langBit(3);
+    ttf.cyrillic = langBit(9);
 
     std::lock_guard<std::mutex> lock(readTTFMutex);
     TTFs[fontName] = ttf;
@@ -504,7 +510,12 @@ FontaDB::FontaDB()
     for(int i = 0; i<cores; ++i) {
         futurs.push_back( std::thread(loadTTFChunk, std::ref(out), from, to, std::ref(TTFs), std::ref(File2Fonts)) );
         from = to+1;
-        to = std::min(to+chunkN, out.size()-1);
+
+        if(i+1 >= (cores-1)) {
+            to = out.size()-1;
+        } else {
+            to += chunkN;
+        }
     }
 
     for(auto& f : futurs) {
@@ -601,18 +612,29 @@ void FontaDB::uninstall(CStringRef family)
     QStringList uninstalledList = uninstalled();
     uninstalledList << family;
     uninstalledList << linkedFonts(family);
+    uninstalledList.removeDuplicates();
 
     QSettings uninstalledReg("HKEY_LOCAL_MACHINE", QSettings::NativeFormat);
     uninstalledReg.setValue("FontaUninstalledFonts", uninstalledList);
 
+    QStringList filesToDeleteList = filesToDelete();
+    filesToDeleteList << files;
+    filesToDeleteList.removeDuplicates();
+
     QSettings fontaReg("PitM", "Fonta");
-    fontaReg.setValue("FilesToDelete", files);
+    fontaReg.setValue("FilesToDelete", filesToDeleteList);
 }
 
 QStringList FontaDB::uninstalled() const
 {
     QSettings uninstalledReg("HKEY_LOCAL_MACHINE", QSettings::NativeFormat);
     return uninstalledReg.value("FontaUninstalledFonts", QStringList()).toStringList();
+}
+
+QStringList FontaDB::filesToDelete() const
+{
+    QSettings fontaReg("PitM", "Fonta");
+    return fontaReg.value("FilesToDelete", QStringList()).toStringList();
 }
 
 bool FontaDB::getTTF(CStringRef family, FontaTTF& ttf) const {
@@ -636,19 +658,6 @@ FullFontInfo FontaDB::getFullFontInfo(CStringRef family) const
     fullInfo.qtInfo.monospaced = QtDB->isFixedPitch(family);
 
     return fullInfo;
-}
-
-bool FontaDB::isCyrillic(CStringRef family) const
-{
-    // 1
-    if(QtDB->writingSystems(family).contains(QFontDatabase::Cyrillic))
-        return true;
-
-    // 2
-    FontaTTF ttf;
-    if(!getTTF(family, ttf)) return false;
-
-    return ttf.cyrillic;
 }
 
 static bool _isSerif(const FontaTTF& ttf)
@@ -965,4 +974,37 @@ bool FontaDB::isFlarredSans(CStringRef family) const
     }
 
     return ttf.panose.SerifStyle == Panose::SerifStyle::FLARED;
+}
+
+bool FontaDB::isNonCyrillic(CStringRef family) const
+{
+    return !isCyrillic(family);
+}
+
+bool FontaDB::isCyrillic(CStringRef family) const
+{
+    // 1
+    if(QtDB->writingSystems(family).contains(QFontDatabase::Cyrillic))
+        return true;
+
+    // 2
+    FontaTTF ttf;
+    if(!getTTF(family, ttf)) return false;
+
+    return ttf.cyrillic;
+}
+
+bool FontaDB::isNotLatinOrCyrillic(CStringRef family) const
+{
+    cauto systems = QtDB->writingSystems(family);
+    if(systems.contains(QFontDatabase::Cyrillic)
+    || systems.contains(QFontDatabase::Latin)
+    || isSymbolic(family)) {
+        return false;
+    }
+
+    FontaTTF ttf;
+    if(!getTTF(family, ttf)) return true;
+
+    return ttf.latin || ttf.cyrillic;
 }

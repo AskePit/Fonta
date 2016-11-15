@@ -48,6 +48,7 @@ enum_interface
 struct FontaTTF {
     FamilyClass::type familyClass;
     int familySubClass;
+    bool latin;
     bool cyrillic;
     bool monospaced;
     Panose panose;
@@ -60,6 +61,7 @@ struct FontaTTF {
 
     FontaTTF()
         : familyClass(FamilyClass::NO)
+        , latin(false)
         , cyrillic(false)
         , monospaced(false)
         , panose(0)
@@ -104,9 +106,9 @@ public:
 
     void uninstall(CStringRef family);
     QStringList uninstalled() const;
+    QStringList filesToDelete() const;
 
     bool isAnyFont(CStringRef family) const { (void)family; return true; }
-    bool isCyrillic(CStringRef family) const;
     bool isSerif(CStringRef family) const;
     bool isSansSerif(CStringRef family) const;
     bool isMonospaced(CStringRef family) const;
@@ -132,6 +134,10 @@ public:
     bool isNormalSans(CStringRef family) const;
     bool isRoundedSans(CStringRef family) const;
     bool isFlarredSans(CStringRef family) const;
+
+    bool isNonCyrillic(CStringRef family) const;
+    bool isCyrillic(CStringRef family) const;
+    bool isNotLatinOrCyrillic(CStringRef family) const;
 
     bool getTTF(CStringRef family, FontaTTF& ttf) const;
     FullFontInfo getFullFontInfo(CStringRef family) const;

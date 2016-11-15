@@ -101,6 +101,8 @@ private slots:
     void on_actionClose_other_Tabs_triggered();
     void on_actionNext_Tab_triggered();
 
+    void on_actionFonts_Cleaner_triggered();
+
 protected:
     void resizeEvent(QResizeEvent* event);
 
