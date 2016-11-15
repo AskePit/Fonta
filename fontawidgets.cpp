@@ -372,7 +372,7 @@ FontaField* FontaWorkArea::addField()
 
     addWidget(field->surfaceWidget());
 
-    connect(field, SIGNAL(focussed(FontaField*)), this, SLOT(on_currentFieldChanged(FontaField*)));
+    connect(field, &FontaField::focussed, this, &FontaWorkArea::on_currentFieldChanged);
 
     return field;
 }

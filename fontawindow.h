@@ -72,11 +72,6 @@ private slots:
     void on_filterBox_currentIndexChanged(int index);
     void on_styleBox_activated(const QString &arg1);
 
-    void on_topLeftButton_clicked();
-    void on_topCenterButton_clicked();
-    void on_topRightButton_clicked();
-    void on_topJustifyButton_clicked();
-
     void showTabsContextMenu(const QPoint &point);
     void addTab(bool empty = false);
     void closeTabPrompted(int i);
@@ -123,13 +118,14 @@ private:
     QPushButton *topCenterButton;
     QPushButton *topRightButton;
     QPushButton *topJustifyButton;
+    QButtonGroup* alignButtosGroup;
 
     QPushButton *addTabButton;
 
+    void initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment);
+
     void saveGeometry();
     void loadGeometry();
-
-    void initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, CStringRef iconPath);
 
     void save(CStringRef fileName) const;
     void load(CStringRef fileName);

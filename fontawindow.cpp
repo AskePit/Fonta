@@ -19,18 +19,6 @@
 
 const Version FontaWindow::versionNumber = Version(0, 5, 2);
 
-void FontaWindow::initAlignButton(QPushButton*& button, int size, QButtonGroup* buttonGroup, CStringRef iconPath)
-{
-    button = new QPushButton();
-    button->setMinimumSize(QSize(size, size));
-    button->setMaximumSize(QSize(size, size));
-    button->setText(QString());
-    button->setCheckable(true);
-    button->setFlat(false);
-    button->setIcon(QIcon(iconPath));
-    buttonGroup->addButton(button);
-}
-
 FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::FontaWindow)
@@ -39,32 +27,19 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->fontsListSplitter->setSizes(QList<int>() << 110 << 200);
-
     ui->fontsList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->fontsList, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showFontListContextMenu(const QPoint &)));
+    connect(ui->fontsList, &QListWidget::customContextMenuRequested, this, &FontaWindow::showFontListContextMenu);
 
-    connect(ui->sizeBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_sizeBox_edited()));
-    connect(ui->leadingBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_leadingBox_edited()));
-    connect(ui->trackingBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_trackingBox_edited()));
+    cauto boxEditSig = &QLineEdit::returnPressed;
+    connect(ui->sizeBox->lineEdit(), boxEditSig, this, &FontaWindow::on_sizeBox_edited);
+    connect(ui->leadingBox->lineEdit(), boxEditSig, this, &FontaWindow::on_leadingBox_edited);
+    connect(ui->trackingBox->lineEdit(), boxEditSig, this, &FontaWindow::on_trackingBox_edited);
 
-    QButtonGroup* buttonGroup = new QButtonGroup(this);
-
-    const int buttonSize = 30;
-    initAlignButton(topLeftButton, buttonSize, buttonGroup, ":/pic/left.png");
-    initAlignButton(topCenterButton, buttonSize, buttonGroup ,":/pic/center.png");
-    initAlignButton(topRightButton, buttonSize, buttonGroup, ":/pic/right.png");
-    initAlignButton(topJustifyButton, buttonSize, buttonGroup, ":/pic/justify.png");
-
-    ui->horizontalLayout->insertWidget(2, topLeftButton);
-    ui->horizontalLayout->insertWidget(3, topCenterButton);
-    ui->horizontalLayout->insertWidget(4, topRightButton);
-    ui->horizontalLayout->insertWidget(5, topJustifyButton);
-
-    connect(topLeftButton, SIGNAL(clicked(bool)), this, SLOT(on_topLeftButton_clicked()));
-    connect(topCenterButton, SIGNAL(clicked(bool)), this, SLOT(on_topCenterButton_clicked()));
-    connect(topRightButton, SIGNAL(clicked(bool)), this, SLOT(on_topRightButton_clicked()));
-    connect(topJustifyButton, SIGNAL(clicked(bool)), this, SLOT(on_topJustifyButton_clicked()));
+    alignButtosGroup = new QButtonGroup(this);
+    initAlignButton(topLeftButton, ":/pic/left.png", Qt::AlignLeft);
+    initAlignButton(topCenterButton, ":/pic/center.png", Qt::AlignHCenter);
+    initAlignButton(topRightButton, ":/pic/right.png", Qt::AlignRight);
+    initAlignButton(topJustifyButton, ":/pic/justify.png", Qt::AlignJustify);
 
     QStringList filterItems;
     for(int i = FilterMode::Start; i<FilterMode::End; ++i) {
@@ -76,20 +51,22 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     fontFinderEdit->setObjectName(QStringLiteral("fontFinderEdit"));
     ui->fontsListLayout->insertWidget(1, fontFinderEdit);
 
-    ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->tabWidget->setTabsClosable(false);
-    ui->tabWidget->tabBar()->setStyleSheet("QTabBar::tab { height: 27px; }"
-                                           "QTabBar::close-button {image: url(:/pic/closeTab.png); }"
-                                           "QTabBar::close-button:hover {image: url(:/pic/closeTabHover.png); }"
-                                           );
-    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(closeTabPrompted(int)));
-    connect(ui->tabWidget->tabBar(), SIGNAL(tabBarDoubleClicked(int)), this, SLOT(renameTab(int)));
-    connect(ui->tabWidget->tabBar(), SIGNAL(tabMoved(int,int)), this, SLOT(onTabsMove(int, int)));
-    connect(ui->tabWidget->tabBar(), SIGNAL(customContextMenuRequested(QPoint)), SLOT(showTabsContextMenu(const QPoint &)));
+    QTabWidget *tabs = ui->tabWidget;
+    QTabBar *bar = tabs->tabBar();
+    bar->setContextMenuPolicy(Qt::CustomContextMenu);
+    tabs->setTabsClosable(false);
+    bar->setStyleSheet("QTabBar::tab { height: 27px; }"
+                       "QTabBar::close-button { image: url(:/pic/closeTab.png); }"
+                       "QTabBar::close-button:hover { image: url(:/pic/closeTabHover.png); }"
+    );
+    connect(tabs, &QTabWidget::tabCloseRequested, this, &FontaWindow::closeTabPrompted);
+    connect(bar, &QTabBar::tabBarDoubleClicked, this, &FontaWindow::renameTab);
+    connect(bar, &QTabBar::tabMoved, this, &FontaWindow::onTabsMove);
+    connect(bar, &QTabBar::customContextMenuRequested, this, &FontaWindow::showTabsContextMenu);
 
-    addTabButton = new QPushButton(ui->tabWidget->tabBar());
-    connect(addTabButton, SIGNAL(clicked(bool)), this, SLOT(addTab()));
-    connect(addTabButton, SIGNAL(clicked(bool)), this, SLOT(changeAddTabButtonGeometry()));
+    addTabButton = new QPushButton(bar);
+    connect(addTabButton, &QPushButton::clicked, this, &FontaWindow::addTab);
+    connect(addTabButton, &QPushButton::clicked, this, &FontaWindow::changeAddTabButtonGeometry);
 
     if(fileToOpen.isEmpty()) {
         addTab();
@@ -133,8 +110,8 @@ void FontaWindow::loadGeometry()
     settings.beginGroup("FontaWindow");
     QSize size = settings.value("size", QSize()).toSize();
     QPoint pos = settings.value("pos", QPoint()).toPoint();
-    int fontsSplitterSizes0 = settings.value("fontsSplitterSizes0", -1).toInt();
-    int fontsSplitterSizes1 = settings.value("fontsSplitterSizes1", -1).toInt();
+    int fontsSplitterSizes0 = settings.value("fontsSplitterSizes0", 100).toInt();
+    int fontsSplitterSizes1 = settings.value("fontsSplitterSizes1", 200).toInt();
 
     if(size.isValid()) {
         resize(size);
@@ -151,6 +128,26 @@ void FontaWindow::loadGeometry()
     }
 
     settings.endGroup();
+}
+
+void FontaWindow::initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment)
+{
+    const int size = 30;
+    static int pos = 2; // button position in layout
+
+    button = new QPushButton();
+    button->setMinimumSize(QSize(size, size));
+    button->setMaximumSize(QSize(size, size));
+    button->setText(QString());
+    button->setCheckable(true);
+    button->setFlat(false);
+    button->setIcon(QIcon(iconPath));
+    alignButtosGroup->addButton(button);
+    ui->horizontalLayout->insertWidget(pos++, button);
+
+    connect(button, &QPushButton::clicked, this, [=](){
+        currField->alignText(alignment);
+    });
 }
 
 void FontaWindow::changeAddTabButtonGeometry()
@@ -202,8 +199,8 @@ void FontaWindow::showTabsContextMenu(const QPoint &point)
     QMenu menu(this);
 
     QAction remove("Close Other Tabs", this);
-    connect(&remove, SIGNAL(triggered(bool)), this, SLOT(closeOtherTabs()));
-    connect(&remove, SIGNAL(triggered(bool)), this, SLOT(changeAddTabButtonGeometry()));
+    connect(&remove, &QAction::triggered, this, &FontaWindow::closeOtherTabs);
+    connect(&remove, &QAction::triggered, this, &FontaWindow::changeAddTabButtonGeometry);
     menu.addAction(&remove);
 
     menu.exec(ui->tabWidget->tabBar()->mapToGlobal(point));
@@ -332,12 +329,12 @@ void FontaWindow::closeOtherTabs()
 void FontaWindow::renameTab(int id)
 {
     RenameTabEdit* edit = new RenameTabEdit(ui->tabWidget, workAreas[id], ui->tabWidget->tabBar());
-    connect(edit, SIGNAL(applied()), this, SLOT(changeAddTabButtonGeometry()));
+    connect(edit, &RenameTabEdit::applied, this, &FontaWindow::changeAddTabButtonGeometry);
     edit->show();
 }
 
 void FontaWindow::makeFieldConnected(FontaField* field) {
-    connect(field, SIGNAL(focussed(FontaField*)), this, SLOT(on_currentFieldChanged(FontaField*)));
+    connect(field, &FontaField::focussed, this, &FontaWindow::on_currentFieldChanged);
 }
 
 void FontaWindow::makeFieldsConnected() {
@@ -509,11 +506,6 @@ void FontaWindow::on_styleBox_activated(CStringRef style)
 {
     currField->setPreferableFontStyle(style);
 }
-
-void FontaWindow::on_topLeftButton_clicked()       { currField->alignText(Qt::AlignLeft); }
-void FontaWindow::on_topCenterButton_clicked()     { currField->alignText(Qt::AlignHCenter); }
-void FontaWindow::on_topRightButton_clicked()      { currField->alignText(Qt::AlignRight); }
-void FontaWindow::on_topJustifyButton_clicked()    { currField->alignText(Qt::AlignJustify); }
 
 void FontaWindow::on_leadingBox_edited()
 {

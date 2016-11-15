@@ -226,8 +226,8 @@ void GeneralPage::addGeneralBloc(QPushButton** button, QCheckBox** box, int widt
 
     registerField(extBlocName, *box);
 
-    connect(*button, SIGNAL(toggled(bool)), *box, SLOT(setEnabled(bool)));
-    connect(*button, SIGNAL(toggled(bool)), *box, SLOT(setVisible(bool)));
+    connect(*button, &QPushButton::toggled, *box, &QCheckBox::setEnabled);
+    connect(*button, &QPushButton::toggled, *box, &QCheckBox::setVisible);
 }
 
 GeneralPage::GeneralPage(QWidget *parent)
