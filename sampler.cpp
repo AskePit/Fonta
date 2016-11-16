@@ -93,7 +93,7 @@ const QVector<Sample> Sampler::preSamples = {
     },
     {
         "Impact", 24,
-        "Trebuchet MS", 14
+        "Trebuchet MS", 12
     },
     {
         "Trebuchet MS", 26,
@@ -106,6 +106,26 @@ const QVector<Sample> Sampler::preSamples = {
     {
         "Impact", 26,
         "Arial Narrow", 12
+    },
+    {
+        "Cambria", 20,
+        "Calibri", 11
+    },
+    {
+        "Segoe UI", 26,
+        "Arial", 11
+    },
+    {
+        "Terminal", 14,
+        "Terminal", 12
+    },
+    {
+        "Clarendon", 24,
+        "Times New Roman", 12
+    },
+    {
+        "Palatino", 24,
+        "Mistral", 14
     },
 };
 
@@ -187,20 +207,18 @@ void Sampler::loadSample(FontaWorkArea& area)
     int i = getPoolsValue(samplesPool, samples.length());
     Sample& sample = samples[i];
 
-    area.addField();
-    area.addField();
+    area.addField(true);
+    area.addField(true);
 
     auto &field1 = *area.m_fields[0];
     auto &field2 = *area.m_fields[1];
 
-    area.setSizes(QList<int>() << 120 << 100);
+    area.setSizes({120, 100});
 
-    field1.setPreferableFontStyle("Normal");
     field1.setFontSize(sample.size1);
     field1.setSamples(getText(), getRusText());
     field1.setFontFamily(sample.family1);
 
-    field2.setPreferableFontStyle("Normal");
     field2.setFontSize(sample.size2);
     field2.setSamples(getText(), getRusText());
     field2.setFontFamily(sample.family2);

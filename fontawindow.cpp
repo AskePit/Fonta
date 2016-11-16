@@ -110,8 +110,8 @@ void FontaWindow::loadGeometry()
     settings.beginGroup("FontaWindow");
     QSize size = settings.value("size", QSize()).toSize();
     QPoint pos = settings.value("pos", QPoint()).toPoint();
-    int fontsSplitterSizes0 = settings.value("fontsSplitterSizes0", 100).toInt();
-    int fontsSplitterSizes1 = settings.value("fontsSplitterSizes1", 200).toInt();
+    int size0 = settings.value("fontsSplitterSizes0", 100).toInt();
+    int size1 = settings.value("fontsSplitterSizes1", 200).toInt();
 
     if(size.isValid()) {
         resize(size);
@@ -121,10 +121,8 @@ void FontaWindow::loadGeometry()
         move(pos);
     }
 
-    QList<int> sizes;
-    if(fontsSplitterSizes0 != -1 && fontsSplitterSizes1 != -1) {
-        sizes << fontsSplitterSizes0 << fontsSplitterSizes1;
-        ui->fontsListSplitter->setSizes(sizes);
+    if(size0 != -1 && size1 != -1) {
+        ui->fontsListSplitter->setSizes({size0, size1});
     }
 
     settings.endGroup();
@@ -347,6 +345,8 @@ void FontaWindow::makeFieldsConnected() {
 void FontaWindow::on_addFieldButton_clicked()
 {
     FontaField* field = currWorkArea->addField();
+    field->setFontFamily("Arial");
+
     makeFieldConnected(field);
 
     updateAddRemoveButtons();
@@ -781,12 +781,19 @@ void FontaWindow::on_actionNext_Tab_triggered()
 
 void FontaWindow::on_actionFonts_Cleaner_triggered()
 {
-    int ret = callQuestionDialog(tr("Do you want to uninstall all non-latin and non-cyrillic fonts?\nSymbolic fonts won't be removed."));
+    /*int ret = callQuestionDialog(tr("Do you want to uninstall all non-latin and non-cyrillic fonts?\nSymbolic fonts won't be removed."));
 
     if (ret == QMessageBox::Cancel) {
         return;
+    }*/
+
+    for(CStringRef family : fontaDB().families()) {
+        if(fontaDB().isNotLatinOrCyrillic(family)) {
+            qDebug() << family;
+        }
     }
 
+    /*
     QStringList families = fontaDB().families();
     int i = 0;
     int removed = 0;
@@ -818,4 +825,5 @@ void FontaWindow::on_actionFonts_Cleaner_triggered()
     } else {
         callInfoDialog(tr("There is no fonts to uninstall!"));
     }
+    */
 }

@@ -14,7 +14,7 @@ static void GetFontFiles(QStringList &out)
 {
     cauto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
     for(cauto dir : fontsDirs) {
-        QDirIterator it(dir, QStringList() << "*.ttf" << "*.otf" << "*.ttc" << "*.otc" << "*.fon" , QDir::Files, QDirIterator::Subdirectories);
+        QDirIterator it(dir, {"*.ttf", "*.otf", "*.ttc", "*.otc", "*.fon"} , QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             it.next();
             QString fileName = it.filePath();
@@ -1004,7 +1004,7 @@ bool FontaDB::isNotLatinOrCyrillic(CStringRef family) const
     }
 
     FontaTTF ttf;
-    if(!getTTF(family, ttf)) return true;
+    if(!getTTF(family, ttf)) return false;
 
-    return ttf.latin || ttf.cyrillic;
+    return !ttf.latin && !ttf.cyrillic;
 }

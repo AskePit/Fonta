@@ -86,7 +86,7 @@ class FontaField : public QTextEdit
     Q_OBJECT
 
 public:
-    FontaField(QWidget* parent = 0);
+    FontaField(bool empty = false, QWidget* parent = 0);
     virtual ~FontaField(){ }
 
     void toogle(bool toogle) { return m_tooglePanel->toogle(toogle); }
@@ -164,7 +164,7 @@ public:
     FontaField* currField() const { return m_currField; }
     void setCurrField(FontaField* field) { m_currField = field; }
 
-    FontaField* addField();
+    FontaField* addField(bool empty = false);
     void popField();
     FontaField* operator[](int i);
     int fieldCount() const { return m_fields.size(); }

@@ -153,7 +153,7 @@ void TooglePanel::paintEvent(QPaintEvent *pe)
 
 constexpr bool FontaField::showBorders;
 
-FontaField::FontaField(QWidget* parent)
+FontaField::FontaField(bool empty, QWidget* parent)
     : QTextEdit(parent)
     , m_fontStyle("Normal")
     , m_preferableFontStyle("Normal")
@@ -166,9 +166,14 @@ FontaField::FontaField(QWidget* parent)
     setFrameShadow(QFrame::Plain);
     setLineWidth(showBorders ? 1 : 0);
     setAcceptRichText(false);
-    setFont(QFont("Arial", 10));
     setLeading(m_leading);
     alignText(Qt::AlignLeft);
+
+    if(!empty) {
+        setSamples(Sampler::getText(), Sampler::getRusText());
+        setFontSize(10);
+        setFontFamily("Arial");
+    }
 
     m_sheet.set("padding-top", "0px");
     m_sheet.set("padding-left", "15px");
@@ -213,9 +218,9 @@ void FontaField::keyPressEvent(QKeyEvent *k)
 
 void FontaField::setFontFamily(CStringRef family)
 {
-    if(font().family() == family) {
+    /*if(font().family() == family) {
         return;
-    }
+    }*/
 
     if(!m_userChangedText) {
         bool cyr = fontaDB().isCyrillic(family);
@@ -385,9 +390,9 @@ FontaWorkArea::~FontaWorkArea()
     clear();
 }
 
-FontaField* FontaWorkArea::addField()
+FontaField* FontaWorkArea::addField(bool empty)
 {    
-    FontaField* field = new FontaField(this);
+    FontaField* field = new FontaField(empty, this);
 
     int id = m_fields.length();
 
