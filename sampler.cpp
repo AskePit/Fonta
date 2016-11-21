@@ -72,7 +72,7 @@ const QVector<Sample> Sampler::preSamples = {
         "FuturaLight", 14
     },
     {
-        "Trebuchet MS", 24,
+        "Trebuchet MS", 18,
         "Verdana", 9
     },
     {
@@ -122,10 +122,6 @@ const QVector<Sample> Sampler::preSamples = {
     {
         "Clarendon", 24,
         "Times New Roman", 12
-    },
-    {
-        "Palatino", 24,
-        "Mistral", 14
     },
 };
 
