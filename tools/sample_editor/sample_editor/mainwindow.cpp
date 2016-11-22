@@ -6,19 +6,21 @@
 #include <QDirIterator>
 #include <QFileDialog>
 
-#define checked        state == Qt::Checked
-#define unchecked      state == Qt::Unchecked
-#define semiState      state == Qt::PartiallyChecked
-#define definedState   state == Qt::Checked   || state == Qt::Unchecked
-#define maybeChecked   state == Qt::Checked   || state == Qt::PartiallyChecked
-#define maybeUnchecked state == Qt::Unchecked || state == Qt::PartiallyChecked
+#define checked        (state == Qt::Checked)
+#define unchecked      (state == Qt::Unchecked)
+#define semiState      (state == Qt::PartiallyChecked)
+#define maybeChecked   (checked || semiState)
 
-#define bindWeight(BOOL_NAME) connect(ui->BOOL_NAME##Box, &QCheckBox::stateChanged, [&](int state){ \
+#define bindWeight(BOOL_NAME) \
+    connect(ui->BOOL_NAME##Box, &QCheckBox::stateChanged, [&](int state){ \
         ui->BOOL_NAME##Weight->setEnabled(semiState); \
         ui->BOOL_NAME##Weight->setValue(checked ? 100 : unchecked ? 0 : ui->BOOL_NAME##Weight->value()); \
-    });
+    })
 
-#define checkBoxConnect(CHECKBOX) connect(ui->CHECKBOX, &QCheckBox::stateChanged, [&](int state)
+#define bindGroup(BOOL_NAME) \
+    connect(ui->BOOL_NAME##Box, &QCheckBox::stateChanged, [&](int state) { \
+        ui->BOOL_NAME##Group->setEnabled(maybeChecked); \
+    })
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,13 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    checkBoxConnect(serifBox){
-        ui->serifGroup->setEnabled(maybeChecked);
-    });
-
-    checkBoxConnect(sansBox){
-        ui->sansGroup->setEnabled(maybeChecked);
-    });
+    bindGroup(serif);
+    bindGroup(sans);
 
     bindWeight(serif);
     bindWeight(sans);
@@ -51,9 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
     bindWeight(humanist);
 
     ui->image->setScaledContents(true);
-    ui->image->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+    ui->image->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-    openDir("D:\\Code\\AskePit\\Fonta\\Fonta\\tools\\font_sampler\\build-font_sampler-Desktop_Qt_5_7_0_MinGW_32bit-Release\\font_samples");
+    openDir("../../font_samples");
 
     setFocus();
 }
@@ -72,6 +69,8 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
+    QMainWindow::keyPressEvent(event);
+
     if(event->key() == Qt::Key_Left) {
         if(ui->backButton->isEnabled()) {
             on_backButton_clicked();
@@ -81,8 +80,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             on_nextButton_clicked();
         }
     }
-
-    QMainWindow::keyPressEvent(event);
 }
 
 MainWindow::~MainWindow()
@@ -113,26 +110,13 @@ void MainWindow::openDir(const QString &dirName)
     }
 
     if(files.count()) {
-        pos = -1;
-        nextSample();
+        pos = 0;
+        getSample();
     }
 }
 
-void MainWindow::nextSample()
+void MainWindow::getSample()
 {
-    ++pos;
-    QString filename = files[pos];
-    QFileInfo info(filename);
-
-    ui->image->setPixmap(filename);
-    ui->statusBar->showMessage(info.fileName());
-    ui->nextButton->setEnabled(pos < files.count());
-    ui->backButton->setEnabled(pos > 0);
-}
-
-void MainWindow::prevSample()
-{
-    --pos;
     QString filename = files[pos];
     QFileInfo info(filename);
 
@@ -144,10 +128,16 @@ void MainWindow::prevSample()
 
 void MainWindow::on_nextButton_clicked()
 {
-    nextSample();
+    ++pos;
+    getSample();
+
+    setFocus();
 }
 
 void MainWindow::on_backButton_clicked()
 {
-    prevSample();
+    --pos;
+    getSample();
+
+    setFocus();
 }

@@ -58,8 +58,7 @@ private:
     int pos;
 
     void openDir(const QString &dirName);
-    void nextSample();
-    void prevSample();
+    void getSample();
 };
 
 #endif // MAINWINDOW_H

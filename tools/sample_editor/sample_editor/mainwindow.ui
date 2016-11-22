@@ -75,6 +75,9 @@
          </item>
          <item row="3" column="0">
           <widget class="TristBox" name="decorativeBox">
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
            <property name="text">
             <string>Decorative</string>
            </property>
@@ -214,6 +217,9 @@
          </item>
          <item row="2" column="0">
           <widget class="TristBox" name="scriptBox">
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
            <property name="text">
             <string>Script</string>
            </property>
@@ -280,6 +286,9 @@
          </item>
          <item row="4" column="0">
           <widget class="TristBox" name="symbolBox">
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
            <property name="text">
             <string>Symbol</string>
            </property>
@@ -290,6 +299,9 @@
          </item>
          <item row="5" column="0">
           <widget class="TristBox" name="monospacedBox">
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
            <property name="text">
             <string>Monospaced</string>
            </property>
@@ -302,6 +314,9 @@
           <layout class="QHBoxLayout" name="serifCell">
            <item>
             <widget class="TristBox" name="serifBox">
+             <property name="focusPolicy">
+              <enum>Qt::TabFocus</enum>
+             </property>
              <property name="text">
               <string>Serif</string>
              </property>
@@ -332,6 +347,9 @@
                <layout class="QGridLayout" name="serifGrid">
                 <item row="3" column="1">
                  <widget class="TristBox" name="slabBox">
+                  <property name="focusPolicy">
+                   <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="text">
                    <string>Slab</string>
                   </property>
@@ -342,6 +360,9 @@
                 </item>
                 <item row="1" column="1">
                  <widget class="TristBox" name="transitionalBox">
+                  <property name="focusPolicy">
+                   <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="text">
                    <string>Transitional</string>
                   </property>
@@ -438,6 +459,9 @@
                 </item>
                 <item row="2" column="1">
                  <widget class="TristBox" name="modernBox">
+                  <property name="focusPolicy">
+                   <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="text">
                    <string>Modern</string>
                   </property>
@@ -491,6 +515,9 @@
                 </item>
                 <item row="0" column="1">
                  <widget class="TristBox" name="oldStyleBox">
+                  <property name="focusPolicy">
+                   <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="text">
                    <string>Old Style</string>
                   </property>
@@ -553,6 +580,9 @@
           <layout class="QHBoxLayout" name="sansCell">
            <item>
             <widget class="TristBox" name="sansBox">
+             <property name="focusPolicy">
+              <enum>Qt::TabFocus</enum>
+             </property>
              <property name="text">
               <string>Sans</string>
              </property>
@@ -583,6 +613,9 @@
                <layout class="QGridLayout" name="sansGrid">
                 <item row="0" column="1">
                  <widget class="TristBox" name="grotesqueBox">
+                  <property name="focusPolicy">
+                   <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="text">
                    <string>Grotesque</string>
                   </property>
@@ -593,6 +626,9 @@
                 </item>
                 <item row="2" column="1">
                  <widget class="TristBox" name="humanistBox">
+                  <property name="focusPolicy">
+                   <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="text">
                    <string>Humanist</string>
                   </property>
@@ -646,6 +682,9 @@
                 </item>
                 <item row="1" column="1">
                  <widget class="TristBox" name="geometricBox">
+                  <property name="focusPolicy">
+                   <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="text">
                    <string>Geometric</string>
                   </property>
@@ -779,6 +818,9 @@
                <height>40</height>
               </size>
              </property>
+             <property name="focusPolicy">
+              <enum>Qt::TabFocus</enum>
+             </property>
              <property name="text">
               <string>&lt;</string>
              </property>
@@ -800,6 +842,9 @@
                <width>50</width>
                <height>40</height>
               </size>
+             </property>
+             <property name="focusPolicy">
+              <enum>Qt::TabFocus</enum>
              </property>
              <property name="text">
               <string>&gt;</string>
@@ -828,27 +873,25 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>683</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>Dir</string>
-    </property>
-    <addaction name="actionOpen"/>
-   </widget>
-   <addaction name="menuFile"/>
-  </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpen"/>
+  </widget>
   <action name="actionOpen">
    <property name="text">
     <string>Open...</string>
+   </property>
+   <property name="iconText">
+    <string>Open Folder</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
