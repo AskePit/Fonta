@@ -5,21 +5,23 @@
 #include <QResizeEvent>
 #include <QDirIterator>
 #include <QFileDialog>
+#include <QSettings>
+#include <QDebug>
 
 #define checked        (state == Qt::Checked)
 #define unchecked      (state == Qt::Unchecked)
 #define semiState      (state == Qt::PartiallyChecked)
 #define maybeChecked   (checked || semiState)
 
-#define bindWeight(BOOL_NAME) \
-    connect(ui->BOOL_NAME##Box, &QCheckBox::stateChanged, [&](int state){ \
-        ui->BOOL_NAME##Weight->setEnabled(semiState); \
-        ui->BOOL_NAME##Weight->setValue(checked ? 100 : unchecked ? 0 : ui->BOOL_NAME##Weight->value()); \
+#define bindWeight(X) \
+    connect(ui->X##Box, &QCheckBox::stateChanged, [&](int state){ \
+        ui->X##Weight->setEnabled(semiState); \
+        ui->X##Weight->setValue(checked ? 100 : unchecked ? 0 : ui->X##Weight->value()); \
     })
 
-#define bindGroup(BOOL_NAME) \
-    connect(ui->BOOL_NAME##Box, &QCheckBox::stateChanged, [&](int state) { \
-        ui->BOOL_NAME##Group->setEnabled(maybeChecked); \
+#define bindGroup(X) \
+    connect(ui->X##Box, &QCheckBox::stateChanged, [&](int state) { \
+        ui->X##Group->setEnabled(maybeChecked); \
     })
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -117,8 +119,16 @@ void MainWindow::openDir(const QString &dirName)
 
 void MainWindow::getSample()
 {
-    QString filename = files[pos];
+    if(pos < 0 || pos >= files.count()) {
+        return;
+    }
+
+    saveConfig();
+
+    const QString &filename = files[pos];
     QFileInfo info(filename);
+    currConfig = QString("%1/%2.ini").arg(info.path(), info.completeBaseName());
+    readConfig();
 
     ui->image->setPixmap(filename);
     ui->statusBar->showMessage(info.fileName());
@@ -140,4 +150,82 @@ void MainWindow::on_backButton_clicked()
     getSample();
 
     setFocus();
+}
+
+void MainWindow::readConfig()
+{
+    if(currConfig.isEmpty()) {
+        return;
+    }
+
+#define readTristate(X) \
+    ui->X##Box->setCheckState(static_cast<Qt::CheckState>(s.value(#X, Qt::Unchecked).toInt())); \
+    ui->X##Weight->setValue(s.value(#X"Weight", 0).toInt())
+
+    QSettings s(currConfig, QSettings::IniFormat);
+    s.beginGroup("FamilyType");
+    readTristate(serif);
+    readTristate(sans);
+    readTristate(script);
+    readTristate(decorative);
+    readTristate(symbol);
+    s.endGroup();
+
+    s.beginGroup("SerifStyle");
+    readTristate(oldStyle);
+    readTristate(transitional);
+    readTristate(modern);
+    readTristate(slab);
+    s.endGroup();
+
+    s.beginGroup("SansStyle");
+    readTristate(grotesque);
+    readTristate(geometric);
+    readTristate(humanist);
+    s.endGroup();
+
+    s.beginGroup("Other");
+    ui->monospacedBox->setChecked(s.value("monospaced", false).toBool());
+    s.endGroup();
+
+#undef saveTristate
+}
+
+void MainWindow::saveConfig()
+{
+    if(currConfig.isEmpty()) {
+        return;
+    }
+
+#define saveTristate(X) \
+    s.setValue(#X, static_cast<int>(ui->X##Box->checkState())); \
+    s.setValue(#X"Weight", ui->X##Weight->value())
+
+    QSettings s(currConfig, QSettings::IniFormat);
+    s.beginGroup("FamilyType");
+    saveTristate(serif);
+    saveTristate(sans);
+    saveTristate(script);
+    saveTristate(decorative);
+    saveTristate(symbol);
+    s.endGroup();
+
+    s.beginGroup("SerifStyle");
+    saveTristate(oldStyle);
+    saveTristate(transitional);
+    saveTristate(modern);
+    saveTristate(slab);
+    s.endGroup();
+
+    s.beginGroup("SansStyle");
+    saveTristate(grotesque);
+    saveTristate(geometric);
+    saveTristate(humanist);
+    s.endGroup();
+
+    s.beginGroup("Other");
+    s.setValue("monospaced", ui->monospacedBox->isChecked());
+    s.endGroup();
+
+#undef saveTristate
 }

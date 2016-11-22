@@ -55,10 +55,14 @@ private:
     Ui::MainWindow *ui;
 
     QStringList files;
+    QString currConfig;
     int pos;
 
     void openDir(const QString &dirName);
     void getSample();
+
+    void readConfig();
+    void saveConfig();
 };
 
 #endif // MAINWINDOW_H

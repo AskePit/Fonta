@@ -297,19 +297,6 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
-          <widget class="TristBox" name="monospacedBox">
-           <property name="focusPolicy">
-            <enum>Qt::TabFocus</enum>
-           </property>
-           <property name="text">
-            <string>Monospaced</string>
-           </property>
-           <property name="tristate">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <layout class="QHBoxLayout" name="serifCell">
            <item>
@@ -865,6 +852,19 @@
             </spacer>
            </item>
           </layout>
+         </item>
+         <item row="5" column="0">
+          <widget class="QCheckBox" name="monospacedBox">
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
+           <property name="text">
+            <string>Monospaced</string>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
