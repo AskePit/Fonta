@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "info.h"
+#include "ui_info.h"
 
 #include <QCheckBox>
 #include <QResizeEvent>
@@ -16,17 +18,33 @@
 #define bindWeight(X) \
     connect(ui->X##Box, &QCheckBox::stateChanged, [&](int state){ \
         ui->X##Weight->setEnabled(semiState); \
+        if(semiState) { \
+            ui->X##Weight->setValue(50); \
+        } \
         ui->X##Weight->setValue(checked ? 100 : unchecked ? 0 : ui->X##Weight->value()); \
+        update(); \
+    }); \
+    connect(ui->X##Weight, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [&](int value){ \
+        if(value == 0) { \
+            ui->X##Box->setChecked(false); \
+        } \
+        \
+        if(value == 100) { \
+            ui->X##Box->setChecked(true); \
+        } \
+        update(); \
     })
 
 #define bindGroup(X) \
     connect(ui->X##Box, &QCheckBox::stateChanged, [&](int state) { \
         ui->X##Group->setEnabled(maybeChecked); \
+        update(); \
     })
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    infoDialog(nullptr),
     pos(-1)
 {
     ui->setupUi(this);
@@ -106,56 +124,70 @@ void MainWindow::openDir(const QString &dirName)
     ui->nextButton->setDisabled(true);
 
     QDirIterator dirIt(dirName, {"*.png"}, QDir::Files, QDirIterator::Subdirectories);
+
     while(dirIt.hasNext()) {
         dirIt.next();
         files << dirIt.filePath();
-    }
+    };
 
     if(files.count()) {
-        pos = 0;
-        getSample();
+        pos = -1;
+        getSample(Direction::Forward);
     }
 }
 
-void MainWindow::getSample()
+void MainWindow::getSample(Direction direction)
 {
-    if(pos < 0 || pos >= files.count()) {
+    direction == Direction::Forward ? ++pos : --pos;
+
+    if(pos < 0) {
+        pos = 0;
+        ui->backButton->setDisabled(true);
         return;
     }
 
-    saveConfig();
+    if(pos >= files.count()) {
+        pos = files.count()-1;
+        ui->nextButton->setDisabled(true);
+        return;
+    }
 
     const QString &filename = files[pos];
     QFileInfo info(filename);
     currConfig = QString("%1/%2.ini").arg(info.path(), info.completeBaseName());
-    readConfig();
+    if(!readConfig()) {
+        getSample(direction);
+        return;
+    }
 
     ui->image->setPixmap(filename);
     ui->statusBar->showMessage(info.fileName());
     ui->nextButton->setEnabled(pos < files.count());
     ui->backButton->setEnabled(pos > 0);
+    update();
 }
 
 void MainWindow::on_nextButton_clicked()
 {
-    ++pos;
-    getSample();
+    saveConfig();
+    getSample(Direction::Forward);
 
     setFocus();
 }
 
 void MainWindow::on_backButton_clicked()
 {
-    --pos;
-    getSample();
+    saveConfig();
+    getSample(Direction::Backward);
 
     setFocus();
 }
 
-void MainWindow::readConfig()
+// false - done. won't read
+bool MainWindow::readConfig()
 {
     if(currConfig.isEmpty()) {
-        return;
+        return false;
     }
 
 #define readTristate(X) \
@@ -163,6 +195,13 @@ void MainWindow::readConfig()
     ui->X##Weight->setValue(s.value(#X"Weight", 0).toInt())
 
     QSettings s(currConfig, QSettings::IniFormat);
+    s.beginGroup("State");
+    bool done = s.value("done", false).toBool();
+    s.endGroup();
+    if(done) {
+        return false;
+    }
+
     s.beginGroup("FamilyType");
     readTristate(serif);
     readTristate(sans);
@@ -188,10 +227,13 @@ void MainWindow::readConfig()
     ui->monospacedBox->setChecked(s.value("monospaced", false).toBool());
     s.endGroup();
 
+    return true;
+
 #undef saveTristate
 }
 
-void MainWindow::saveConfig()
+// true - done
+void MainWindow::saveConfig(bool done)
 {
     if(currConfig.isEmpty()) {
         return;
@@ -202,6 +244,11 @@ void MainWindow::saveConfig()
     s.setValue(#X"Weight", ui->X##Weight->value())
 
     QSettings s(currConfig, QSettings::IniFormat);
+
+    s.beginGroup("State");
+    s.setValue("done", done);
+    s.endGroup();
+
     s.beginGroup("FamilyType");
     saveTristate(serif);
     saveTristate(sans);
@@ -226,6 +273,49 @@ void MainWindow::saveConfig()
     s.beginGroup("Other");
     s.setValue("monospaced", ui->monospacedBox->isChecked());
     s.endGroup();
-
 #undef saveTristate
+
+    return;
+}
+
+void MainWindow::on_saveButton_clicked()
+{
+    saveConfig(true);
+    getSample(Direction::Forward);
+}
+
+static bool isFileDone(const QString &filename)
+{
+    if(filename.isEmpty()) {
+        return false;
+    }
+
+    QSettings s(filename, QSettings::IniFormat);
+    s.beginGroup("State");
+    bool done = s.value("done", false).toBool();
+    s.endGroup();
+
+    return done;
+}
+
+void MainWindow::on_actionInfo_triggered()
+{
+    if(!infoDialog) {
+        infoDialog = new Info(this);
+    }
+
+    infoDialog->ui->list->clear();
+
+    int count = 0;
+    for(const auto &f : files) {
+        QFileInfo info(f);
+        QString iniFile = QString("%1/%2.ini").arg(info.path(), info.completeBaseName());
+        if(!isFileDone(iniFile)) {
+            ++count;
+            infoDialog->ui->list->addItem(info.baseName());
+        }
+    }
+
+    infoDialog->ui->countLabel->setText(QString::number(count));
+    infoDialog->show();
 }

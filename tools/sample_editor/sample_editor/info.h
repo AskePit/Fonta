@@ -15,6 +15,8 @@ public:
     explicit Info(QWidget *parent = 0);
     ~Info();
 
+    friend class MainWindow;
+
 private:
     Ui::Info *ui;
 };

@@ -32,6 +32,13 @@ namespace Ui {
 class MainWindow;
 }
 
+class Info;
+
+enum Direction {
+    Forward,
+    Backward,
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -46,23 +53,26 @@ protected:
 
 private slots:
     void on_actionOpen_triggered();
-
     void on_nextButton_clicked();
-
     void on_backButton_clicked();
+    void on_saveButton_clicked();
+
+    void on_actionInfo_triggered();
 
 private:
     Ui::MainWindow *ui;
+    Info *infoDialog;
 
     QStringList files;
     QString currConfig;
     int pos;
 
     void openDir(const QString &dirName);
-    void getSample();
+    void getSample(Direction direction);
 
-    void readConfig();
-    void saveConfig();
+    bool readConfig(); // false - done. won't read
+    void saveConfig(bool done = false); // true - done
+    //bool isFileDone(const QString &filename);
 };
 
 #endif // MAINWINDOW_H
