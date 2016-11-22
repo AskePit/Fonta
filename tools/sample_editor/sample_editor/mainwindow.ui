@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>683</width>
-    <height>575</height>
+    <height>589</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,25 +15,35 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QGraphicsView" name="graphicsView"/>
+    <item alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="image">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QWidget" name="widget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <layout class="QGridLayout" name="gridLayout_8">
+        <layout class="QGridLayout" name="grid">
          <item row="1" column="1">
-          <widget class="QSpinBox" name="spinBox_29">
+          <widget class="QSpinBox" name="sansWeight">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>16777215</height>
             </size>
            </property>
@@ -44,7 +54,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="frame">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -64,7 +74,7 @@
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="TristBox" name="checkBox_16">
+          <widget class="TristBox" name="decorativeBox">
            <property name="text">
             <string>Decorative</string>
            </property>
@@ -74,16 +84,19 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QSpinBox" name="spinBox_8">
+          <widget class="QSpinBox" name="scriptWeight">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>16777215</height>
             </size>
            </property>
@@ -94,7 +107,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="frame">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -114,16 +127,19 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QSpinBox" name="spinBox_30">
+          <widget class="QSpinBox" name="serifWeight">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>16777215</height>
             </size>
            </property>
@@ -134,7 +150,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="frame">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -154,16 +170,19 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QSpinBox" name="spinBox_9">
+          <widget class="QSpinBox" name="symbolWeight">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>16777215</height>
             </size>
            </property>
@@ -174,7 +193,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="frame">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -194,7 +213,7 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="TristBox" name="checkBox_12">
+          <widget class="TristBox" name="scriptBox">
            <property name="text">
             <string>Script</string>
            </property>
@@ -204,16 +223,19 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QSpinBox" name="spinBox_10">
+          <widget class="QSpinBox" name="decorativeWeight">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>30</width>
+             <width>35</width>
              <height>16777215</height>
             </size>
            </property>
@@ -224,7 +246,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="frame">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -244,7 +266,7 @@
           </widget>
          </item>
          <item row="0" column="2">
-          <spacer name="horizontalSpacer_29">
+          <spacer name="spacer">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -257,7 +279,7 @@
           </spacer>
          </item>
          <item row="4" column="0">
-          <widget class="TristBox" name="checkBox_13">
+          <widget class="TristBox" name="symbolBox">
            <property name="text">
             <string>Symbol</string>
            </property>
@@ -267,7 +289,7 @@
           </widget>
          </item>
          <item row="5" column="0">
-          <widget class="TristBox" name="checkBox_3">
+          <widget class="TristBox" name="monospacedBox">
            <property name="text">
             <string>Monospaced</string>
            </property>
@@ -277,9 +299,9 @@
           </widget>
          </item>
          <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <layout class="QHBoxLayout" name="serifCell">
            <item>
-            <widget class="TristBox" name="checkBox">
+            <widget class="TristBox" name="serifBox">
              <property name="text">
               <string>Serif</string>
              </property>
@@ -289,7 +311,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox">
+            <widget class="QGroupBox" name="serifGroup">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="title">
               <string/>
              </property>
@@ -304,9 +329,9 @@
                <number>9</number>
               </property>
               <item>
-               <layout class="QGridLayout" name="gridLayout_5">
+               <layout class="QGridLayout" name="serifGrid">
                 <item row="3" column="1">
-                 <widget class="TristBox" name="checkBox_5">
+                 <widget class="TristBox" name="slabBox">
                   <property name="text">
                    <string>Slab</string>
                   </property>
@@ -316,7 +341,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="TristBox" name="checkBox_36">
+                 <widget class="TristBox" name="transitionalBox">
                   <property name="text">
                    <string>Transitional</string>
                   </property>
@@ -326,16 +351,19 @@
                  </widget>
                 </item>
                 <item row="2" column="2">
-                 <widget class="QSpinBox" name="spinBox_26">
+                 <widget class="QSpinBox" name="modernWeight">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -346,7 +374,7 @@
                    <enum>Qt::NoContextMenu</enum>
                   </property>
                   <property name="frame">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -366,16 +394,19 @@
                  </widget>
                 </item>
                 <item row="0" column="2">
-                 <widget class="QSpinBox" name="spinBox_25">
+                 <widget class="QSpinBox" name="oldStyleWeight">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -386,7 +417,7 @@
                    <enum>Qt::NoContextMenu</enum>
                   </property>
                   <property name="frame">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -406,7 +437,7 @@
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="TristBox" name="checkBox_37">
+                 <widget class="TristBox" name="modernBox">
                   <property name="text">
                    <string>Modern</string>
                   </property>
@@ -416,16 +447,19 @@
                  </widget>
                 </item>
                 <item row="1" column="2">
-                 <widget class="QSpinBox" name="spinBox_24">
+                 <widget class="QSpinBox" name="transitionalWeight">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -436,7 +470,7 @@
                    <enum>Qt::NoContextMenu</enum>
                   </property>
                   <property name="frame">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -456,7 +490,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="TristBox" name="checkBox_38">
+                 <widget class="TristBox" name="oldStyleBox">
                   <property name="text">
                    <string>Old Style</string>
                   </property>
@@ -466,16 +500,19 @@
                  </widget>
                 </item>
                 <item row="3" column="2">
-                 <widget class="QSpinBox" name="spinBox_27">
+                 <widget class="QSpinBox" name="slabWeight">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -486,7 +523,7 @@
                    <enum>Qt::NoContextMenu</enum>
                   </property>
                   <property name="frame">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -513,9 +550,9 @@
           </layout>
          </item>
          <item row="1" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <layout class="QHBoxLayout" name="sansCell">
            <item>
-            <widget class="TristBox" name="checkBox_2">
+            <widget class="TristBox" name="sansBox">
              <property name="text">
               <string>Sans</string>
              </property>
@@ -525,7 +562,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox_2">
+            <widget class="QGroupBox" name="sansGroup">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="title">
               <string/>
              </property>
@@ -540,9 +580,9 @@
                <number>9</number>
               </property>
               <item>
-               <layout class="QGridLayout" name="gridLayout_6">
+               <layout class="QGridLayout" name="sansGrid">
                 <item row="0" column="1">
-                 <widget class="TristBox" name="checkBox_41">
+                 <widget class="TristBox" name="grotesqueBox">
                   <property name="text">
                    <string>Grotesque</string>
                   </property>
@@ -552,7 +592,7 @@
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="TristBox" name="checkBox_40">
+                 <widget class="TristBox" name="humanistBox">
                   <property name="text">
                    <string>Humanist</string>
                   </property>
@@ -562,16 +602,19 @@
                  </widget>
                 </item>
                 <item row="1" column="2">
-                 <widget class="QSpinBox" name="spinBox_32">
+                 <widget class="QSpinBox" name="geometricWeight">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -582,7 +625,7 @@
                    <enum>Qt::NoContextMenu</enum>
                   </property>
                   <property name="frame">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -602,7 +645,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="TristBox" name="checkBox_39">
+                 <widget class="TristBox" name="geometricBox">
                   <property name="text">
                    <string>Geometric</string>
                   </property>
@@ -612,16 +655,19 @@
                  </widget>
                 </item>
                 <item row="0" column="2">
-                 <widget class="QSpinBox" name="spinBox_31">
+                 <widget class="QSpinBox" name="grotesqueWeight">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -632,7 +678,7 @@
                    <enum>Qt::NoContextMenu</enum>
                   </property>
                   <property name="frame">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -652,16 +698,19 @@
                  </widget>
                 </item>
                 <item row="2" column="2">
-                 <widget class="QSpinBox" name="spinBox_28">
+                 <widget class="QSpinBox" name="humanistWeight">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>30</width>
+                    <width>35</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -672,7 +721,7 @@
                    <enum>Qt::NoContextMenu</enum>
                   </property>
                   <property name="frame">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -698,6 +747,80 @@
            </item>
           </layout>
          </item>
+         <item row="1" column="2">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="backButton">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="nextButton">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
         </layout>
        </item>
       </layout>
@@ -716,15 +839,19 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Dir</string>
     </property>
     <addaction name="actionOpen"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
    <property name="text">
     <string>Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>
