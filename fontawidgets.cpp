@@ -206,8 +206,11 @@ void FontaField::keyPressEvent(QKeyEvent *k)
 {
     Q_UNUSED(k);
 
+    bool ctrlChange = k->modifiers() == Qt::ControlModifier
+                  && (k->key() == Qt::Key_X || k->key() == Qt::Key_V);
+
     // all printable keys
-    if(k->modifiers() != Qt::ControlModifier
+    if((k->modifiers() != Qt::ControlModifier || ctrlChange)
     && k->modifiers() != Qt::AltModifier
     && k->key() >= Qt::Key_Space
     && k->key() <= Qt::Key_ydiaeresis) {
