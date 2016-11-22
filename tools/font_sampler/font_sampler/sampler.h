@@ -17,7 +17,7 @@ struct SamplerSettings {
         boxSize = 150;
         fontSize = 120;
         dir = "../../font_samples";
-        chars = "QRagAxHTElSkMOCq";
+        chars = "QRagAxHTEfSkMOCq";
         columns = 8;
         ext = "png";
     }

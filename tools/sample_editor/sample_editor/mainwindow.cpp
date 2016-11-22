@@ -8,7 +8,7 @@
 #include <QDirIterator>
 #include <QFileDialog>
 #include <QSettings>
-#include <QDebug>
+#include <QClipboard>
 
 #define checked        (state == Qt::Checked)
 #define unchecked      (state == Qt::Unchecked)
@@ -79,7 +79,7 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 {
    QMainWindow::resizeEvent(event);
 
-   int ratio = 1600/400;
+   double ratio = 1200./300.;
    QSize s = event->size();
    const int margin = 25;
    int height = s.width()/(double)ratio;
@@ -161,7 +161,9 @@ void MainWindow::getSample(Direction direction)
     }
 
     ui->image->setPixmap(filename);
-    ui->statusBar->showMessage(info.fileName());
+    ui->statusBar->showMessage(info.baseName());
+    QApplication::clipboard()->setText(info.baseName());
+
     ui->nextButton->setEnabled(pos < files.count());
     ui->backButton->setEnabled(pos > 0);
     update();
