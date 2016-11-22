@@ -14,10 +14,10 @@ struct SamplerSettings {
     QString ext;
 
     SamplerSettings() {
-        boxSize = 200;
-        fontSize = 150;
-        dir = "font_samples";
-        chars = "HIESOMJACxlbdkqp";
+        boxSize = 150;
+        fontSize = 120;
+        dir = "../../font_samples";
+        chars = "QRagAxHTElSkMOCq";
         columns = 8;
         ext = "png";
     }
