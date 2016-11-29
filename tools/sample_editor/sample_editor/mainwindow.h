@@ -56,7 +56,6 @@ private slots:
     void on_nextButton_clicked();
     void on_backButton_clicked();
     void on_saveButton_clicked();
-
     void on_actionInfo_triggered();
 
 private:
@@ -67,12 +66,12 @@ private:
     QString currConfig;
     int pos;
 
-    void openDir(const QString &dirName);
-    void getSample(Direction direction);
+    void openFile(const QString &filename);
+    void loadPrevNextSample(Direction direction);
+    void loadCurrSample();
 
-    bool readConfig(); // false - done. won't read
-    void saveConfig(bool done = false); // true - done
-    //bool isFileDone(const QString &filename);
+    void readConfig();
+    void saveConfig();
 };
 
 #endif // MAINWINDOW_H

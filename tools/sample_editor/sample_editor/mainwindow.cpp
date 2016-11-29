@@ -9,6 +9,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QClipboard>
+#include <QDebug>
 
 #define checked        (state == Qt::Checked)
 #define unchecked      (state == Qt::Unchecked)
@@ -70,9 +71,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->image->setScaledContents(true);
     ui->image->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-    openDir("../../font_samples");
-
     setFocus();
+
+    QSettings s("PitM", "Fonta Sample Editor");
+    QString filename = s.value("filename", "").toString();
+    if(!filename.isEmpty()) {
+        openFile(filename);
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
@@ -104,24 +109,32 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 MainWindow::~MainWindow()
 {
+    if(pos >= 0 && pos < files.length()) {
+        QSettings s("PitM", "Fonta Sample Editor");
+        s.setValue("filename", files[pos]);
+    }
+
     delete ui;
 }
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString dirName = QFileDialog::getExistingDirectory();
-    if(dirName.isEmpty()) {
+    QString filename = QFileDialog::getOpenFileName();
+    if(filename.isEmpty()) {
         return;
     }
 
-    openDir(dirName);
+    openFile(filename);
 }
 
-void MainWindow::openDir(const QString &dirName)
+void MainWindow::openFile(const QString &filename)
 {
     files.clear();
     ui->backButton->setDisabled(true);
     ui->nextButton->setDisabled(true);
+
+    QFileInfo info(filename);
+    QString dirName = info.path();
 
     QDirIterator dirIt(dirName, {"*.png"}, QDir::Files, QDirIterator::Subdirectories);
 
@@ -131,15 +144,23 @@ void MainWindow::openDir(const QString &dirName)
     };
 
     if(files.count()) {
-        pos = -1;
-        getSample(Direction::Forward);
+        pos = files.indexOf(filename);
+        if(pos != -1) {
+            loadCurrSample();
+        } else {
+            loadPrevNextSample(Direction::Forward);
+        }
     }
 }
 
-void MainWindow::getSample(Direction direction)
+void MainWindow::loadPrevNextSample(Direction direction)
 {
     direction == Direction::Forward ? ++pos : --pos;
+    loadCurrSample();
+}
 
+void MainWindow::loadCurrSample()
+{
     if(pos < 0) {
         pos = 0;
         ui->backButton->setDisabled(true);
@@ -155,10 +176,7 @@ void MainWindow::getSample(Direction direction)
     const QString &filename = files[pos];
     QFileInfo info(filename);
     currConfig = QString("%1/%2.ini").arg(info.path(), info.completeBaseName());
-    if(!readConfig()) {
-        getSample(direction);
-        return;
-    }
+    readConfig();
 
     ui->image->setPixmap(filename);
     ui->statusBar->showMessage(info.baseName());
@@ -172,7 +190,7 @@ void MainWindow::getSample(Direction direction)
 void MainWindow::on_nextButton_clicked()
 {
     saveConfig();
-    getSample(Direction::Forward);
+    loadPrevNextSample(Direction::Forward);
 
     setFocus();
 }
@@ -180,16 +198,15 @@ void MainWindow::on_nextButton_clicked()
 void MainWindow::on_backButton_clicked()
 {
     saveConfig();
-    getSample(Direction::Backward);
+    loadPrevNextSample(Direction::Backward);
 
     setFocus();
 }
 
-// false - done. won't read
-bool MainWindow::readConfig()
+void MainWindow::readConfig()
 {
     if(currConfig.isEmpty()) {
-        return false;
+        return;
     }
 
 #define readTristate(X) \
@@ -197,12 +214,6 @@ bool MainWindow::readConfig()
     ui->X##Weight->setValue(s.value(#X"Weight", 0).toInt())
 
     QSettings s(currConfig, QSettings::IniFormat);
-    s.beginGroup("State");
-    bool done = s.value("done", false).toBool();
-    s.endGroup();
-    if(done) {
-        return false;
-    }
 
     s.beginGroup("FamilyType");
     readTristate(serif);
@@ -229,13 +240,12 @@ bool MainWindow::readConfig()
     ui->monospacedBox->setChecked(s.value("monospaced", false).toBool());
     s.endGroup();
 
-    return true;
+    return;
 
 #undef saveTristate
 }
 
-// true - done
-void MainWindow::saveConfig(bool done)
+void MainWindow::saveConfig()
 {
     if(currConfig.isEmpty()) {
         return;
@@ -246,10 +256,6 @@ void MainWindow::saveConfig(bool done)
     s.setValue(#X"Weight", ui->X##Weight->value())
 
     QSettings s(currConfig, QSettings::IniFormat);
-
-    s.beginGroup("State");
-    s.setValue("done", done);
-    s.endGroup();
 
     s.beginGroup("FamilyType");
     saveTristate(serif);
@@ -282,8 +288,8 @@ void MainWindow::saveConfig(bool done)
 
 void MainWindow::on_saveButton_clicked()
 {
-    saveConfig(true);
-    getSample(Direction::Forward);
+    saveConfig();
+    loadPrevNextSample(Direction::Forward);
 }
 
 static bool isFileDone(const QString &filename)

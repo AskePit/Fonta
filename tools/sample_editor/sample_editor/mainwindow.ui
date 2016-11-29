@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>683</width>
-    <height>589</height>
+    <width>785</width>
+    <height>626</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -904,25 +904,16 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
-   <addaction name="actionInfo"/>
   </widget>
   <action name="actionOpen">
    <property name="text">
     <string>Open...</string>
    </property>
-   <property name="iconText">
-    <string>Open Folder</string>
+   <property name="toolTip">
+    <string>open file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
-   </property>
-  </action>
-  <action name="actionInfo">
-   <property name="text">
-    <string>Info...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+I</string>
    </property>
   </action>
  </widget>
