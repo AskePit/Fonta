@@ -13,7 +13,7 @@ humanist = open('humanist.dat').readlines();
 def contains(s, arr):
     for l in arr:
         if(l == s):
-            if(s in sans):
+            if(s in arr):
                 return True
 
 def contains_sans(s):
