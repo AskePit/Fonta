@@ -117,6 +117,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::clearUi()
+{
+    ui->image->setPixmap(QPixmap());
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
     QString filename = QFileDialog::getOpenFileName();
@@ -129,6 +134,9 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::openFile(const QString &filename)
 {
+    clearUi();
+    unfinishedMode = false;
+
     files.clear();
     ui->backButton->setDisabled(true);
     ui->nextButton->setDisabled(true);
@@ -141,6 +149,16 @@ void MainWindow::openFile(const QString &filename)
     while(dirIt.hasNext()) {
         dirIt.next();
         files << dirIt.filePath();
+
+        /*QFileInfo info = dirIt.fileInfo();
+        QString configFile = info.path() + "/" + info.completeBaseName() + ".ini";
+        QSettings s(configFile, QSettings::IniFormat);
+        s.beginGroup("State");
+        bool done = s.value("done", false).toBool();
+        if(!done) {
+            qDebug() << configFile;
+        }
+        s.endGroup();*/
     };
 
     if(files.count()) {
@@ -150,6 +168,40 @@ void MainWindow::openFile(const QString &filename)
         } else {
             loadPrevNextSample(Direction::Forward);
         }
+    }
+}
+
+void MainWindow::on_actionOpen_unfinished_triggered()
+{
+    clearUi();
+    unfinishedMode = true;
+
+    files.clear();
+    ui->backButton->setDisabled(true);
+    ui->nextButton->setDisabled(true);
+
+    QString dirName = QFileDialog::getExistingDirectory();
+    QDirIterator dirIt(dirName, {"*.png"}, QDir::Files, QDirIterator::Subdirectories);
+
+    while(dirIt.hasNext()) {
+        dirIt.next();
+
+        QFileInfo info = dirIt.fileInfo();
+        QString configFile = info.path() + "/" + info.completeBaseName() + ".ini";
+        QSettings s(configFile, QSettings::IniFormat);
+        s.beginGroup("State");
+        bool done = s.value("done", false).toBool();
+        if(!done) {
+            files << dirIt.filePath();
+        }
+        s.endGroup();
+
+
+    };
+
+    if(files.count()) {
+        pos = -1;
+        loadPrevNextSample(Direction::Forward);
     }
 }
 

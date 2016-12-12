@@ -58,6 +58,8 @@ private slots:
     void on_saveButton_clicked();
     void on_actionInfo_triggered();
 
+    void on_actionOpen_unfinished_triggered();
+
 private:
     Ui::MainWindow *ui;
     Info *infoDialog;
@@ -65,6 +67,7 @@ private:
     QStringList files;
     QString currConfig;
     int pos;
+    bool unfinishedMode;
 
     void openFile(const QString &filename);
     void loadPrevNextSample(Direction direction);
@@ -72,6 +75,8 @@ private:
 
     void readConfig();
     void saveConfig();
+
+    void clearUi();
 };
 
 #endif // MAINWINDOW_H
