@@ -1,8 +1,11 @@
+import glob
+
 def format_file(filename):
     fonts = open(filename, 'rb').readlines()
 
-    fonts = list(map(lambda x:x.decode('utf-8').lower().strip(), fonts))
+    fonts = list(map(lambda x:x.decode('utf-8').lower(), fonts))
     fonts = list(map(lambda x:' '.join(x.split()), fonts))
+    fonts = list(set(fonts))
     fonts.sort()
 
     out = open(filename, 'wb')
@@ -14,20 +17,5 @@ def format_file(filename):
         out.write(b'\r\n')
     out.close()
 
-files = [
-    'old_style',
-    'decorative',
-    'script',
-    'transitional',
-    'modern',
-    'sans',
-    'serif',
-    'slab',
-    'monospaced',
-    'humanist',
-    'grotesque',
-    'geometric',
-]
-
-for f in files:
-    format_file(f + '.dat')
+for f in glob.glob('*.dat'):
+    format_file(f)
