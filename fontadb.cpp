@@ -3,9 +3,16 @@
 #include <QDirIterator>
 #include <QTextCodec>
 #include <thread>
-#include <QMutex>
+
+#ifdef FONTA_MEASURES
 #include <QElapsedTimer>
 #include <QDebug>
+#endif
+
+#ifdef FONTA_DETAILED_DEBUG
+#include <QDebug>
+#endif
+
 #include <QStandardPaths>
 #include <QSettings>
 #include <mutex>

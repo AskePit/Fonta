@@ -1,4 +1,4 @@
-QT += core gui widgets
+QT += core gui widgets network xml
 
 CONFIG += c++11 #console
 

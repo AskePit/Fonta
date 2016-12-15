@@ -2,6 +2,18 @@
 
 #include <cstdlib>
 #include <QVector>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QXmlStreamReader>
+#include <QEventLoop>
+#include <QObject>
+
+#ifdef FONTA_MEASURES
+#include <QElapsedTimer>
+#include <QDebug>
+#endif
+
 #include "fontadb.h"
 
 const QStringList Sampler::names = {
@@ -21,7 +33,7 @@ const QStringList Sampler::names = {
     "Solly",
 };
 
-const QStringList Sampler::texts = {
+QStringList Sampler::texts = {
     "The quick brown fox jumps over the lazy dog",
     "Pack my box with five dozen liquor jugs",
     "Jackdaws love my big sphinx of quartz",
@@ -51,7 +63,7 @@ const QStringList Sampler::texts = {
     "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
 };
 
-const QStringList Sampler::textsRus = {
+QStringList Sampler::textsRus = {
     "Съешь же ещё этих мягких французских булок да выпей чаю",
     "Аэрофотосъёмка ландшафта уже выявила земли богачей и процветающих крестьян",
     "Южно-эфиопский грач увёл мышь за хобот на съезд ящериц",
@@ -140,8 +152,58 @@ const QVector<Sample> Sampler::preSamples = {
     },
 };
 
+void fetchNews(QStringList &list, const QString &url, const QString &tag)
+{
+    QNetworkAccessManager manager;
+    QNetworkReply *reply = manager.get(QNetworkRequest(url));
+
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    QObject::connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), &loop, SLOT(quit()));
+
+#ifdef FONTA_MEASURES
+    QElapsedTimer timer;
+    timer.start();
+#endif
+
+    loop.exec();
+    if(reply->error() != QNetworkReply::NoError) {
+        return;
+    }
+
+#ifdef FONTA_MEASURES
+    qDebug() << timer.elapsed() << "ms to load news";
+    timer.start();
+#endif
+
+    list.clear();
+    QXmlStreamReader r(reply->readAll());
+    while(r.readNextStartElement());
+    while(!r.atEnd()) {
+        r.readNext();
+        if(r.name() == "item") {
+            while(!r.atEnd()) {
+                r.readNext();
+                if(r.name() == tag) {
+                    list << r.readElementText();
+                    break;
+                }
+            }
+        }
+    }
+
+#ifdef FONTA_MEASURES
+    qDebug() << timer.elapsed() << "ms to process news rss-xml";
+#endif
+}
+
 void Sampler::initSamples()
 {
+    // try to fetch rss news
+    fetchNews(texts, "http://feeds.bbci.co.uk/news/world/rss.xml", "description");
+    fetchNews(textsRus, "http://tass.ru/rss/v2.xml", "title");
+
+    // filter font pair depending on users installed fonts
     const QStringList& families = fontaDB().families();
 
     for(const Sample& p : preSamples) {

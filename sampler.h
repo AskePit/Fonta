@@ -18,6 +18,7 @@ struct Sample {
 
 class Sampler
 {
+    Q_OBJECT
 public:
     static void initSamples();
 
@@ -31,8 +32,8 @@ private:
     Sampler();
 
     static const QStringList names;
-    static const QStringList texts;
-    static const QStringList textsRus;
+    static QStringList texts;
+    static QStringList textsRus;
     static const QVector<Sample> preSamples;
     static QVector<Sample> samples;
 
