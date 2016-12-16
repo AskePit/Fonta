@@ -181,10 +181,10 @@ const QVector<Sample> Sampler::preSamples = {
 
 struct NewsData {
     QStringList *list;
-    const QString *tag;
+    QString tag;
 
     NewsData() {}
-    NewsData(QStringList *list, const QString *tag)
+    NewsData(QStringList *list, const QString &tag)
         : list(list)
         , tag(tag)
 #ifdef FONTA_MEASURES
@@ -198,7 +198,7 @@ struct NewsData {
 };
 
 QNetworkAccessManager *network;
-QHash<QNetworkReply *, NewsData> newsMap;
+static QHash<QNetworkReply *, NewsData> newsMap;
 
 void Sampler::fetchNews(QStringList &list, CStringRef url, CStringRef tag)
 {
@@ -208,7 +208,7 @@ void Sampler::fetchNews(QStringList &list, CStringRef url, CStringRef tag)
 
     QNetworkReply *reply = network->get(QNetworkRequest(url));
 
-    NewsData d(&list, &tag);
+    NewsData d(&list, tag);
     newsMap[reply] = d;
 
 #ifdef FONTA_MEASURES
@@ -246,9 +246,9 @@ void Sampler::fetchNewsSlot()
     }
 
     QStringList &list = *d.list;
-    CStringRef tag = *d.tag;
+    CStringRef tag = d.tag;
 
-    list.clear();
+    QStringList tmpList;
 
 #ifdef FONTA_MEASURES
     d.timer->start();
@@ -262,11 +262,16 @@ void Sampler::fetchNewsSlot()
             while(!r.atEnd()) {
                 r.readNext();
                 if(r.name() == tag) {
-                    list << r.readElementText();
+                    tmpList << r.readElementText();
                     break;
                 }
             }
         }
+    }
+
+    if(tmpList.count()) {
+        list.clear();
+        list << tmpList;
     }
 
 #ifdef FONTA_MEASURES
@@ -283,7 +288,7 @@ QSet<int> Sampler::textsRusPool;
 QSet<int> Sampler::samplesPool;
 
 static int getPoolsValue(QSet<int>& pool, int length)
-{
+{    
     int r = rand()%length;
 
     if(!pool.contains(r)) {

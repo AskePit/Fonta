@@ -35,19 +35,6 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     connect(ui->leadingBox->lineEdit(), boxEditSig, this, &FontaWindow::on_leadingBox_edited);
     connect(ui->trackingBox->lineEdit(), boxEditSig, this, &FontaWindow::on_trackingBox_edited);
 
-    /*auto &tb1 = *ui->toolBar1;
-    auto &tb2 = *ui->toolBar2;
-    auto &tb3 = *ui->toolBar3;
-    auto &tb4 = *ui->toolBar4;
-
-    auto addFixedSpace = [](QToolBar &tb){
-        QWidget* empty = new QWidget();
-        empty->setMinimumWidth(5);
-        empty->setMaximumWidth(5);
-        tb.addWidget(empty);
-    };
-
-    addFixedSpace(tb2);*/
     alignButtosGroup = new QButtonGroup(this);
     initAlignButton(topLeftButton, ":/pic/left.png", Qt::AlignLeft);
     initAlignButton(topCenterButton, ":/pic/center.png", Qt::AlignHCenter);
@@ -95,29 +82,12 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
         tb.addWidget(empty);
     };
 
-    ui->widget->setMinimumHeight(60);
-
-    addFixedSpace(tb1);
-    tb1.addWidget(ui->widget);
-
-
-    addFixedSpace(tb3);
-    tb3.addWidget(ui->textColorButton);
-    addFixedSpace(tb3);
-    tb3.addWidget(ui->backColorButton);
-
-    addFixedSpace(tb4);
-    tb4.addWidget(ui->addFieldButton);
-    addFixedSpace(tb4);
-    tb4.addWidget(ui->removeFieldButton);
-
-    ui->bottomWidget->hide();*/
-
-    ui->toolBar1->hide();
-    ui->toolBar2->hide();
-    ui->toolBar3->hide();
-    ui->toolBar4->hide();
-
+    auto addFixedSpace = [](QToolBar &tb){
+        QWidget* empty = new QWidget();
+        empty->setMinimumWidth(5);
+        empty->setMaximumWidth(5);
+        tb.addWidget(empty);
+    };*/
 }
 
 FontaWindow::~FontaWindow()
