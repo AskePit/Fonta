@@ -6,8 +6,6 @@
 #include <QNetworkReply>
 #include <QUrl>
 #include <QXmlStreamReader>
-#include <QEventLoop>
-#include <QObject>
 
 #ifdef FONTA_MEASURES
 #include <QElapsedTimer>
@@ -15,6 +13,32 @@
 #endif
 
 #include "fontadb.h"
+
+Sampler *Sampler::mInstance = nullptr;
+
+Sampler *Sampler::instance() {
+    if (mInstance == nullptr) {
+        mInstance = new Sampler;
+    }
+
+    return mInstance;
+}
+
+Sampler::Sampler()
+{
+    // try to fetch rss news
+    fetchNews(texts, "http://feeds.bbci.co.uk/news/world/rss.xml", "description");
+    fetchNews(textsRus, "http://tass.ru/rss/v2.xml", "title");
+
+    // filter font pair depending on users installed fonts
+    const QStringList& families = fontaDB().families();
+
+    for(const Sample& p : preSamples) {
+        if(families.contains(p.family1) && families.contains(p.family2)) {
+            samples << p;
+        }
+    }
+}
 
 const QStringList Sampler::names = {
     "Severin",
@@ -31,6 +55,9 @@ const QStringList Sampler::names = {
     "Tilda",
     "Vespa",
     "Solly",
+    "Pit",
+    "Kurt",
+    "Sharona",
 };
 
 QStringList Sampler::texts = {
@@ -152,31 +179,81 @@ const QVector<Sample> Sampler::preSamples = {
     },
 };
 
-void fetchNews(QStringList &list, const QString &url, const QString &tag)
-{
-    QNetworkAccessManager manager;
-    QNetworkReply *reply = manager.get(QNetworkRequest(url));
+struct NewsData {
+    QStringList *list;
+    const QString *tag;
 
-    QEventLoop loop;
-    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    QObject::connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), &loop, SLOT(quit()));
+    NewsData() {}
+    NewsData(QStringList *list, const QString *tag)
+        : list(list)
+        , tag(tag)
+#ifdef FONTA_MEASURES
+        , timer(new QElapsedTimer)
+#endif
+    {}
 
 #ifdef FONTA_MEASURES
-    QElapsedTimer timer;
-    timer.start();
+    QElapsedTimer *timer;
 #endif
+};
 
-    loop.exec();
-    if(reply->error() != QNetworkReply::NoError) {
-        return;
+QNetworkAccessManager *network;
+QHash<QNetworkReply *, NewsData> newsMap;
+
+void Sampler::fetchNews(QStringList &list, CStringRef url, CStringRef tag)
+{
+    if(newsMap.isEmpty()) {
+        network = new QNetworkAccessManager;
     }
 
+    QNetworkReply *reply = network->get(QNetworkRequest(url));
+
+    NewsData d(&list, &tag);
+    newsMap[reply] = d;
+
 #ifdef FONTA_MEASURES
-    qDebug() << timer.elapsed() << "ms to load news";
-    timer.start();
+    d.timer->start();
 #endif
 
+    QObject::connect(reply, SIGNAL(finished()), this, SLOT(fetchNewsSlot()));
+}
+
+void cleanupNetwork(QNetworkReply *reply)
+{
+    reply->deleteLater();
+    delete newsMap[reply].timer;
+    newsMap.remove(reply);
+    if(newsMap.isEmpty()) {
+        delete network;
+    }
+}
+
+void Sampler::fetchNewsSlot()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    NewsData &d = newsMap[reply];
+
+    if(reply->error() != QNetworkReply::NoError) {
+#ifdef FONTA_MEASURES
+        qDebug() << d.timer->elapsed() << "ms: timeout to load news";
+#endif
+        cleanupNetwork(reply);
+        return;
+    } else {
+#ifdef FONTA_MEASURES
+        qDebug() << d.timer->elapsed() << "ms to load news";
+#endif
+    }
+
+    QStringList &list = *d.list;
+    CStringRef tag = *d.tag;
+
     list.clear();
+
+#ifdef FONTA_MEASURES
+    d.timer->start();
+#endif
+
     QXmlStreamReader r(reply->readAll());
     while(r.readNextStartElement());
     while(!r.atEnd()) {
@@ -193,24 +270,10 @@ void fetchNews(QStringList &list, const QString &url, const QString &tag)
     }
 
 #ifdef FONTA_MEASURES
-    qDebug() << timer.elapsed() << "ms to process news rss-xml";
+    qDebug() << d.timer->elapsed() << "ms to process news rss-xml";
 #endif
-}
 
-void Sampler::initSamples()
-{
-    // try to fetch rss news
-    fetchNews(texts, "http://feeds.bbci.co.uk/news/world/rss.xml", "description");
-    fetchNews(textsRus, "http://tass.ru/rss/v2.xml", "title");
-
-    // filter font pair depending on users installed fonts
-    const QStringList& families = fontaDB().families();
-
-    for(const Sample& p : preSamples) {
-        if(families.contains(p.family1) && families.contains(p.family2)) {
-            samples << p;
-        }
-    }
+    cleanupNetwork(reply);
 }
 
 QVector<Sample> Sampler::samples;

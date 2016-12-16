@@ -16,11 +16,11 @@ struct Sample {
     int size2;
 };
 
-class Sampler
+class Sampler : public QObject
 {
     Q_OBJECT
 public:
-    static void initSamples();
+    static Sampler *instance();
 
     static CStringRef getName();
     static CStringRef getText();
@@ -28,8 +28,16 @@ public:
     static CStringRef getTextForFamily(CStringRef family);
     static void loadSample(FontaWorkArea& area);
 
+private slots:
+    void fetchNewsSlot();
+
 private:
     Sampler();
+    Sampler(const Sampler &) = delete;
+    void operator=(const Sampler &) = delete;
+    static Sampler *mInstance;
+
+    void fetchNews(QStringList &list, CStringRef url, CStringRef tag);
 
     static const QStringList names;
     static QStringList texts;

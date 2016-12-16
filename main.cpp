@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
     cauto args = getArgs(a);
 
-    Sampler::initSamples();
+    Sampler::instance();
     FontaWindow w(args.file);
     w.show();
 
