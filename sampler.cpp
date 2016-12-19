@@ -61,80 +61,42 @@ const QStringList Sampler::names = {
 };
 
 QStringList Sampler::texts = {
-    "The quick brown fox jumps over the lazy dog",
-    "Pack my box with five dozen liquor jugs",
-    "Jackdaws love my big sphinx of quartz",
-    "Cozy lummox gives smart squid who asks for job pen",
-    "Wafting zephyrs quickly vexed jumbo",
-    "Waltz nymph for quick jigs vex Bud",
-    "The five boxing wizards jump quickly",
-    "Mix Zapf with Veljovic and get quirky Beziers",
-    "Queen Elizabeth's proxy waved off Mick Jagger",
-    "Quick jigs for waltz vex bad nymph",
-    "Sphinx of black quartz, judge my vow",
-    "Then a cop quizzed Mick Jagger's ex-wives briefly",
-    "Sexy diva Jeniffer Lopez wasn't baking me quiche",
-    "Five big quacking zephyrs jolt my wax bed",
-    "The big plump jowls of zany Dick Nixon quiver",
-    "Mix Zapf with Veljovic and get quircky Beziers",
-    "Quickly Shortz dreams up a few vexing jumbles",
-    "Blowzy red vixens fight for a quick jump",
-    "Turgid saxophones blew over Mick's jazzy quiff",
-    "Quincy Jones vowed to fix the bleak jazz program",
-    "Quick zephyrs blow, vexing daft Jim",
-    "Brick quiz whangs jumpy veldt fox!",
-    "Mr. Jock, TV quiz Ph.D., bags few lynx.",
-    "Dumpy kibitzer jingles as exchequer overflows",
-    "Puzzled women bequeath jerks very exotic gifts",
-    "Putin backs away from Iraq zeal; Bush, vexed, jogs.",
-    "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
+    "Before 1960 95% of soft drinks sold in the U.S. are furnished in reusable bottles, but in 1960 aluminum cans are used for the first time."
+    "Ernest Hemmingway commits suicide with shotgun.",
+    "American U-2 spy plane, piloted by Francis Gary Powers, shot down over Russia",
+    "Kennedy was assassinated in Dallas, Texas, on November 22, 1963",
+
 };
 
 QStringList Sampler::textsRus = {
-    "Съешь же ещё этих мягких французских булок да выпей чаю",
-    "Аэрофотосъёмка ландшафта уже выявила земли богачей и процветающих крестьян",
-    "Южно-эфиопский грач увёл мышь за хобот на съезд ящериц",
     "Шифровальщица попросту забыла ряд ключевых множителей и тэгов",
-    "Безмозглый широковещательный цифровой передатчик сужающихся экспонент",
-    "Однажды съев фейхоа, я, как зацикленный, ностальгирую всё чаще и больше по этому чуду",
-    "Блеф разъедает ум, чаще цыгана живёшь беспокойно",
-    "Пиши: зять съел яйцо, ещё чан брюквы...",
-    "Флегматичная эта верблюдица жует у подъезда засыхающий горький шиповник",
-    "Вступив в бой с шипящими змеями — эфой и гадюкой, — маленький, цепкий, храбрый ёж съел их",
     "Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства",
-    "Подъехал шофёр на рефрижераторе грузить яйца для обучающихся элитных медиков",
     "Подъём с затонувшего эсминца легкобьющейся древнегреческой амфоры сопряжён с техническими трудностями",
-    "Мюзикл-буфф «Огнедышащий простужается ночью» (в 12345 сценах и 67890 эпизодах)",
-    "Буквопечатающей связи нужны хорошие э/магнитные реле. Дать цифры (1234567890+= .?-)",
 };
 
 const QVector<Sample> Sampler::preSamples = {
     {
-        "Georgia", 24,
-        "Verdana", 9
+        "Georgia", 22,
+        "Verdana", 11
     },
     {
         "Helvetica", 26,
         "Garamond", 12
     },
     {
-        "Bodoni MT", 28,
-        "FuturaLight", 14
+        "Bodoni MT", 24,
+        "FuturaLight", 16
     },
     {
         "Trebuchet MS", 18,
         "Verdana", 9
     },
     {
-        "Calisto MT", 28,
-        "Century Gothic", 11
+        "Century Schoolbook", 22,
+        "Century Gothic", 12
     },
     {
-        "Century Schoolbook", 30,
-        "Century Gothic", 11
-    },
-    {
-        "Franklin Gothic Demi Cond", 32,
+        "Franklin Gothic Demi Cond", 24,
         "Century Gothic", 11
     },
     {
@@ -142,40 +104,36 @@ const QVector<Sample> Sampler::preSamples = {
         "Segoe UI", 11
     },
     {
-        "Impact", 24,
+        "Franklin Gothic Demi", 20,
         "Trebuchet MS", 12
     },
     {
-        "Trebuchet MS", 26,
-        "Corbel", 13
+        "Trebuchet MS", 20,
+        "Corbel", 11
     },
     {
-        "Arial Black", 24,
+        "Arial Black", 20,
         "Arial", 11
     },
     {
-        "Impact", 26,
+        "Impact", 22,
         "Arial Narrow", 12
     },
     {
-        "Cambria", 20,
+        "Georgia", 20,
         "Calibri", 11
     },
     {
-        "Segoe UI", 26,
+        "Segoe UI", 20,
         "Arial", 11
     },
     {
-        "Terminal", 14,
-        "Terminal", 12
+        "Terminal", 16,
+        "Terminal", 16
     },
     {
-        "Clarendon", 24,
+        "Clarendon", 20,
         "Times New Roman", 12
-    },
-    {
-        "Century Gothic", 20,
-        "Arial Narrow", 12
     },
 };
 
