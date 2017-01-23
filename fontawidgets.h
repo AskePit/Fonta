@@ -34,17 +34,6 @@ public:
 
 private slots:
     void on_pushButton_clicked();
-
-private:
-    QVBoxLayout *verticalLayout;
-    QSpacerItem *verticalSpacer_3;
-    QLabel *label;
-    QSpacerItem *verticalSpacer_2;
-    QHBoxLayout *horizontalLayout;
-    QSpacerItem *horizontalSpacer;
-    QPushButton *pushButton;
-    QSpacerItem *horizontalSpacer_2;
-    QSpacerItem *verticalSpacer;
 };
 
 class WorkArea;

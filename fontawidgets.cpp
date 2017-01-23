@@ -43,41 +43,32 @@ About::About(const Version& version, QWidget *parent) :
     QDialog(parent)
 {
     resize(175, 85);
-    verticalLayout = new QVBoxLayout(this);
-    verticalSpacer_3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    verticalLayout->addItem(verticalSpacer_3);
+    auto vLayout = new QVBoxLayout(this);
+    auto vSpacer3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    vLayout->addItem(vSpacer3);
 
-    label = new QLabel(this);
+    auto label = new QLabel(this);
     label->setAlignment(Qt::AlignCenter);
+    vLayout->addWidget(label);
 
-    verticalLayout->addWidget(label);
+    auto vSpacer2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    vLayout->addItem(vSpacer2);
 
-    verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto hLayout = new QHBoxLayout();
+    auto horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    hLayout->addItem(horizontalSpacer);
 
-    verticalLayout->addItem(verticalSpacer_2);
-
-    horizontalLayout = new QHBoxLayout();
-    horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    horizontalLayout->addItem(horizontalSpacer);
-
-    pushButton = new QPushButton(this);
+    auto pushButton = new QPushButton(this);
     pushButton->setObjectName(QStringLiteral("pushButton"));
+    hLayout->addWidget(pushButton);
 
-    horizontalLayout->addWidget(pushButton);
+    auto hSpacer2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    hLayout->addItem(hSpacer2);
+    vLayout->addLayout(hLayout);
 
-    horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    horizontalLayout->addItem(horizontalSpacer_2);
-
-
-    verticalLayout->addLayout(horizontalLayout);
-
-    verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-    verticalLayout->addItem(verticalSpacer);
-
+    auto verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    vLayout->addItem(verticalSpacer);
 
     setWindowTitle(tr("About"));
     label->setText(tr("Fonta v. %1").arg(version.str));
