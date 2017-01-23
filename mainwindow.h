@@ -76,7 +76,7 @@ private slots:
     void on_styleBox_activated(const QString &arg1);
 
     void showTabsContextMenu(const QPoint &point);
-    void addTab(bool empty = false);
+    void addTab(InitType initType = InitType::Sampled);
     void closeTabPrompted(int i);
     void closeTab(int i);
     void closeOtherTabs();
@@ -111,21 +111,21 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    About* aboutDialog;
+    About* m_aboutDialog;
 
-    QVector<WorkArea*> workAreas;
-    WorkArea* currWorkArea;
-    Field* currField;
-    FilterEdit* fontFinderEdit;
+    QVector<WorkArea*> m_workAreas;
+    WorkArea* m_currWorkArea;
+    Field* m_currField;
+    FilterEdit* m_fontFinderEdit;
 
     // alignment
-    QPushButton *topLeftButton;
-    QPushButton *topCenterButton;
-    QPushButton *topRightButton;
-    QPushButton *topJustifyButton;
-    QButtonGroup* alignButtosGroup;
+    QPushButton *m_topLeftButton;
+    QPushButton *m_topCenterButton;
+    QPushButton *m_topRightButton;
+    QPushButton *m_topJustifyButton;
+    QButtonGroup* m_alignButtosGroup;
 
-    QPushButton *addTabButton;
+    QPushButton *m_addTabButton;
 
     void initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment);
 
@@ -139,7 +139,7 @@ private:
 
     void clearWorkAreas();
 
-    QString currentProjectFile;
+    QString m_currentProjectFile;
     void setCurrentProjectFile(CStringRef filename);
     void resetCurrentProjectFile();
 
@@ -150,6 +150,6 @@ private:
     void updateAddRemoveButtons();
 };
 
-}
+} // namespace fonta
 
 #endif // FONTAWINDOW_H

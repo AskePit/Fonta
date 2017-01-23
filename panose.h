@@ -3,10 +3,6 @@
 
 #include "types.h"
 
-#define enum_class(x) class x { public: enum type
-#define enum_interface };
-#define enum_end ;}
-
 namespace fonta {
 
 struct Panose {
@@ -482,7 +478,7 @@ struct Panose {
     } enum_end;
 };
 
-}
+} // namespace fonta
 
 #endif // PANOSE_H
 

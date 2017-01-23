@@ -155,6 +155,6 @@ private:
 inline DB& fontaDB() { return DB::getInstance(); }
 inline QFontDatabase& qtDB() { return fontaDB().getQtDB(); }
 
-}
+} // namespace fonta
 
 #endif // FONTADB_H

@@ -124,6 +124,6 @@ private:
     QCheckBox* monospacedBox;
 };
 
-}
+} // namespace fonta
 
 #endif // FILTERWIZARD_H

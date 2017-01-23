@@ -308,8 +308,8 @@ void Sampler::loadSample(WorkArea& area)
     int i = getPoolsValue(samplesPool, samples.length());
     Sample& sample = samples[i];
 
-    area.addField(true);
-    area.addField(true);
+    area.addField(InitType::Empty);
+    area.addField(InitType::Empty);
 
     auto &field1 = *area.m_fields[0];
     auto &field2 = *area.m_fields[1];
@@ -325,4 +325,4 @@ void Sampler::loadSample(WorkArea& area)
     field2.setFontFamily(sample.family2);
 }
 
-}
+} // namespace fonta

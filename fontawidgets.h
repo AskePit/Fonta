@@ -64,8 +64,8 @@ private slots:
     void keyPressEvent(QKeyEvent* event);
     void focusOutEvent(QFocusEvent* e) { (void)e; deleteLater(); }
 private:
-    QTabWidget* tabWidget;
-    WorkArea* workArea;
+    QTabWidget* m_tabWidget;
+    WorkArea* m_workArea;
 
     void apply();
 };
@@ -90,22 +90,22 @@ class Field : public QTextEdit
     Q_OBJECT
 
 public:
-    Field(bool empty = false, QWidget* parent = 0);
+    Field(InitType initType = InitType::Sampled, QWidget* parent = 0);
     virtual ~Field(){ }
 
-    void toogle(bool toogle) { return m_tooglePanel->toogle(toogle); }
-    QWidget* surfaceWidget() { return m_surfaceWidget; }
+    void toogle(bool toogle);
+    QWidget* surfaceWidget();
 
-    int id() const { return m_id; }
-    QString fontFamily() const { return font().family(); }
-    float fontSize() const { return font().pointSizeF(); }
-    QString fontStyle() const { return m_fontStyle; }
-    QString preferableFontStyle() const { return m_preferableFontStyle; }
-    Qt::Alignment textAlignment() const { return m_alignment; }
-    float leading() const { return m_leading; }
-    int tracking() const { return m_tracking; }
+    int id() const;
+    QString fontFamily() const;
+    float fontSize() const;
+    QString fontStyle() const;
+    QString preferableFontStyle() const;
+    Qt::Alignment textAlignment() const;
+    float leading() const;
+    int tracking() const;
 
-    void setId(int id) { m_id = id; }
+    void setId(int id);
     void setFontFamily(CStringRef family);
     void setFontSize(float size);
     void setFontStyle(CStringRef style);
@@ -113,9 +113,9 @@ public:
     void alignText(Qt::Alignment alignment);
     void setLeading(float val);
     void setTracking(int val);
-    StyleSheet& sheet() const { return m_sheet; }
-    void applySheet() { setStyleSheet(m_sheet.get()); }
-    void setSamples(CStringRef latin, CStringRef rus) { m_latinText = latin; m_rusText = rus; }
+    StyleSheet& sheet() const;
+    void applySheet();
+    void setSamples(CStringRef latin, CStringRef rus);
 
     void save(QJsonObject &json) const;
     void load(const QJsonObject &json);
@@ -161,17 +161,17 @@ public:
 
     void createSample();
 
-    int id() const { return m_id; }
-    void setId(int id) { m_id = id; }
-    CStringRef name() const { return m_name; }
-    void rename(CStringRef name) { m_name = name; }
-    Field* currField() const { return m_currField; }
-    void setCurrField(Field* field) { m_currField = field; }
+    int id() const;
+    void setId(int id);
+    CStringRef name() const;
+    void rename(CStringRef name);
+    Field* currField() const;
+    void setCurrField(Field* field);
 
-    Field* addField(bool empty = false);
+    Field* addField(InitType initType = InitType::Sampled);
     void popField();
     Field* operator[](int i);
-    int fieldCount() const { return m_fields.size(); }
+    int fieldCount() const;
     void clear();
 
     void save(QJsonObject &json) const;
@@ -234,6 +234,6 @@ protected:
     //void focusOutEvent(QFocusEvent* e){(void)e;}
 };
 
-}
+} // namespace fonta
 
 #endif // FONTAWIDGETS_H

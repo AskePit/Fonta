@@ -1018,4 +1018,4 @@ bool DB::isNotLatinOrCyrillic(CStringRef family) const
     return !ttf.latin && !ttf.cyrillic;
 }
 
-}
+} // namespace fonta

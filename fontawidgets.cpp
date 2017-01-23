@@ -97,8 +97,8 @@ void About::on_pushButton_clicked()
 
 RenameTabEdit::RenameTabEdit(QTabWidget* tabWidget, WorkArea* workArea, QWidget *parent)
     : QLineEdit(parent)
-    , tabWidget(tabWidget)
-    , workArea(workArea)
+    , m_tabWidget(tabWidget)
+    , m_workArea(workArea)
 {
     setWindowFlags(Qt::FramelessWindowHint);
 
@@ -122,8 +122,8 @@ void RenameTabEdit::keyPressEvent(QKeyEvent* event)
 void RenameTabEdit::apply()
 {
     QString txt = text();
-    workArea->rename(txt);
-    tabWidget->setTabText(workArea->id(), txt);
+    m_workArea->rename(txt);
+    m_tabWidget->setTabText(m_workArea->id(), txt);
     emit applied();
     deleteLater();
 }
@@ -155,7 +155,7 @@ void TooglePanel::paintEvent(QPaintEvent *pe)
 
 constexpr bool Field::showBorders;
 
-Field::Field(bool empty, QWidget* parent)
+Field::Field(InitType initType, QWidget* parent)
     : QTextEdit(parent)
     , m_fontStyle("Normal")
     , m_preferableFontStyle("Normal")
@@ -171,7 +171,7 @@ Field::Field(bool empty, QWidget* parent)
     setLeading(m_leading);
     alignText(Qt::AlignLeft);
 
-    if(!empty) {
+    if(initType == InitType::Sampled) {
         setSamples(Sampler::getText(), Sampler::getRusText());
         setFontSize(10);
         setFontFamily("Arial");
@@ -197,6 +197,69 @@ Field::Field(bool empty, QWidget* parent)
     m_surfaceLayout->addWidget(this);
 }
 
+void Field::toogle(bool toogle) { return m_tooglePanel->toogle(toogle); }
+QWidget* Field::surfaceWidget() { return m_surfaceWidget; }
+
+int Field::id() const
+{
+    return m_id;
+}
+
+QString Field::fontFamily() const
+{
+    return font().family();
+}
+
+float Field::fontSize() const
+{
+    return font().pointSizeF();
+}
+
+QString Field::fontStyle() const
+{
+    return m_fontStyle;
+}
+
+QString Field::preferableFontStyle() const
+{
+    return m_preferableFontStyle;
+}
+
+Qt::Alignment Field::textAlignment() const
+{
+    return m_alignment;
+}
+
+float Field::leading() const
+{
+    return m_leading;
+}
+
+int Field::tracking() const
+{
+    return m_tracking;
+}
+
+void Field::setId(int id)
+{
+    m_id = id;
+}
+
+StyleSheet& Field::sheet() const
+{
+    return m_sheet;
+}
+
+void Field::applySheet()
+{
+    setStyleSheet(m_sheet.get());
+}
+
+void Field::setSamples(CStringRef latin, CStringRef rus)
+{
+    m_latinText = latin;
+    m_rusText = rus;
+}
 
 void Field::focusInEvent(QFocusEvent* e)
 {
@@ -395,9 +458,39 @@ WorkArea::~WorkArea()
     clear();
 }
 
-Field* WorkArea::addField(bool empty)
+int WorkArea::id() const
+{
+    return m_id;
+}
+
+void WorkArea::setId(int id)
+{
+    m_id = id;
+}
+
+CStringRef WorkArea::name() const
+{
+    return m_name;
+}
+
+void WorkArea::rename(CStringRef name)
+{
+    m_name = name;
+}
+
+Field* WorkArea::currField() const
+{
+    return m_currField;
+}
+
+void WorkArea::setCurrField(Field* field)
+{
+    m_currField = field;
+}
+
+Field* WorkArea::addField(InitType initType)
 {    
-    Field* field = new Field(empty, this);
+    Field* field = new Field(initType, this);
 
     int id = m_fields.length();
 
@@ -420,6 +513,11 @@ void WorkArea::popField()
 Field* WorkArea::operator[](int i)
 {
     return m_fields.at(i);
+}
+
+int WorkArea::fieldCount() const
+{
+    return m_fields.size();
 }
 
 void WorkArea::clear()
@@ -625,4 +723,4 @@ void ComboBoxLineEdit::mousePressEvent(QMouseEvent* e)
     selectAll();
 }
 
-}
+} // namespace fonta

@@ -54,6 +54,6 @@ private:
     static QSet<int> samplesPool;
 };
 
-}
+} // namespace fonta
 
 #endif // SAMPLER_H

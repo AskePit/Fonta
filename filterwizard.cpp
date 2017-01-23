@@ -555,4 +555,4 @@ int FinishPage::nextId() const
     return -1;
 }
 
-}
+} // namespace fonta
