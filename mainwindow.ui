@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FontaWindow</class>
- <widget class="QMainWindow" name="FontaWindow">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -148,7 +148,7 @@
                <cstring>sizeBox</cstring>
               </property>
              </widget>
-             <widget class="FontaComboBox" name="sizeBox">
+             <widget class="fonta::ComboBox" name="sizeBox">
               <property name="geometry">
                <rect>
                 <x>30</x>
@@ -292,7 +292,7 @@
                <cstring>sizeBox</cstring>
               </property>
              </widget>
-             <widget class="FontaComboBox" name="leadingBox">
+             <widget class="fonta::ComboBox" name="leadingBox">
               <property name="geometry">
                <rect>
                 <x>188</x>
@@ -412,7 +412,7 @@
                <cstring>sizeBox</cstring>
               </property>
              </widget>
-             <widget class="FontaComboBox" name="trackingBox">
+             <widget class="fonta::ComboBox" name="trackingBox">
               <property name="geometry">
                <rect>
                 <x>188</x>
@@ -1115,7 +1115,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>FontaComboBox</class>
+   <class>fonta::ComboBox</class>
    <extends>QComboBox</extends>
    <header>fontawidgets.h</header>
   </customwidget>

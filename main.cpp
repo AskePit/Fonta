@@ -1,4 +1,4 @@
-#include "fontawindow.h"
+#include "mainwindow.h"
 #include <QApplication>
 #include <QStyleFactory>
 #include <QCommandLineParser>
@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
 
     cauto args = getArgs(a);
 
-    Sampler::instance();
-    FontaWindow w(args.file);
+    fonta::Sampler::instance();
+    fonta::MainWindow w(args.file);
     w.show();
 
     return a.exec();

@@ -1,5 +1,5 @@
-#include "fontawindow.h"
-#include "ui_fontawindow.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 #include "fontawidgets.h"
 #include "sampler.h"
@@ -17,23 +17,25 @@
 
 #include <QDebug>
 
-const Version FontaWindow::versionNumber = Version(0, 5, 2);
+namespace fonta {
 
-FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
+const Version MainWindow::versionNumber = Version(0, 5, 2);
+
+MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::FontaWindow)
+    , ui(new Ui::MainWindow)
     , aboutDialog(NULL)
     , currentProjectFile("")
 {
     ui->setupUi(this);
 
     ui->fontsList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->fontsList, &QListWidget::customContextMenuRequested, this, &FontaWindow::showFontListContextMenu);
+    connect(ui->fontsList, &QListWidget::customContextMenuRequested, this, &MainWindow::showFontListContextMenu);
 
     cauto boxEditSig = &QLineEdit::returnPressed;
-    connect(ui->sizeBox->lineEdit(), boxEditSig, this, &FontaWindow::on_sizeBox_edited);
-    connect(ui->leadingBox->lineEdit(), boxEditSig, this, &FontaWindow::on_leadingBox_edited);
-    connect(ui->trackingBox->lineEdit(), boxEditSig, this, &FontaWindow::on_trackingBox_edited);
+    connect(ui->sizeBox->lineEdit(), boxEditSig, this, &MainWindow::on_sizeBox_edited);
+    connect(ui->leadingBox->lineEdit(), boxEditSig, this, &MainWindow::on_leadingBox_edited);
+    connect(ui->trackingBox->lineEdit(), boxEditSig, this, &MainWindow::on_trackingBox_edited);
 
     alignButtosGroup = new QButtonGroup(this);
     initAlignButton(topLeftButton, ":/pic/left.png", Qt::AlignLeft);
@@ -47,7 +49,7 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     }
     ui->filterBox->addItems(filterItems);
 
-    fontFinderEdit = new FontaFilterEdit(ui->fontsList, ui->fontsListLayoutWidget);
+    fontFinderEdit = new FilterEdit(ui->fontsList, ui->fontsListLayoutWidget);
     fontFinderEdit->setObjectName(QStringLiteral("fontFinderEdit"));
     ui->fontsListLayout->insertWidget(1, fontFinderEdit);
 
@@ -59,14 +61,14 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
                        "QTabBar::close-button { image: url(:/pic/closeTab.png); }"
                        "QTabBar::close-button:hover { image: url(:/pic/closeTabHover.png); }"
     );
-    connect(tabs, &QTabWidget::tabCloseRequested, this, &FontaWindow::closeTabPrompted);
-    connect(bar, &QTabBar::tabBarDoubleClicked, this, &FontaWindow::renameTab);
-    connect(bar, &QTabBar::tabMoved, this, &FontaWindow::onTabsMove);
-    connect(bar, &QTabBar::customContextMenuRequested, this, &FontaWindow::showTabsContextMenu);
+    connect(tabs, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTabPrompted);
+    connect(bar, &QTabBar::tabBarDoubleClicked, this, &MainWindow::renameTab);
+    connect(bar, &QTabBar::tabMoved, this, &MainWindow::onTabsMove);
+    connect(bar, &QTabBar::customContextMenuRequested, this, &MainWindow::showTabsContextMenu);
 
     addTabButton = new QPushButton(bar);
-    connect(addTabButton, &QPushButton::clicked, this, &FontaWindow::addTab);
-    connect(addTabButton, &QPushButton::clicked, this, &FontaWindow::changeAddTabButtonGeometry);
+    connect(addTabButton, &QPushButton::clicked, this, &MainWindow::addTab);
+    connect(addTabButton, &QPushButton::clicked, this, &MainWindow::changeAddTabButtonGeometry);
 
     if(fileToOpen.isEmpty()) {
         addTab();
@@ -90,19 +92,19 @@ FontaWindow::FontaWindow(CStringRef fileToOpen, QWidget *parent)
     };*/
 }
 
-FontaWindow::~FontaWindow()
+MainWindow::~MainWindow()
 {
     saveGeometry();
     delete ui;
 }
 
-void FontaWindow::resizeEvent(QResizeEvent* event)
+void MainWindow::resizeEvent(QResizeEvent* event)
 {
     QMainWindow::resizeEvent(event);
     changeAddTabButtonGeometry();
 }
 
-void FontaWindow::saveGeometry()
+void MainWindow::saveGeometry()
 {
     QSettings settings("PitM", "Fonta");
 
@@ -116,7 +118,7 @@ void FontaWindow::saveGeometry()
     settings.endGroup();
 }
 
-void FontaWindow::loadGeometry()
+void MainWindow::loadGeometry()
 {
     QSettings settings("PitM", "Fonta");
 
@@ -141,7 +143,7 @@ void FontaWindow::loadGeometry()
     settings.endGroup();
 }
 
-void FontaWindow::initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment)
+void MainWindow::initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment)
 {
     const int size = 30;
     static int pos = 2; // button position in layout
@@ -163,7 +165,7 @@ void FontaWindow::initAlignButton(QPushButton*& button, CStringRef iconPath, Qt:
     });
 }
 
-void FontaWindow::changeAddTabButtonGeometry()
+void MainWindow::changeAddTabButtonGeometry()
 {
     QRect r = ui->tabWidget->tabBar()->tabRect(workAreas.length()-1);
     const int padding = 2;
@@ -171,14 +173,14 @@ void FontaWindow::changeAddTabButtonGeometry()
     addTabButton->setGeometry(r.x() + r.width() + padding, padding, sz, sz);
 }
 
-void FontaWindow::onTabsMove(int from, int to)
+void MainWindow::onTabsMove(int from, int to)
 {
-    FontaWorkArea* toMove = workAreas.at(from);
+    WorkArea* toMove = workAreas.at(from);
     workAreas.removeAt(from);
     workAreas.insert(to, toMove);
 }
 
-void FontaWindow::showFontListContextMenu(const QPoint &point)
+void MainWindow::showFontListContextMenu(const QPoint &point)
 {
     if (point.isNull()) {
         return;
@@ -195,7 +197,7 @@ void FontaWindow::showFontListContextMenu(const QPoint &point)
     menu.exec(ui->fontsList->mapToGlobal(point));
 }
 
-void FontaWindow::showTabsContextMenu(const QPoint &point)
+void MainWindow::showTabsContextMenu(const QPoint &point)
 {
     if (point.isNull()) {
         return;
@@ -212,14 +214,14 @@ void FontaWindow::showTabsContextMenu(const QPoint &point)
     QMenu menu(this);
 
     QAction remove(tr("Close Other Tabs"), this);
-    connect(&remove, &QAction::triggered, this, &FontaWindow::closeOtherTabs);
-    connect(&remove, &QAction::triggered, this, &FontaWindow::changeAddTabButtonGeometry);
+    connect(&remove, &QAction::triggered, this, &MainWindow::closeOtherTabs);
+    connect(&remove, &QAction::triggered, this, &MainWindow::changeAddTabButtonGeometry);
     menu.addAction(&remove);
 
     menu.exec(ui->tabWidget->tabBar()->mapToGlobal(point));
 }
 
-void FontaWindow::uninstallFont(const QString &fontName)
+void MainWindow::uninstallFont(const QString &fontName)
 {
     cauto linked = fontaDB().linkedFonts(fontName);
 
@@ -237,7 +239,7 @@ void FontaWindow::uninstallFont(const QString &fontName)
     }
 }
 
-void FontaWindow::addTab(bool empty)
+void MainWindow::addTab(bool empty)
 {
     int id = workAreas.length();
 
@@ -245,7 +247,7 @@ void FontaWindow::addTab(bool empty)
     QVBoxLayout* horizontalLayout = new QVBoxLayout(tab);
     horizontalLayout->setSpacing(0);
     horizontalLayout->setContentsMargins(0, 0, 0, 0);
-    currWorkArea = new FontaWorkArea(id, tab, Sampler::getName());
+    currWorkArea = new WorkArea(id, tab, Sampler::getName());
 
     if(!empty) {
         currWorkArea->createSample();
@@ -285,7 +287,7 @@ void FontaWindow::addTab(bool empty)
     }
 }
 
-void FontaWindow::closeTabPrompted(int i)
+void MainWindow::closeTabPrompted(int i)
 {
     int ret = callQuestionDialog(tr("Delete %1 tab.\nSure?").arg(workAreas[i]->name()));
 
@@ -296,7 +298,7 @@ void FontaWindow::closeTabPrompted(int i)
     changeAddTabButtonGeometry();
 }
 
-void FontaWindow::closeTab(int id)
+void MainWindow::closeTab(int id)
 {
     delete workAreas[id];
     workAreas.removeAt(id);
@@ -319,7 +321,7 @@ void FontaWindow::closeTab(int id)
     }
 }
 
-void FontaWindow::closeOtherTabs()
+void MainWindow::closeOtherTabs()
 {
     int ret = callQuestionDialog(tr("Delete all tabs except %1\nSure?").arg(currWorkArea->name()));
 
@@ -327,7 +329,7 @@ void FontaWindow::closeOtherTabs()
         return;
     }
 
-    FontaWorkArea* onlyArea = currWorkArea;
+    WorkArea* onlyArea = currWorkArea;
 
     for(int i = 0; i<workAreas.size(); ++i) {
         if(workAreas[i] != onlyArea) {
@@ -339,27 +341,27 @@ void FontaWindow::closeOtherTabs()
     changeAddTabButtonGeometry();
 }
 
-void FontaWindow::renameTab(int id)
+void MainWindow::renameTab(int id)
 {
     RenameTabEdit* edit = new RenameTabEdit(ui->tabWidget, workAreas[id], ui->tabWidget->tabBar());
-    connect(edit, &RenameTabEdit::applied, this, &FontaWindow::changeAddTabButtonGeometry);
+    connect(edit, &RenameTabEdit::applied, this, &MainWindow::changeAddTabButtonGeometry);
     edit->show();
 }
 
-void FontaWindow::makeFieldConnected(FontaField* field) {
-    connect(field, &FontaField::focussed, this, &FontaWindow::on_currentFieldChanged);
+void MainWindow::makeFieldConnected(Field* field) {
+    connect(field, &Field::focussed, this, &MainWindow::on_currentFieldChanged);
 }
 
-void FontaWindow::makeFieldsConnected() {
+void MainWindow::makeFieldsConnected() {
     for(int i = 0; i<currWorkArea->fieldCount(); ++i) {
-        FontaField* field = (*currWorkArea)[i];
+        Field* field = (*currWorkArea)[i];
         makeFieldConnected(field);
     }
 }
 
-void FontaWindow::on_addFieldButton_clicked()
+void MainWindow::on_addFieldButton_clicked()
 {
-    FontaField* field = currWorkArea->addField();
+    Field* field = currWorkArea->addField();
     field->setFontFamily("Arial");
 
     makeFieldConnected(field);
@@ -367,7 +369,7 @@ void FontaWindow::on_addFieldButton_clicked()
     updateAddRemoveButtons();
 }
 
-void FontaWindow::on_removeFieldButton_clicked()
+void MainWindow::on_removeFieldButton_clicked()
 {
     int count = currWorkArea->fieldCount();
     if(currField->id() == count-1) {
@@ -378,7 +380,7 @@ void FontaWindow::on_removeFieldButton_clicked()
     updateAddRemoveButtons();
 }
 
-void FontaWindow::on_currentFieldChanged(FontaField* field)
+void MainWindow::on_currentFieldChanged(Field* field)
 {
     currField = field;
     CStringRef family = currField->fontFamily();
@@ -420,7 +422,7 @@ void FontaWindow::on_currentFieldChanged(FontaField* field)
     }
 }
 
-void FontaWindow::on_fontsList_currentTextChanged(const QString &family)
+void MainWindow::on_fontsList_currentTextChanged(const QString &family)
 {
     /*if(family.isEmpty()) {
         return;
@@ -435,18 +437,18 @@ void FontaWindow::on_fontsList_currentTextChanged(const QString &family)
     ui->styleBox->setCurrentText(currField->fontStyle());
 }
 
-void FontaWindow::on_sizeBox_edited()
+void MainWindow::on_sizeBox_edited()
 {
     on_sizeBox_activated(ui->sizeBox->lineEdit()->text());
 }
 
-void FontaWindow::on_sizeBox_activated(const QString &arg1)
+void MainWindow::on_sizeBox_activated(const QString &arg1)
 {
     float val = strtof(arg1.toStdString().c_str(), nullptr);
     currField->setFontSize(val);
 }
 
-void FontaWindow::on_filterBox_currentIndexChanged(int index)
+void MainWindow::on_filterBox_currentIndexChanged(int index)
 {
     if(ui->filterBox->currentText() == "Custom") {
         return;
@@ -459,17 +461,17 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
 
     ui->fontsList->clear();
 
-    bool (FontaDB::*goodFont)(CStringRef) const;
+    bool (DB::*goodFont)(CStringRef) const;
     switch(index) {
         default:
-        case FilterMode::ALL:        goodFont = &FontaDB::isAnyFont; break;
-        case FilterMode::CYRILLIC:   goodFont = &FontaDB::isCyrillic; break;
-        case FilterMode::SERIF:      goodFont = &FontaDB::isSerif; break;
-        case FilterMode::SANS_SERIF: goodFont = &FontaDB::isSansSerif; break;
-        case FilterMode::MONOSPACE:  goodFont = &FontaDB::isMonospaced; break;
-        case FilterMode::SCRIPT:     goodFont = &FontaDB::isScript; break;
-        case FilterMode::DECORATIVE: goodFont = &FontaDB::isDecorative; break;
-        case FilterMode::SYMBOLIC:   goodFont = &FontaDB::isSymbolic; break;
+        case FilterMode::ALL:        goodFont = &DB::isAnyFont; break;
+        case FilterMode::CYRILLIC:   goodFont = &DB::isCyrillic; break;
+        case FilterMode::SERIF:      goodFont = &DB::isSerif; break;
+        case FilterMode::SANS_SERIF: goodFont = &DB::isSansSerif; break;
+        case FilterMode::MONOSPACE:  goodFont = &DB::isMonospaced; break;
+        case FilterMode::SCRIPT:     goodFont = &DB::isScript; break;
+        case FilterMode::DECORATIVE: goodFont = &DB::isDecorative; break;
+        case FilterMode::SYMBOLIC:   goodFont = &DB::isSymbolic; break;
     }
 
     for (CStringRef family : fontaDB().families()) {
@@ -517,17 +519,17 @@ void FontaWindow::on_filterBox_currentIndexChanged(int index)
     }
 }
 
-void FontaWindow::on_styleBox_activated(CStringRef style)
+void MainWindow::on_styleBox_activated(CStringRef style)
 {
     currField->setPreferableFontStyle(style);
 }
 
-void FontaWindow::on_leadingBox_edited()
+void MainWindow::on_leadingBox_edited()
 {
     on_leadingBox_activated(ui->leadingBox->lineEdit()->text());
 }
 
-void FontaWindow::on_leadingBox_activated(CStringRef arg1)
+void MainWindow::on_leadingBox_activated(CStringRef arg1)
 {
     float val = inf();
     if(arg1 != "Auto") {
@@ -537,18 +539,18 @@ void FontaWindow::on_leadingBox_activated(CStringRef arg1)
     currField->setLeading(val);
 }
 
-void FontaWindow::on_trackingBox_edited()
+void MainWindow::on_trackingBox_edited()
 {
     on_trackingBox_activated(ui->trackingBox->lineEdit()->text());
 }
 
-void FontaWindow::on_trackingBox_activated(CStringRef arg1)
+void MainWindow::on_trackingBox_activated(CStringRef arg1)
 {
     int val = strtol(arg1.toStdString().c_str(), nullptr, 10);
     currField->setTracking(val);
 }
 
-void FontaWindow::save(CStringRef fileName) const
+void MainWindow::save(CStringRef fileName) const
 {
     QJsonObject json;
 
@@ -579,7 +581,7 @@ void FontaWindow::save(CStringRef fileName) const
     saveFile.write(saveDoc.toJson());
 }
 
-void FontaWindow::on_actionSave_as_triggered()
+void MainWindow::on_actionSave_as_triggered()
 {
     QSettings fontaReg("PitM", "Fonta");
     QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
@@ -596,7 +598,7 @@ void FontaWindow::on_actionSave_as_triggered()
     }
 }
 
-void FontaWindow::load(CStringRef fileName)
+void MainWindow::load(CStringRef fileName)
 {
     QFile loadFile(fileName);
 
@@ -627,7 +629,7 @@ void FontaWindow::load(CStringRef fileName)
     currField->setFocus();
 }
 
-void FontaWindow::openFile(CStringRef filename)
+void MainWindow::openFile(CStringRef filename)
 {
     load(filename);
     setCurrentProjectFile(filename);
@@ -637,7 +639,7 @@ void FontaWindow::openFile(CStringRef filename)
     fontaReg.setValue("OpenSaveFilePath", info.filePath());
 }
 
-void FontaWindow::on_actionOpen_triggered()
+void MainWindow::on_actionOpen_triggered()
 {
     QSettings fontaReg("PitM", "Fonta");
     QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
@@ -650,7 +652,7 @@ void FontaWindow::on_actionOpen_triggered()
     }
 }
 
-void FontaWindow::on_actionSave_triggered()
+void MainWindow::on_actionSave_triggered()
 {
     if(currentProjectFile.isEmpty()) {
         on_actionSave_as_triggered();
@@ -659,20 +661,20 @@ void FontaWindow::on_actionSave_triggered()
     }
 }
 
-void FontaWindow::setCurrentProjectFile(CStringRef filename)
+void MainWindow::setCurrentProjectFile(CStringRef filename)
 {
     currentProjectFile = filename;
     QFileInfo fileInfo(filename);
     setWindowTitle(tr("Fonta - %1").arg(fileInfo.fileName()));
 }
 
-void FontaWindow::resetCurrentProjectFile()
+void MainWindow::resetCurrentProjectFile()
 {
     currentProjectFile.clear();
     setWindowTitle(tr("Fonta"));
 }
 
-void FontaWindow::clearWorkAreas()
+void MainWindow::clearWorkAreas()
 {
     int prevSize = workAreas.size();
     for(int i = 0; i<prevSize; ++i) {
@@ -683,20 +685,20 @@ void FontaWindow::clearWorkAreas()
     ui->tabWidget->clear();
 }
 
-void FontaWindow::on_actionNew_triggered()
+void MainWindow::on_actionNew_triggered()
 {
     resetCurrentProjectFile();
     clearWorkAreas();
     addTab();
 }
 
-void FontaWindow::updateAddRemoveButtons()
+void MainWindow::updateAddRemoveButtons()
 {
     ui->addFieldButton->setEnabled(currWorkArea->fieldCount() < 9);
     ui->removeFieldButton->setEnabled(currWorkArea->fieldCount() > 1);
 }
 
-void FontaWindow::setCurrWorkArea(int id)
+void MainWindow::setCurrWorkArea(int id)
 {
     if(workAreas.isEmpty()) {
         return;
@@ -709,7 +711,7 @@ void FontaWindow::setCurrWorkArea(int id)
     }
 }
 
-void FontaWindow::on_tabWidget_currentChanged(int index)
+void MainWindow::on_tabWidget_currentChanged(int index)
 {
     if(index == -1) {
         return;
@@ -720,7 +722,7 @@ void FontaWindow::on_tabWidget_currentChanged(int index)
 }
 
 
-void FontaWindow::on_actionAbout_triggered()
+void MainWindow::on_actionAbout_triggered()
 {
     if(aboutDialog == NULL) {
         aboutDialog = new About(versionNumber, this);
@@ -728,13 +730,13 @@ void FontaWindow::on_actionAbout_triggered()
     aboutDialog->show();
 }
 
-void FontaWindow::on_filterWizardButton_clicked()
+void MainWindow::on_filterWizardButton_clicked()
 {
     FilterWizard* w = new FilterWizard(this);
     w->exec();
 }
 
-void FontaWindow::filterFontList(const QStringList& l)
+void MainWindow::filterFontList(const QStringList& l)
 {
     ui->fontsList->clear();
     ui->fontsList->addItems(l);
@@ -742,7 +744,7 @@ void FontaWindow::filterFontList(const QStringList& l)
     ui->filterBox->setCurrentText("Custom");
 }
 
-void FontaWindow::on_backColorButton_clicked()
+void MainWindow::on_backColorButton_clicked()
 {
     QColor c = QColorDialog::getColor(currField->sheet()["background-color"], this);
 
@@ -752,7 +754,7 @@ void FontaWindow::on_backColorButton_clicked()
     }
 }
 
-void FontaWindow::on_textColorButton_clicked()
+void MainWindow::on_textColorButton_clicked()
 {
     QColor c = QColorDialog::getColor(currField->sheet()["color"], this);
 
@@ -762,26 +764,26 @@ void FontaWindow::on_textColorButton_clicked()
     }
 }
 
-void FontaWindow::on_actionNew_Tab_triggered()
+void MainWindow::on_actionNew_Tab_triggered()
 {
     addTab();
 }
 
-void FontaWindow::on_actionClose_Tab_triggered()
+void MainWindow::on_actionClose_Tab_triggered()
 {
     if(workAreas.count() > 1) {
         closeTabPrompted(currWorkArea->id());
     }
 }
 
-void FontaWindow::on_actionClose_other_Tabs_triggered()
+void MainWindow::on_actionClose_other_Tabs_triggered()
 {
     if(workAreas.count() > 1) {
         closeOtherTabs();
     }
 }
 
-void FontaWindow::on_actionNext_Tab_triggered()
+void MainWindow::on_actionNext_Tab_triggered()
 {
     int id = currWorkArea->id();
     if(id != workAreas.count()-1) {
@@ -794,7 +796,7 @@ void FontaWindow::on_actionNext_Tab_triggered()
     ui->tabWidget->setCurrentIndex(id);
 }
 
-void FontaWindow::on_actionFonts_Cleaner_triggered()
+void MainWindow::on_actionFonts_Cleaner_triggered()
 {
     /*int ret = callQuestionDialog(tr("Do you want to uninstall all non-latin and non-cyrillic fonts?\nSymbolic fonts won't be removed."));
 
@@ -841,4 +843,6 @@ void FontaWindow::on_actionFonts_Cleaner_triggered()
         callInfoDialog(tr("There is no fonts to uninstall!"));
     }
     */
+}
+
 }

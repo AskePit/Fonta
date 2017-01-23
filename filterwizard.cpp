@@ -1,7 +1,7 @@
 #include "filterwizard.h"
 
 #include "fontadb.h"
-#include "fontawindow.h"
+#include "mainwindow.h"
 
 #include <QCheckBox>
 #include <QPushButton>
@@ -12,6 +12,8 @@
 #include <QGridLayout>
 #include <QVariant>
 #include <QRect>
+
+namespace fonta {
 
 FilterWizard::FilterWizard(QWidget *parent)
     : QWizard(parent)
@@ -28,7 +30,7 @@ FilterWizard::FilterWizard(QWidget *parent)
 
     setWindowTitle(tr("Filter Wizard"));
 
-    QRect parentG = dynamic_cast<FontaWindow*>(parent)->geometry();
+    QRect parentG = dynamic_cast<MainWindow*>(parent)->geometry();
     int wid = 423;
     int hei = 400;//364;
     QRect g(parentG.x() + (parentG.width()-wid)/2, parentG.y() + 50, wid, hei);
@@ -95,7 +97,7 @@ void FilterWizard::accept()
         normal = rounded = flarred = true;
     }
 
-    FontaDB& db = fontaDB();
+    DB& db = fontaDB();
 
     QStringList l;
     for (CStringRef f : db.families()) {
@@ -177,7 +179,7 @@ void FilterWizard::accept()
         }
     }
 
-    dynamic_cast<FontaWindow*>(parent())->filterFontList(l);
+    dynamic_cast<MainWindow*>(parent())->filterFontList(l);
     QDialog::accept();
 }
 
@@ -553,3 +555,4 @@ int FinishPage::nextId() const
     return -1;
 }
 
+}

@@ -7,14 +7,17 @@
 #include "types.h"
 
 namespace Ui {
-class FontaWindow;
+class MainWindow;
 }
 
 class QPushButton;
 class QButtonGroup;
-class FontaWorkArea;
-class FontaField;
-class FontaFilterEdit;
+
+namespace fonta {
+
+class WorkArea;
+class Field;
+class FilterEdit;
 class About;
 
 enum_class (FilterMode) {
@@ -45,13 +48,13 @@ enum_class (FilterMode) {
     }
 };
 
-class FontaWindow : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit FontaWindow(CStringRef fileToOpen = QString(), QWidget *parent = 0);
-    ~FontaWindow();
+    explicit MainWindow(CStringRef fileToOpen = QString(), QWidget *parent = 0);
+    ~MainWindow();
 
     static const Version versionNumber;
 
@@ -61,7 +64,7 @@ private slots:
     void on_fontsList_currentTextChanged(const QString &currentText);
     void on_addFieldButton_clicked();
     void on_removeFieldButton_clicked();
-    void on_currentFieldChanged(FontaField* textEdit);
+    void on_currentFieldChanged(Field* textEdit);
 
     void on_sizeBox_edited();
     void on_sizeBox_activated(const QString &arg1);
@@ -107,13 +110,13 @@ protected:
     void resizeEvent(QResizeEvent* event);
 
 private:
-    Ui::FontaWindow *ui;
+    Ui::MainWindow *ui;
     About* aboutDialog;
 
-    QVector<FontaWorkArea*> workAreas;
-    FontaWorkArea* currWorkArea;
-    FontaField* currField;
-    FontaFilterEdit* fontFinderEdit;
+    QVector<WorkArea*> workAreas;
+    WorkArea* currWorkArea;
+    Field* currField;
+    FilterEdit* fontFinderEdit;
 
     // alignment
     QPushButton *topLeftButton;
@@ -140,11 +143,13 @@ private:
     void setCurrentProjectFile(CStringRef filename);
     void resetCurrentProjectFile();
 
-    void makeFieldConnected(FontaField* textEdit);
+    void makeFieldConnected(Field* textEdit);
     void makeFieldsConnected();
 
     void setCurrWorkArea(int id);
     void updateAddRemoveButtons();
 };
+
+}
 
 #endif // FONTAWINDOW_H

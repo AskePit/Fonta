@@ -7,6 +7,8 @@
 #define enum_interface };
 #define enum_end ;}
 
+namespace fonta {
+
 struct Panose {
     u8 Family;
     u8 SerifStyle;
@@ -479,6 +481,8 @@ struct Panose {
         VERY_NARROW
     } enum_end;
 };
+
+}
 
 #endif // PANOSE_H
 
