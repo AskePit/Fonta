@@ -811,24 +811,32 @@ void MainWindow::on_actionFonts_Cleaner_triggered()
     */
 }
 
-void MainWindow::on_alignLeftButton_clicked()
+void MainWindow::on_alignLeftButton_toggled(bool enabled)
 {
-    m_currField->alignText(Qt::AlignLeft);
+    if(enabled) {
+        m_currField->alignText(Qt::AlignLeft);
+    }
 }
 
-void MainWindow::on_alignCenterButton_clicked()
+void MainWindow::on_alignCenterButton_toggled(bool enabled)
 {
-    m_currField->alignText(Qt::AlignHCenter);
+    if(enabled) {
+        m_currField->alignText(Qt::AlignHCenter);
+    }
 }
 
-void MainWindow::on_alignRightButton_clicked()
+void MainWindow::on_alignRightButton_toggled(bool enabled)
 {
-    m_currField->alignText(Qt::AlignRight);
+    if(enabled) {
+        m_currField->alignText(Qt::AlignRight);
+    }
 }
 
-void MainWindow::on_alignJustifyButton_clicked()
+void MainWindow::on_alignJustifyButton_toggled(bool enabled)
 {
-    m_currField->alignText(Qt::AlignJustify);
+    if(enabled) {
+        m_currField->alignText(Qt::AlignJustify);
+    }
 }
 
 } // namespace fonta
