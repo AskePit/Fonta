@@ -7,14 +7,17 @@
 #include "types.h"
 
 namespace Ui {
-class FontaWindow;
+class MainWindow;
 }
 
 class QPushButton;
 class QButtonGroup;
-class FontaWorkArea;
-class FontaField;
-class FontaFilterEdit;
+
+namespace fonta {
+
+class WorkArea;
+class Field;
+class FilterEdit;
 class About;
 
 enum_class (FilterMode) {
@@ -45,13 +48,13 @@ enum_class (FilterMode) {
     }
 };
 
-class FontaWindow : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit FontaWindow(CStringRef fileToOpen = QString(), QWidget *parent = 0);
-    ~FontaWindow();
+    explicit MainWindow(CStringRef fileToOpen = QString(), QWidget *parent = 0);
+    ~MainWindow();
 
     static const Version versionNumber;
 
@@ -61,7 +64,7 @@ private slots:
     void on_fontsList_currentTextChanged(const QString &currentText);
     void on_addFieldButton_clicked();
     void on_removeFieldButton_clicked();
-    void on_currentFieldChanged(FontaField* textEdit);
+    void on_currentFieldChanged(Field* textEdit);
 
     void on_sizeBox_edited();
     void on_sizeBox_activated(const QString &arg1);
@@ -73,7 +76,7 @@ private slots:
     void on_styleBox_activated(const QString &arg1);
 
     void showTabsContextMenu(const QPoint &point);
-    void addTab(bool empty = false);
+    void addTab(InitType initType = InitType::Sampled);
     void closeTabPrompted(int i);
     void closeTab(int i);
     void closeOtherTabs();
@@ -103,28 +106,23 @@ private slots:
 
     void on_actionFonts_Cleaner_triggered();
 
+    void on_alignLeftButton_toggled();
+    void on_alignCenterButton_toggled();
+    void on_alignRightButton_toggled();
+    void on_alignJustifyButton_toggled();
+
 protected:
     void resizeEvent(QResizeEvent* event);
 
 private:
-    Ui::FontaWindow *ui;
-    About* aboutDialog;
+    Ui::MainWindow *ui;
+    About* m_aboutDialog;
 
-    QVector<FontaWorkArea*> workAreas;
-    FontaWorkArea* currWorkArea;
-    FontaField* currField;
-    FontaFilterEdit* fontFinderEdit;
+    QVector<WorkArea*> m_workAreas;
+    WorkArea* m_currWorkArea;
+    Field* m_currField;
 
-    // alignment
-    QPushButton *topLeftButton;
-    QPushButton *topCenterButton;
-    QPushButton *topRightButton;
-    QPushButton *topJustifyButton;
-    QButtonGroup* alignButtosGroup;
-
-    QPushButton *addTabButton;
-
-    void initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment);
+    QPushButton *m_addTabButton;
 
     void saveGeometry();
     void loadGeometry();
@@ -136,15 +134,17 @@ private:
 
     void clearWorkAreas();
 
-    QString currentProjectFile;
-    void setCurrentProjectFile(CStringRef filename);
-    void resetCurrentProjectFile();
+    QString m_currFile;
+    void setCurrFile(CStringRef filename);
+    void resetCurrFile();
 
-    void makeFieldConnected(FontaField* textEdit);
+    void makeFieldConnected(Field* textEdit);
     void makeFieldsConnected();
 
     void setCurrWorkArea(int id);
     void updateAddRemoveButtons();
 };
+
+} // namespace fonta
 
 #endif // FONTAWINDOW_H

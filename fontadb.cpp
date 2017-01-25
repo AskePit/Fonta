@@ -17,6 +17,8 @@
 #include <QSettings>
 #include <mutex>
 
+namespace fonta {
+
 static void GetFontFiles(QStringList &out)
 {
     cauto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
@@ -134,7 +136,7 @@ static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2
         return;
     }
 
-    std::function<void(QFile &, QHash<QString, FontaTTF> &, File2FontsMap &)> func;
+    std::function<void(QFile &, QHash<QString, TTF> &, File2FontsMap &)> func;
 
     if(fileName.endsWith(".ttc", Qt::CaseInsensitive)) {
         func = readTTC;
@@ -255,7 +257,7 @@ static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
         return;
     }
 
-    FontaTTF ttf;
+    TTF ttf;
     ttf.files << fileName;
 
     {
@@ -400,7 +402,7 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
         return;
     }
 
-    FontaTTF ttf;
+    TTF ttf;
     ttf.files << fileName;
     //qDebug() << '\t' << fontName;
 
@@ -468,7 +470,7 @@ static void loadTTFChunk(const QStringList &out, int from, int to, TTFMap &TTFs,
 }
 #endif
 
-FontaDB::FontaDB()
+DB::DB()
 {
     // QFontDatabase seems to use all font files from C:/Windows/Fonts.
     // It's impossible todelete any file while programm is running.
@@ -549,12 +551,12 @@ FontaDB::FontaDB()
 #endif
 }
 
-FontaDB::~FontaDB()
+DB::~DB()
 {
     delete QtDB;
 }
 
-QStringList FontaDB::families() const
+QStringList DB::families() const
 {
     QStringList fonts = QtDB->families();
     QStringList uninstalledList = uninstalled();
@@ -565,9 +567,9 @@ QStringList FontaDB::families() const
     return fonts;
 }
 
-QStringList FontaDB::linkedFonts(CStringRef family) const
+QStringList DB::linkedFonts(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) {
         return QStringList();
     }
@@ -575,9 +577,9 @@ QStringList FontaDB::linkedFonts(CStringRef family) const
     return ttf.linkedFonts.toList();
 }
 
-QStringList FontaDB::fontFiles(CStringRef family) const
+QStringList DB::fontFiles(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) {
         return QStringList();
     }
@@ -585,7 +587,7 @@ QStringList FontaDB::fontFiles(CStringRef family) const
     return ttf.files.toList();
 }
 
-void FontaDB::uninstall(CStringRef family)
+void DB::uninstall(CStringRef family)
 {
     /*
      * To uninstall font:
@@ -632,19 +634,19 @@ void FontaDB::uninstall(CStringRef family)
     fontaReg.setValue("FilesToDelete", filesToDeleteList);
 }
 
-QStringList FontaDB::uninstalled() const
+QStringList DB::uninstalled() const
 {
     QSettings uninstalledReg("HKEY_LOCAL_MACHINE", QSettings::NativeFormat);
     return uninstalledReg.value("FontaUninstalledFonts", QStringList()).toStringList();
 }
 
-QStringList FontaDB::filesToDelete() const
+QStringList DB::filesToDelete() const
 {
     QSettings fontaReg("PitM", "Fonta");
     return fontaReg.value("FilesToDelete", QStringList()).toStringList();
 }
 
-bool FontaDB::getTTF(CStringRef family, FontaTTF& ttf) const {
+bool DB::getTTF(CStringRef family, TTF& ttf) const {
     if(!TTFs.contains(family))
         return false;
 
@@ -652,11 +654,11 @@ bool FontaDB::getTTF(CStringRef family, FontaTTF& ttf) const {
     return true;
 }
 
-FullFontInfo FontaDB::getFullFontInfo(CStringRef family) const
+FullFontInfo DB::getFullFontInfo(CStringRef family) const
 {
     FullFontInfo fullInfo;
 
-    FontaTTF ttf;
+    TTF ttf;
     fullInfo.TTFExists = getTTF(family, ttf);
     fullInfo.fontaTFF = ttf;
 
@@ -667,7 +669,7 @@ FullFontInfo FontaDB::getFullFontInfo(CStringRef family) const
     return fullInfo;
 }
 
-static bool _isSerif(const FontaTTF& ttf)
+static bool _isSerif(const TTF& ttf)
 {
     if(FamilyClass::isSerif(ttf.familyClass)) {
         return true;
@@ -683,16 +685,16 @@ static bool _isSerif(const FontaTTF& ttf)
     // 3 TODO: font name
 }
 
-bool FontaDB::isSerif(CStringRef family) const
+bool DB::isSerif(CStringRef family) const
 {
     // 1
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return _isSerif(ttf);
 }
 
-static bool _isSansSerif(const FontaTTF& ttf)
+static bool _isSansSerif(const TTF& ttf)
 {
     if(FamilyClass::isSans(ttf.familyClass)) {
         return true;
@@ -708,23 +710,23 @@ static bool _isSansSerif(const FontaTTF& ttf)
     // 3 TODO: font name
 }
 
-bool FontaDB::isSansSerif(CStringRef family) const
+bool DB::isSansSerif(CStringRef family) const
 {
     // 1
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return _isSansSerif(ttf);
 }
 
-bool FontaDB::isMonospaced(CStringRef family) const
+bool DB::isMonospaced(CStringRef family) const
 {
     // 1
     if(QtDB->isFixedPitch(family))
         return true;
 
     // 2
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(ttf.panose.isMonospaced())
@@ -734,10 +736,10 @@ bool FontaDB::isMonospaced(CStringRef family) const
     return ttf.monospaced;
 }
 
-bool FontaDB::isScript(CStringRef family) const
+bool DB::isScript(CStringRef family) const
 {
     // 1
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(ttf.familyClass == FamilyClass::SCRIPT) {
@@ -752,10 +754,10 @@ bool FontaDB::isScript(CStringRef family) const
     return ttf.panose.Family == Panose::FamilyType::SCRIPT;
 }
 
-bool FontaDB::isDecorative(CStringRef family) const
+bool DB::isDecorative(CStringRef family) const
 {
     // 1
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(ttf.familyClass == FamilyClass::ORNAMENTAL) {
@@ -770,14 +772,14 @@ bool FontaDB::isDecorative(CStringRef family) const
     return ttf.panose.Family == Panose::FamilyType::DECORATIVE;
 }
 
-bool FontaDB::isSymbolic(CStringRef family) const
+bool DB::isSymbolic(CStringRef family) const
 {
     // 1
     /*if(QtDB.writingSystems(family).contains(QFontDatabase::Symbol))
         return true;*/
 
     // 2
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(ttf.familyClass == FamilyClass::SYMBOL) {
@@ -794,9 +796,9 @@ bool FontaDB::isSymbolic(CStringRef family) const
 
 
 
-bool FontaDB::isOldStyle(CStringRef family) const
+bool DB::isOldStyle(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(ttf.familyClass != FamilyClass::OLDSTYLE_SERIF) return false;
@@ -805,9 +807,9 @@ bool FontaDB::isOldStyle(CStringRef family) const
     return ttf.familySubClass != 5 && ttf.familySubClass != 6 && ttf.familySubClass != 7;
 }
 
-bool FontaDB::isTransitional(CStringRef family) const
+bool DB::isTransitional(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return ttf.familyClass == FamilyClass::TRANSITIONAL_SERIF
@@ -816,26 +818,26 @@ bool FontaDB::isTransitional(CStringRef family) const
        ||  ttf.familyClass == FamilyClass::FREEFORM_SERIF;
 }
 
-bool FontaDB::isModern(CStringRef family) const
+bool DB::isModern(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return ttf.familyClass == FamilyClass::MODERN_SERIF;
 }
 
-bool FontaDB::isSlab(CStringRef family) const
+bool DB::isSlab(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return ttf.familyClass == FamilyClass::SLAB_SERIF
        || (ttf.familyClass == FamilyClass::CLARENDON_SERIF && (ttf.familySubClass != 2 && ttf.familySubClass != 3 && ttf.familySubClass != 4));
 }
 
-bool FontaDB::isCoveSerif(CStringRef family) const
+bool DB::isCoveSerif(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSerif(ttf)) return false;
@@ -848,9 +850,9 @@ bool FontaDB::isCoveSerif(CStringRef family) const
         && ttf.panose.SerifStyle <= Panose::SerifStyle::OBTUSE_SQUARE_COVE;
 }
 
-bool FontaDB::isSquareSerif(CStringRef family) const
+bool DB::isSquareSerif(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSerif(ttf)) return false;
@@ -863,9 +865,9 @@ bool FontaDB::isSquareSerif(CStringRef family) const
         || ttf.panose.SerifStyle == Panose::SerifStyle::THIN;
 }
 
-bool FontaDB::isBoneSerif(CStringRef family) const
+bool DB::isBoneSerif(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSerif(ttf)) return false;
@@ -877,9 +879,9 @@ bool FontaDB::isBoneSerif(CStringRef family) const
     return ttf.panose.SerifStyle == Panose::SerifStyle::OVAL;
 }
 
-bool FontaDB::isAsymmetricSerif(CStringRef family) const
+bool DB::isAsymmetricSerif(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSerif(ttf)) return false;
@@ -891,9 +893,9 @@ bool FontaDB::isAsymmetricSerif(CStringRef family) const
     return ttf.panose.SerifStyle == Panose::SerifStyle::ASYMMETRICAL;
 }
 
-bool FontaDB::isTriangleSerif(CStringRef family) const
+bool DB::isTriangleSerif(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSerif(ttf)) return false;
@@ -906,9 +908,9 @@ bool FontaDB::isTriangleSerif(CStringRef family) const
 }
 
 
-bool FontaDB::isGrotesque(CStringRef family) const
+bool DB::isGrotesque(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return ttf.familyClass == FamilyClass::SANS_SERIF &&
@@ -919,9 +921,9 @@ bool FontaDB::isGrotesque(CStringRef family) const
           || ttf.familySubClass == 10);
 }
 
-bool FontaDB::isGeometric(CStringRef family) const
+bool DB::isGeometric(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return ttf.familyClass == FamilyClass::SANS_SERIF &&
@@ -929,9 +931,9 @@ bool FontaDB::isGeometric(CStringRef family) const
           || ttf.familySubClass == 4);
 }
 
-bool FontaDB::isHumanist(CStringRef family) const
+bool DB::isHumanist(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return ttf.familyClass == FamilyClass::SANS_SERIF &&
@@ -939,9 +941,9 @@ bool FontaDB::isHumanist(CStringRef family) const
 }
 
 
-bool FontaDB::isNormalSans(CStringRef family) const
+bool DB::isNormalSans(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSansSerif(ttf)) return false;
@@ -955,9 +957,9 @@ bool FontaDB::isNormalSans(CStringRef family) const
         || ttf.panose.SerifStyle == Panose::SerifStyle::PERPENDICULAR_SANS;
 }
 
-bool FontaDB::isRoundedSans(CStringRef family) const
+bool DB::isRoundedSans(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSansSerif(ttf)) return false;
@@ -969,9 +971,9 @@ bool FontaDB::isRoundedSans(CStringRef family) const
     return ttf.panose.SerifStyle == Panose::SerifStyle::ROUNDED;
 }
 
-bool FontaDB::isFlarredSans(CStringRef family) const
+bool DB::isFlarredSans(CStringRef family) const
 {
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     if(!_isSansSerif(ttf)) return false;
@@ -983,25 +985,25 @@ bool FontaDB::isFlarredSans(CStringRef family) const
     return ttf.panose.SerifStyle == Panose::SerifStyle::FLARED;
 }
 
-bool FontaDB::isNonCyrillic(CStringRef family) const
+bool DB::isNonCyrillic(CStringRef family) const
 {
     return !isCyrillic(family);
 }
 
-bool FontaDB::isCyrillic(CStringRef family) const
+bool DB::isCyrillic(CStringRef family) const
 {
     // 1
     if(QtDB->writingSystems(family).contains(QFontDatabase::Cyrillic))
         return true;
 
     // 2
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return ttf.cyrillic;
 }
 
-bool FontaDB::isNotLatinOrCyrillic(CStringRef family) const
+bool DB::isNotLatinOrCyrillic(CStringRef family) const
 {
     cauto systems = QtDB->writingSystems(family);
     if(systems.contains(QFontDatabase::Cyrillic)
@@ -1010,8 +1012,10 @@ bool FontaDB::isNotLatinOrCyrillic(CStringRef family) const
         return false;
     }
 
-    FontaTTF ttf;
+    TTF ttf;
     if(!getTTF(family, ttf)) return false;
 
     return !ttf.latin && !ttf.cyrillic;
 }
+
+} // namespace fonta

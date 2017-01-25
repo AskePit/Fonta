@@ -8,26 +8,26 @@ TEMPLATE = app
 
 SOURCES += \
     main.cpp\
-    fontawindow.cpp \
     fontadb.cpp \
     fontawidgets.cpp \
     types.cpp \
     sampler.cpp \
     filterwizard.cpp \
-    stylesheet.cpp
+    stylesheet.cpp \
+    mainwindow.cpp
 
 HEADERS += \
-    fontawindow.h \
     fontadb.h \
     panose.h \
     fontawidgets.h \
     types.h \
     sampler.h \
     filterwizard.h \
-    stylesheet.h
+    stylesheet.h \
+    mainwindow.h
 
 FORMS += \
-    fontawindow.ui
+    mainwindow.ui
 
 RESOURCES_DIR = resources
 
@@ -43,7 +43,7 @@ build_all:!build_pass {
     CONFIG += release
 }
 
-QMAKE_CXXFLAGS += -O3
+QMAKE_CXXFLAGS += -O2
 
 DEFINES *= \
     QT_USE_QSTRINGBUILDER \

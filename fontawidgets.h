@@ -14,8 +14,15 @@ class QHBoxLayout;
 class QSpacerItem;
 class QLabel;
 
+class QFontDatabase;
+class QHBoxLayout;
+
+class QListWidget;
+
 int callQuestionDialog(CStringRef message);
 void callInfoDialog(CStringRef message);
+
+namespace fonta {
 
 class About : public QDialog
 {
@@ -27,27 +34,16 @@ public:
 
 private slots:
     void on_pushButton_clicked();
-
-private:
-    QVBoxLayout *verticalLayout;
-    QSpacerItem *verticalSpacer_3;
-    QLabel *label;
-    QSpacerItem *verticalSpacer_2;
-    QHBoxLayout *horizontalLayout;
-    QSpacerItem *horizontalSpacer;
-    QPushButton *pushButton;
-    QSpacerItem *horizontalSpacer_2;
-    QSpacerItem *verticalSpacer;
 };
 
-class FontaWorkArea;
+class WorkArea;
 
 class RenameTabEdit : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    explicit RenameTabEdit(QTabWidget* tabWidget, FontaWorkArea* workArea, QWidget *parent = 0);
+    explicit RenameTabEdit(QTabWidget* tabWidget, WorkArea* workArea, QWidget *parent = 0);
     virtual ~RenameTabEdit(){}
 
 signals:
@@ -57,8 +53,8 @@ private slots:
     void keyPressEvent(QKeyEvent* event);
     void focusOutEvent(QFocusEvent* e) { (void)e; deleteLater(); }
 private:
-    QTabWidget* tabWidget;
-    FontaWorkArea* workArea;
+    QTabWidget* m_tabWidget;
+    WorkArea* m_workArea;
 
     void apply();
 };
@@ -78,30 +74,27 @@ protected:
     void paintEvent(QPaintEvent *pe);
 };
 
-class QFontDatabase;
-class QHBoxLayout;
-
-class FontaField : public QTextEdit
+class Field : public QTextEdit
 {
     Q_OBJECT
 
 public:
-    FontaField(bool empty = false, QWidget* parent = 0);
-    virtual ~FontaField(){ }
+    Field(InitType initType = InitType::Sampled, QWidget* parent = 0);
+    virtual ~Field(){ }
 
-    void toogle(bool toogle) { return m_tooglePanel->toogle(toogle); }
-    QWidget* surfaceWidget() { return m_surfaceWidget; }
+    void toogle(bool toogle);
+    QWidget* surfaceWidget();
 
-    int id() const { return m_id; }
-    QString fontFamily() const { return font().family(); }
-    float fontSize() const { return font().pointSizeF(); }
-    QString fontStyle() const { return m_fontStyle; }
-    QString preferableFontStyle() const { return m_preferableFontStyle; }
-    Qt::Alignment textAlignment() const { return m_alignment; }
-    float leading() const { return m_leading; }
-    int tracking() const { return m_tracking; }
+    int id() const;
+    QString fontFamily() const;
+    float fontSize() const;
+    QString fontStyle() const;
+    QString preferableFontStyle() const;
+    Qt::Alignment textAlignment() const;
+    float leading() const;
+    int tracking() const;
 
-    void setId(int id) { m_id = id; }
+    void setId(int id);
     void setFontFamily(CStringRef family);
     void setFontSize(float size);
     void setFontStyle(CStringRef style);
@@ -109,9 +102,9 @@ public:
     void alignText(Qt::Alignment alignment);
     void setLeading(float val);
     void setTracking(int val);
-    StyleSheet& sheet() const { return m_sheet; }
-    void applySheet() { setStyleSheet(m_sheet.get()); }
-    void setSamples(CStringRef latin, CStringRef rus) { m_latinText = latin; m_rusText = rus; }
+    StyleSheet& sheet() const;
+    void applySheet();
+    void setSamples(CStringRef latin, CStringRef rus);
 
     void save(QJsonObject &json) const;
     void load(const QJsonObject &json);
@@ -119,7 +112,7 @@ public:
     static constexpr bool showBorders = false;
 
 signals:
-    void focussed(FontaField* field);
+    void focussed(Field* field);
 
 protected:
     void focusInEvent(QFocusEvent* e);
@@ -145,29 +138,34 @@ private:
     void alignTextHorizontally(Qt::Alignment alignment);
 };
 
-class FontaWorkArea : public QSplitter {
+class WorkArea : public QSplitter {
 
     Q_OBJECT
 
 public:
-    FontaWorkArea(int id, QWidget* parent, QString name = "");
-    virtual ~FontaWorkArea();
+    WorkArea(int id, QWidget* parent, QString name = "");
+    virtual ~WorkArea();
 
     friend class Sampler;
 
     void createSample();
 
-    int id() const { return m_id; }
-    void setId(int id) { m_id = id; }
-    CStringRef name() const { return m_name; }
-    void rename(CStringRef name) { m_name = name; }
-    FontaField* currField() const { return m_currField; }
-    void setCurrField(FontaField* field) { m_currField = field; }
+    int id() const;
+    void setId(int id);
+    CStringRef name() const;
+    void rename(CStringRef name);
+    Field* currField() const;
+    void setCurrField(Field* field);
 
-    FontaField* addField(bool empty = false);
+    Field* addField(InitType initType = InitType::Sampled);
     void popField();
-    FontaField* operator[](int i);
-    int fieldCount() const { return m_fields.size(); }
+    Field* operator[](int i);
+    int fieldCount() const;
+    QVector<Field*>::iterator begin();
+    QVector<Field*>::const_iterator begin() const;
+    QVector<Field*>::iterator end();
+    QVector<Field*>::const_iterator end() const;
+
     void clear();
 
     void save(QJsonObject &json) const;
@@ -177,59 +175,60 @@ private:
     void loadSample(CStringRef jsonTxt);
 
 private slots:
-    void on_currentFieldChanged(FontaField* field);
+    void on_currentFieldChanged(Field* field);
 
 private:
     int m_id;
     QString m_name;
-    QVector<FontaField*> m_fields;
-    FontaField* m_currField;
+    QVector<Field*> m_fields;
+    Field* m_currField;
 };
 
-class QListWidget;
-
-class FontaFilterEdit : public QLineEdit
+class FilterEdit : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    FontaFilterEdit(QListWidget* listWidget, QWidget* parent = 0);
-    virtual ~FontaFilterEdit(){}
+    FilterEdit(QWidget* parent = 0);
+    void setListWidget(QListWidget* listWidget) { m_listWidget = listWidget; }
+    virtual ~FilterEdit(){}
 
 protected:
     void keyPressEvent(QKeyEvent* event);
     void mousePressEvent(QMouseEvent * e);
 
 private:
-    QListWidget* listWidget;
+    QListWidget* m_listWidget;
 
     void apply();
     void suppose(QChar typed);
 };
 
-class FontaComboBoxLineEdit : public QLineEdit
+class ComboBoxLineEdit : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    FontaComboBoxLineEdit(QWidget* parent = 0);
-    virtual ~FontaComboBoxLineEdit(){}
+    ComboBoxLineEdit(QWidget* parent = 0);
+    virtual ~ComboBoxLineEdit(){}
 
 protected:
     void mousePressEvent(QMouseEvent* e);
 };
 
-class FontaComboBox : public QComboBox
+class ComboBox : public QComboBox
 {
     Q_OBJECT
 
 public:
-    FontaComboBox(QWidget* parent = 0);
-    virtual ~FontaComboBox(){}
+    ComboBox(QWidget* parent = 0);
+    virtual ~ComboBox(){}
 
 protected:
     void wheelEvent(QWheelEvent* e);
     //void focusOutEvent(QFocusEvent* e){(void)e;}
 };
+
+} // namespace fonta
 
 #endif // FONTAWIDGETS_H

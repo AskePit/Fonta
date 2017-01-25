@@ -37,45 +37,38 @@ void callInfoDialog(CStringRef message)
     msgBox.exec();
 }
 
+namespace fonta {
+
 About::About(const Version& version, QWidget *parent) :
     QDialog(parent)
 {
     resize(175, 85);
-    verticalLayout = new QVBoxLayout(this);
-    verticalSpacer_3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    verticalLayout->addItem(verticalSpacer_3);
+    auto vLayout = new QVBoxLayout(this);
+    auto vSpacer3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    vLayout->addItem(vSpacer3);
 
-    label = new QLabel(this);
+    auto label = new QLabel(this);
     label->setAlignment(Qt::AlignCenter);
+    vLayout->addWidget(label);
 
-    verticalLayout->addWidget(label);
+    auto vSpacer2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    vLayout->addItem(vSpacer2);
 
-    verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto hLayout = new QHBoxLayout();
+    auto horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    hLayout->addItem(horizontalSpacer);
 
-    verticalLayout->addItem(verticalSpacer_2);
-
-    horizontalLayout = new QHBoxLayout();
-    horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    horizontalLayout->addItem(horizontalSpacer);
-
-    pushButton = new QPushButton(this);
+    auto pushButton = new QPushButton(this);
     pushButton->setObjectName(QStringLiteral("pushButton"));
+    hLayout->addWidget(pushButton);
 
-    horizontalLayout->addWidget(pushButton);
+    auto hSpacer2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    hLayout->addItem(hSpacer2);
+    vLayout->addLayout(hLayout);
 
-    horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    horizontalLayout->addItem(horizontalSpacer_2);
-
-
-    verticalLayout->addLayout(horizontalLayout);
-
-    verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-    verticalLayout->addItem(verticalSpacer);
-
+    auto verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    vLayout->addItem(verticalSpacer);
 
     setWindowTitle(tr("About"));
     label->setText(tr("Fonta v. %1").arg(version.str));
@@ -93,10 +86,10 @@ void About::on_pushButton_clicked()
     hide();
 }
 
-RenameTabEdit::RenameTabEdit(QTabWidget* tabWidget, FontaWorkArea* workArea, QWidget *parent)
+RenameTabEdit::RenameTabEdit(QTabWidget* tabWidget, WorkArea* workArea, QWidget *parent)
     : QLineEdit(parent)
-    , tabWidget(tabWidget)
-    , workArea(workArea)
+    , m_tabWidget(tabWidget)
+    , m_workArea(workArea)
 {
     setWindowFlags(Qt::FramelessWindowHint);
 
@@ -120,8 +113,8 @@ void RenameTabEdit::keyPressEvent(QKeyEvent* event)
 void RenameTabEdit::apply()
 {
     QString txt = text();
-    workArea->rename(txt);
-    tabWidget->setTabText(workArea->id(), txt);
+    m_workArea->rename(txt);
+    m_tabWidget->setTabText(m_workArea->id(), txt);
     emit applied();
     deleteLater();
 }
@@ -151,9 +144,9 @@ void TooglePanel::paintEvent(QPaintEvent *pe)
     QStyle::PE_Widget, &o, &p, this);
 }
 
-constexpr bool FontaField::showBorders;
+constexpr bool Field::showBorders;
 
-FontaField::FontaField(bool empty, QWidget* parent)
+Field::Field(InitType initType, QWidget* parent)
     : QTextEdit(parent)
     , m_fontStyle("Normal")
     , m_preferableFontStyle("Normal")
@@ -169,7 +162,7 @@ FontaField::FontaField(bool empty, QWidget* parent)
     setLeading(m_leading);
     alignText(Qt::AlignLeft);
 
-    if(!empty) {
+    if(initType == InitType::Sampled) {
         setSamples(Sampler::getText(), Sampler::getRusText());
         setFontSize(10);
         setFontFamily("Arial");
@@ -195,14 +188,77 @@ FontaField::FontaField(bool empty, QWidget* parent)
     m_surfaceLayout->addWidget(this);
 }
 
+void Field::toogle(bool toogle) { return m_tooglePanel->toogle(toogle); }
+QWidget* Field::surfaceWidget() { return m_surfaceWidget; }
 
-void FontaField::focusInEvent(QFocusEvent* e)
+int Field::id() const
+{
+    return m_id;
+}
+
+QString Field::fontFamily() const
+{
+    return font().family();
+}
+
+float Field::fontSize() const
+{
+    return font().pointSizeF();
+}
+
+QString Field::fontStyle() const
+{
+    return m_fontStyle;
+}
+
+QString Field::preferableFontStyle() const
+{
+    return m_preferableFontStyle;
+}
+
+Qt::Alignment Field::textAlignment() const
+{
+    return m_alignment;
+}
+
+float Field::leading() const
+{
+    return m_leading;
+}
+
+int Field::tracking() const
+{
+    return m_tracking;
+}
+
+void Field::setId(int id)
+{
+    m_id = id;
+}
+
+StyleSheet& Field::sheet() const
+{
+    return m_sheet;
+}
+
+void Field::applySheet()
+{
+    setStyleSheet(m_sheet.get());
+}
+
+void Field::setSamples(CStringRef latin, CStringRef rus)
+{
+    m_latinText = latin;
+    m_rusText = rus;
+}
+
+void Field::focusInEvent(QFocusEvent* e)
 {
     QTextEdit::focusInEvent(e);
     emit(focussed(this));
 }
 
-void FontaField::keyPressEvent(QKeyEvent *k)
+void Field::keyPressEvent(QKeyEvent *k)
 {
     Q_UNUSED(k);
 
@@ -219,7 +275,7 @@ void FontaField::keyPressEvent(QKeyEvent *k)
     QTextEdit::keyPressEvent(k);
 }
 
-void FontaField::setFontFamily(CStringRef family)
+void Field::setFontFamily(CStringRef family)
 {
     /*if(font().family() == family) {
         return;
@@ -250,7 +306,7 @@ void FontaField::setFontFamily(CStringRef family)
     }
 }
 
-void FontaField::setFontSize(float size)
+void Field::setFontSize(float size)
 {
     QFont newFont(font());
     newFont.setPointSizeF(size);
@@ -261,7 +317,7 @@ void FontaField::setFontSize(float size)
     setFont(newFont);
 }
 
-void FontaField::setFontStyle(CStringRef style)
+void Field::setFontStyle(CStringRef style)
 {
     const QFont& f = font();
 
@@ -274,19 +330,19 @@ void FontaField::setFontStyle(CStringRef style)
     m_fontStyle = style;
 }
 
-void FontaField::setPreferableFontStyle(CStringRef style)
+void Field::setPreferableFontStyle(CStringRef style)
 {
     m_preferableFontStyle = style;
     setFontStyle(style);
 }
 
-void FontaField::alignText(Qt::Alignment alignment)
+void Field::alignText(Qt::Alignment alignment)
 {
     m_alignment = alignment;
     alignTextHorizontally(alignment);
 }
 
-void FontaField::alignTextHorizontally(Qt::Alignment alignment)
+void Field::alignTextHorizontally(Qt::Alignment alignment)
 {
     QTextCursor cursor(textCursor());
     cursor.movePosition(QTextCursor::Start);
@@ -296,7 +352,7 @@ void FontaField::alignTextHorizontally(Qt::Alignment alignment)
     cursor.mergeBlockFormat(format);
 }
 
-void FontaField::setLeading(float val)
+void Field::setLeading(float val)
 {
     m_leading = val;
 
@@ -314,7 +370,7 @@ void FontaField::setLeading(float val)
     cursor.mergeBlockFormat(format);
 }
 
-void FontaField::setTracking(int val)
+void Field::setTracking(int val)
 {
     m_tracking = val;
 
@@ -327,7 +383,7 @@ void FontaField::setTracking(int val)
     setFont(newFont);
 }
 
-void FontaField::save(QJsonObject &json) const
+void Field::save(QJsonObject &json) const
 {
     const QFont& f = font();
     json["family"] = f.family();
@@ -341,7 +397,7 @@ void FontaField::save(QJsonObject &json) const
     json["backgroundColor"] = sheet()["background-color"];
 }
 
-void FontaField::load(const QJsonObject &json)
+void Field::load(const QJsonObject &json)
 {
     QString family = json["family"].toString("Arial");
     double size = json["size"].toDouble(12.0);
@@ -363,7 +419,7 @@ void FontaField::load(const QJsonObject &json)
     applySheet();
 }
 
-FontaWorkArea::FontaWorkArea(int id, QWidget* parent, QString name)
+WorkArea::WorkArea(int id, QWidget* parent, QString name)
     : QSplitter(parent)
     , m_id(id)
     , m_name(name)
@@ -380,7 +436,7 @@ FontaWorkArea::FontaWorkArea(int id, QWidget* parent, QString name)
     setChildrenCollapsible(false);
 }
 
-void FontaWorkArea::createSample()
+void WorkArea::createSample()
 {
     Sampler::loadSample(*this);
 
@@ -388,14 +444,44 @@ void FontaWorkArea::createSample()
     m_currField = m_fields[0];
 }
 
-FontaWorkArea::~FontaWorkArea()
+WorkArea::~WorkArea()
 {
     clear();
 }
 
-FontaField* FontaWorkArea::addField(bool empty)
+int WorkArea::id() const
+{
+    return m_id;
+}
+
+void WorkArea::setId(int id)
+{
+    m_id = id;
+}
+
+CStringRef WorkArea::name() const
+{
+    return m_name;
+}
+
+void WorkArea::rename(CStringRef name)
+{
+    m_name = name;
+}
+
+Field* WorkArea::currField() const
+{
+    return m_currField;
+}
+
+void WorkArea::setCurrField(Field* field)
+{
+    m_currField = field;
+}
+
+Field* WorkArea::addField(InitType initType)
 {    
-    FontaField* field = new FontaField(empty, this);
+    Field* field = new Field(initType, this);
 
     int id = m_fields.length();
 
@@ -404,23 +490,49 @@ FontaField* FontaWorkArea::addField(bool empty)
 
     addWidget(field->surfaceWidget());
 
-    connect(field, &FontaField::focussed, this, &FontaWorkArea::on_currentFieldChanged);
+    connect(field, &Field::focussed, this, &WorkArea::on_currentFieldChanged);
 
     return field;
 }
 
-void FontaWorkArea::popField()
+void WorkArea::popField()
 {
     delete m_fields.last()->surfaceWidget();
     m_fields.pop_back();
 }
 
-FontaField* FontaWorkArea::operator[](int i)
+Field* WorkArea::operator[](int i)
 {
     return m_fields.at(i);
 }
 
-void FontaWorkArea::clear()
+int WorkArea::fieldCount() const
+{
+    return m_fields.size();
+}
+
+QVector<Field*>::iterator WorkArea::begin()
+{
+    return m_fields.begin();
+}
+
+QVector<Field*>::const_iterator WorkArea::begin() const
+{
+    return m_fields.begin();
+}
+
+QVector<Field*>::iterator WorkArea::end()
+{
+    return m_fields.end();
+}
+
+QVector<Field*>::const_iterator WorkArea::end() const
+{
+    return m_fields.end();
+}
+
+
+void WorkArea::clear()
 {
     int size = m_fields.length();
     for(int i = 0; i<size; ++i) {
@@ -428,7 +540,7 @@ void FontaWorkArea::clear()
     }
 }
 
-void FontaWorkArea::on_currentFieldChanged(FontaField* changedField)
+void WorkArea::on_currentFieldChanged(Field* changedField)
 {
     for(auto field : m_fields) {
         if(field == changedField) {
@@ -440,7 +552,7 @@ void FontaWorkArea::on_currentFieldChanged(FontaField* changedField)
     }
 }
 
-void FontaWorkArea::save(QJsonObject &json) const
+void WorkArea::save(QJsonObject &json) const
 {
     json["id"] = id();
     json["name"] = name();
@@ -462,7 +574,7 @@ void FontaWorkArea::save(QJsonObject &json) const
     json["sizes"] = sizesArr;
 }
 
-void FontaWorkArea::loadSample(CStringRef jsonTxt)
+void WorkArea::loadSample(CStringRef jsonTxt)
 {
     clear();
 
@@ -471,7 +583,7 @@ void FontaWorkArea::loadSample(CStringRef jsonTxt)
 
     QJsonArray fields = json["fields"].toArray();
     for(const QJsonValue& fieldVal : fields) {
-        FontaField* field = addField();
+        Field* field = addField();
         field->load(fieldVal.toObject());
     }
 
@@ -487,7 +599,7 @@ void FontaWorkArea::loadSample(CStringRef jsonTxt)
     setSizes(sizesList);
 }
 
-void FontaWorkArea::load(const QJsonObject &json)
+void WorkArea::load(const QJsonObject &json)
 {
     clear();
 
@@ -496,7 +608,7 @@ void FontaWorkArea::load(const QJsonObject &json)
 
     QJsonArray fields = json["fields"].toArray();
     for(const QJsonValue& fieldVal : fields) {
-        FontaField* field = addField();
+        Field* field = addField();
         field->load(fieldVal.toObject());
     }
 
@@ -513,12 +625,11 @@ void FontaWorkArea::load(const QJsonObject &json)
     setSizes(sizesList);
 }
 
-FontaFilterEdit::FontaFilterEdit(QListWidget* listWidget, QWidget* parent)
+FilterEdit::FilterEdit(QWidget* parent)
     : QLineEdit(parent)
-    , listWidget(listWidget)
 {}
 
-void FontaFilterEdit::keyPressEvent(QKeyEvent* event)
+void FilterEdit::keyPressEvent(QKeyEvent* event)
 {
     int key = event->key();
 
@@ -531,13 +642,13 @@ void FontaFilterEdit::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void FontaFilterEdit::mousePressEvent(QMouseEvent * e)
+void FilterEdit::mousePressEvent(QMouseEvent * e)
 {
     (void)e;
     selectAll();
 }
 
-void FontaFilterEdit::suppose(QChar typed)
+void FilterEdit::suppose(QChar typed)
 {
     int selectStart = selectionStart();
 
@@ -550,9 +661,9 @@ void FontaFilterEdit::suppose(QChar typed)
         match = text().mid(0, selectStart) + typed;
     }
 
-    for(int i = 0; i < listWidget->count(); ++i)
+    for(int i = 0; i < m_listWidget->count(); ++i)
     {
-        QListWidgetItem* item = listWidget->item(i);
+        QListWidgetItem* item = m_listWidget->item(i);
         CStringRef fontName = item->text();
 
         if(fontName.startsWith(match, Qt::CaseInsensitive)) {
@@ -565,22 +676,22 @@ void FontaFilterEdit::suppose(QChar typed)
     }
 }
 
-void FontaFilterEdit::apply()
+void FilterEdit::apply()
 {
-    QList<QListWidgetItem*> items = listWidget->findItems(text(), Qt::MatchExactly);
+    QList<QListWidgetItem*> items = m_listWidget->findItems(text(), Qt::MatchExactly);
     if(items.size() > 0) {
-        listWidget->setCurrentItem(items[0]);
-        listWidget->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
+        m_listWidget->setCurrentItem(items[0]);
+        m_listWidget->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
     }
 }
 
-FontaComboBox::FontaComboBox(QWidget* parent)
+ComboBox::ComboBox(QWidget* parent)
     : QComboBox(parent)
 {
-    setLineEdit(new FontaComboBoxLineEdit());
+    setLineEdit(new ComboBoxLineEdit());
 }
 
-void FontaComboBox::wheelEvent(QWheelEvent* e)
+void ComboBox::wheelEvent(QWheelEvent* e)
 {
     int delta = e->angleDelta().y();
 
@@ -613,12 +724,14 @@ void FontaComboBox::wheelEvent(QWheelEvent* e)
     }
 }
 
-FontaComboBoxLineEdit::FontaComboBoxLineEdit(QWidget* parent)
+ComboBoxLineEdit::ComboBoxLineEdit(QWidget* parent)
     : QLineEdit(parent)
 {}
 
-void FontaComboBoxLineEdit::mousePressEvent(QMouseEvent* e)
+void ComboBoxLineEdit::mousePressEvent(QMouseEvent* e)
 {
     (void)e;
     selectAll();
 }
+
+} // namespace fonta

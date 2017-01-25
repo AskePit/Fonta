@@ -4,6 +4,13 @@
 #include <QWizard>
 #include "types.h"
 
+class QCheckBox;
+class QPushButton;
+class QLabel;
+class QGridLayout;
+
+namespace fonta {
+
 class FilterWizard : public QWizard
 {
     Q_OBJECT
@@ -14,11 +21,6 @@ public:
     FilterWizard(QWidget *parent = 0);
     void accept() Q_DECL_OVERRIDE;
 };
-
-class QCheckBox;
-class QPushButton;
-class QLabel;
-class QGridLayout;
 
 class GeneralPage : public QWizardPage
 {
@@ -121,5 +123,7 @@ private:
     QCheckBox* cyrillicBox;
     QCheckBox* monospacedBox;
 };
+
+} // namespace fonta
 
 #endif // FILTERWIZARD_H

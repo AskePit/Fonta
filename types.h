@@ -30,6 +30,11 @@ struct Version {
     ~Version() {}
 };
 
+enum class InitType {
+    Empty,
+    Sampled
+};
+
 inline QFont& mut_font(const QFont& f) { return const_cast<QFont&>(f); }
 
 int getDPI();
@@ -38,5 +43,8 @@ inline float inf() { return std::numeric_limits<float>::infinity(); }
 
 #define decl_constexpr(x) constexpr decltype(x) x
 
+#define enum_class(x) class x { public: enum type
+#define enum_interface };
+#define enum_end ;}
 
 #endif // TYPES_H

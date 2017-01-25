@@ -5,7 +5,9 @@
 #include <QStringList>
 #include <fontawidgets.h>
 
-typedef void (*SampleLoader)(FontaWorkArea&);
+namespace fonta {
+
+typedef void (*SampleLoader)(WorkArea&);
 
 class Sampler;
 
@@ -26,7 +28,7 @@ public:
     static CStringRef getText();
     static CStringRef getRusText();
     static CStringRef getTextForFamily(CStringRef family);
-    static void loadSample(FontaWorkArea& area);
+    static void loadSample(WorkArea& area);
 
 private slots:
     void fetchNewsSlot();
@@ -51,5 +53,7 @@ private:
     static QSet<int> textsRusPool;
     static QSet<int> samplesPool;
 };
+
+} // namespace fonta
 
 #endif // SAMPLER_H

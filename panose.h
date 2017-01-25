@@ -3,9 +3,7 @@
 
 #include "types.h"
 
-#define enum_class(x) class x { public: enum type
-#define enum_interface };
-#define enum_end ;}
+namespace fonta {
 
 struct Panose {
     u8 Family;
@@ -479,6 +477,8 @@ struct Panose {
         VERY_NARROW
     } enum_end;
 };
+
+} // namespace fonta
 
 #endif // PANOSE_H
 

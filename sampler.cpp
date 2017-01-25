@@ -14,6 +14,8 @@
 
 #include "fontadb.h"
 
+namespace fonta {
+
 Sampler *Sampler::mInstance = nullptr;
 
 Sampler *Sampler::instance() {
@@ -306,13 +308,13 @@ CStringRef Sampler::getTextForFamily(CStringRef family)
     }
 }
 
-void Sampler::loadSample(FontaWorkArea& area)
+void Sampler::loadSample(WorkArea& area)
 {
     int i = getPoolsValue(samplesPool, samples.length());
     Sample& sample = samples[i];
 
-    area.addField(true);
-    area.addField(true);
+    area.addField(InitType::Empty);
+    area.addField(InitType::Empty);
 
     auto &field1 = *area.m_fields[0];
     auto &field2 = *area.m_fields[1];
@@ -327,3 +329,5 @@ void Sampler::loadSample(FontaWorkArea& area)
     field2.setSamples(getText(), getRusText());
     field2.setFontFamily(sample.family2);
 }
+
+} // namespace fonta

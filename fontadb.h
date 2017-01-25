@@ -8,6 +8,8 @@
 #include <QHash>
 #include "panose.h"
 
+namespace fonta {
+
 enum_class (FamilyClass) {
     NO = 0,
     OLDSTYLE_SERIF = 1,
@@ -45,7 +47,7 @@ enum_interface
     static bool isSans(type t) { return t == SANS_SERIF; }
 };
 
-struct FontaTTF {
+struct TTF {
     FamilyClass::type familyClass;
     int familySubClass;
     bool latin;
@@ -59,7 +61,7 @@ struct FontaTTF {
     QSet<QString> files;       // files where this font is defined
     QSet<QString> linkedFonts; // fonts located in the same files with this font
 
-    FontaTTF()
+    TTF()
         : familyClass(FamilyClass::NO)
         , latin(false)
         , cyrillic(false)
@@ -75,28 +77,28 @@ struct QtFontInfo {
 };
 
 struct FullFontInfo {
-    FontaTTF fontaTFF;
+    TTF fontaTFF;
     QtFontInfo qtInfo;
     bool TTFExists;
 };
 
-using TTFMap = QHash<QString, FontaTTF>;
+using TTFMap = QHash<QString, TTF>;
 using File2FontsMap = QHash<QString, QSet<QString>>;
 
-class FontaDB
+class DB
 {
 private:
-    FontaDB();
-    FontaDB(FontaDB const&);
-    void operator=(FontaDB const&);
+    DB();
+    DB(DB const&);
+    void operator=(DB const&);
 
 public:
-    static FontaDB &getInstance()
+    static DB &getInstance()
     {
-        static FontaDB instance;
+        static DB instance;
         return instance;
     }
-    ~FontaDB();
+    ~DB();
 
     QStringList families() const;
     QStringList styles(CStringRef family) const { return QtDB->styles(family); }
@@ -139,7 +141,7 @@ public:
     bool isCyrillic(CStringRef family) const;
     bool isNotLatinOrCyrillic(CStringRef family) const;
 
-    bool getTTF(CStringRef family, FontaTTF& ttf) const;
+    bool getTTF(CStringRef family, TTF& ttf) const;
     FullFontInfo getFullFontInfo(CStringRef family) const;
 
     QFontDatabase& getQtDB() { return *QtDB; }
@@ -150,7 +152,9 @@ private:
     File2FontsMap File2Fonts;
 };
 
-inline FontaDB& fontaDB() { return FontaDB::getInstance(); }
+inline DB& fontaDB() { return DB::getInstance(); }
 inline QFontDatabase& qtDB() { return fontaDB().getQtDB(); }
+
+} // namespace fonta
 
 #endif // FONTADB_H
