@@ -25,9 +25,9 @@ public:
     static Sampler *instance();
 
     static CStringRef getName();
-    static CStringRef getText();
-    static CStringRef getRusText();
-    static CStringRef getTextForFamily(CStringRef family);
+    static CStringRef getEngText(ContentMode mode);
+    static CStringRef getRusText(ContentMode mode);
+    static CStringRef getTextForFamily(CStringRef family, ContentMode mode);
     static void loadSample(WorkArea& area);
 
 private slots:

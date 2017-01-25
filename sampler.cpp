@@ -281,30 +281,107 @@ static int getPoolsValue(QSet<int>& pool, int length)
     }
 }
 
+static const QString engPangram = "The quick brown fox jumps over the lazy dog. 1234567890";
+static const QString rusPangram = "Съешь же ещё этих мягких французских булок да выпей чаю. The quick brown fox jumps over the lazy dog. 1234567890";
+
+static const QString engLoremIpsum =
+        "Lorem ipsum dolor sit amet, "
+        "consectetur adipiscing elit, "
+        "sed do eiusmod tempor incididunt "
+        "ut labore et dolore magna aliqua. "
+        "Ut enim ad minim veniam, "
+        "quis nostrud exercitation "
+        "ullamco laboris nisi ut aliquip "
+        "ex ea commodo consequat. "
+        "Duis aute irure dolor in reprehenderit "
+        "in voluptate velit esse cillum "
+        "dolore eu fugiat nulla pariatur. "
+        "Excepteur sint occaecat "
+        "cupidatat non proident, "
+        "sunt in culpa qui officia deserunt "
+        "mollit anim id est laborum.";
+
+static const QString rusLoremIpsum =
+        "Но чтобы вы поняли, откуда возникает "
+        "это превратное представление людей, "
+        "порицающих наслаждение и восхваляющих страдания, "
+        "я раскрою перед вами всю картину и разъясню, "
+        "что именно говорил этот человек, открывший истину, "
+        "которого я бы назвал зодчим счастливой жизни. "
+        "Действительно, никто не отвергает, не презирает, "
+        "не избегает наслаждений только из-за того, "
+        "что это наслаждения, но лишь из-за того, что тех, "
+        "кто не умеет разумно предаваться наслаждениям, "
+        "постигают великие страдания. "
+        "Равно как нет никого, кто возлюбил бы, "
+        "предпочел и возжаждал бы само страдание только за то, "
+        "что это страдание, а не потому, "
+        "что иной раз возникают такие обстоятельства, "
+        "когда страдания и боль приносят некое и немалое наслаждение. "
+        "Если воспользоваться простейшим примером, "
+        "то кто из нас стал бы заниматься какими бы "
+        "то ни было тягостными физическими упражнениями, "
+        "если бы это не приносило с собой некоей пользы? "
+        "И кто мог бы по справедливости "
+        "упрекнуть стремящегося к наслаждению, "
+        "которое не несло бы с собой никаких неприятностей, "
+        "или того, кто избегал бы такого страдания, "
+        "которое не приносило бы с собой никакого наслаждения?";
+
+static const QString nothing = QString::null;
+
 CStringRef Sampler::getName()
 {
     int i = getPoolsValue(namesPool, names.length());
     return names.at(i);
 }
 
-CStringRef Sampler::getText()
+CStringRef Sampler::getEngText(ContentMode mode)
 {
-    int i = getPoolsValue(textsPool, texts.length());
-    return texts.at(i);
+    switch(mode) {
+        default:
+        case ContentMode::News: {
+            int i = getPoolsValue(textsPool, texts.length());
+            return texts.at(i);
+        } break;
+        case ContentMode::Pangram: {
+            return engPangram;
+        } break;
+        case ContentMode::LoremIpsum: {
+            return engLoremIpsum;
+        } break;
+        case ContentMode::UserDefined: {
+            return nothing;
+        } break;
+    }
 }
 
-CStringRef Sampler::getRusText()
+CStringRef Sampler::getRusText(ContentMode mode)
 {
-    int i = getPoolsValue(textsRusPool, textsRus.length());
-    return textsRus.at(i);
+    switch(mode) {
+        default:
+        case ContentMode::News: {
+            int i = getPoolsValue(textsRusPool, textsRus.length());
+            return textsRus.at(i);
+        } break;
+        case ContentMode::Pangram: {
+            return rusPangram;
+        } break;
+        case ContentMode::LoremIpsum: {
+            return rusLoremIpsum;
+        } break;
+        case ContentMode::UserDefined: {
+            return nothing;
+        } break;
+    }
 }
 
-CStringRef Sampler::getTextForFamily(CStringRef family)
+CStringRef Sampler::getTextForFamily(CStringRef family, ContentMode mode)
 {
     if(fontaDB().isCyrillic(family)) {
-        return getRusText();
+        return getRusText(mode);
     } else {
-        return getText();
+        return getEngText(mode);
     }
 }
 
@@ -322,11 +399,11 @@ void Sampler::loadSample(WorkArea& area)
     area.setSizes({120, 100});
 
     field1.setFontSize(sample.size1);
-    field1.setSamples(getText(), getRusText());
+    field1.setSamples(getEngText(field1.contentMode()), getRusText(field1.contentMode()));
     field1.setFontFamily(sample.family1);
 
     field2.setFontSize(sample.size2);
-    field2.setSamples(getText(), getRusText());
+    field2.setSamples(getEngText(field2.contentMode()), getRusText(field2.contentMode()));
     field2.setFontFamily(sample.family2);
 }
 

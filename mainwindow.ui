@@ -1145,6 +1145,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionFillNews"/>
+   <addaction name="actionFillPangram"/>
+   <addaction name="actionFillLoremIpsum"/>
   </widget>
   <action name="actionSave_as">
    <property name="text">
@@ -1232,6 +1235,51 @@
   <action name="actionFonts_Cleaner">
    <property name="text">
     <string>Fonts Cleaner...</string>
+   </property>
+  </action>
+  <action name="actionFillNews">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/pics.qrc">
+     <normaloff>:/pic/rss.png</normaloff>:/pic/rss.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fill with News</string>
+   </property>
+   <property name="toolTip">
+    <string>Fill with News</string>
+   </property>
+  </action>
+  <action name="actionFillPangram">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/pics.qrc">
+     <normaloff>:/pic/fox.png</normaloff>:/pic/fox.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fill with Pangram</string>
+   </property>
+   <property name="toolTip">
+    <string>Fill with Pangram</string>
+   </property>
+  </action>
+  <action name="actionFillLoremIpsum">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/pics.qrc">
+     <normaloff>:/pic/lorem.png</normaloff>:/pic/lorem.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fill with LoremIpsum</string>
+   </property>
+   <property name="toolTip">
+    <string>Fill with LoremIpsum</string>
    </property>
   </action>
  </widget>

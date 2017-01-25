@@ -35,6 +35,13 @@ enum class InitType {
     Sampled
 };
 
+enum class ContentMode {
+    News,
+    Pangram,
+    LoremIpsum,
+    UserDefined
+};
+
 inline QFont& mut_font(const QFont& f) { return const_cast<QFont&>(f); }
 
 int getDPI();

@@ -93,6 +93,8 @@ public:
     Qt::Alignment textAlignment() const;
     float leading() const;
     int tracking() const;
+    ContentMode contentMode();
+    void setContentMode(ContentMode mode);
 
     void setId(int id);
     void setFontFamily(CStringRef family);
@@ -130,6 +132,8 @@ private:
     QString m_latinText;
     QString m_rusText;
     bool m_userChangedText;
+
+    ContentMode m_contentMode;
 
     QWidget* m_surfaceWidget;
     QHBoxLayout* m_surfaceLayout;

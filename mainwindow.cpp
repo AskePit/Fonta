@@ -62,6 +62,11 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     connect(m_addTabButton, &QPushButton::clicked, [&](){ addTab(InitType::Sampled); });
     connect(m_addTabButton, &QPushButton::clicked, this, &MainWindow::changeAddTabButtonGeometry);
 
+    QActionGroup *fillGroup = new QActionGroup(this);
+    fillGroup->addAction(ui->actionFillNews);
+    fillGroup->addAction(ui->actionFillPangram);
+    fillGroup->addAction(ui->actionFillLoremIpsum);
+
     if(fileToOpen.isEmpty()) {
         addTab();
     } else {
@@ -388,6 +393,18 @@ void MainWindow::on_currentFieldChanged(Field* field)
         case (Qt::AlignHCenter): ui->alignCenterButton->setChecked(true); break;
         case (Qt::AlignRight): ui->alignRightButton->setChecked(true); break;
         case (Qt::AlignJustify): ui->alignJustifyButton->setChecked(true); break;
+    }
+
+    switch(m_currField->contentMode()) {
+
+        case (ContentMode::News): ui->actionFillNews->setChecked(true); break;
+        case (ContentMode::Pangram): ui->actionFillPangram->setChecked(true); break;
+        case (ContentMode::LoremIpsum): ui->actionFillLoremIpsum->setChecked(true); break;
+        default: {
+            ui->actionFillNews->setChecked(false);
+            ui->actionFillPangram->setChecked(false);
+            ui->actionFillLoremIpsum->setChecked(false);
+        }
     }
 }
 
@@ -828,6 +845,22 @@ void MainWindow::on_alignRightButton_toggled()
 void MainWindow::on_alignJustifyButton_toggled()
 {
     m_currField->alignText(Qt::AlignJustify);
+}
+
+void MainWindow::on_actionFillNews_triggered()
+{
+    m_currField->setContentMode(ContentMode::News);
+}
+
+void MainWindow::on_actionFillPangram_triggered()
+{
+    m_currField->setContentMode(ContentMode::Pangram);
+}
+
+void MainWindow::on_actionFillLoremIpsum_triggered()
+{
+    m_currField->setContentMode(ContentMode::LoremIpsum);
+
 }
 
 } // namespace fonta

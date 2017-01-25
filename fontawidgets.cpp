@@ -154,6 +154,7 @@ Field::Field(InitType initType, QWidget* parent)
     , m_tracking(0)
     , m_sheet("QTextEdit")
     , m_userChangedText(false)
+    , m_contentMode(ContentMode::News)
 {
     setFrameShape(QFrame::Box);
     setFrameShadow(QFrame::Plain);
@@ -163,7 +164,7 @@ Field::Field(InitType initType, QWidget* parent)
     alignText(Qt::AlignLeft);
 
     if(initType == InitType::Sampled) {
-        setSamples(Sampler::getText(), Sampler::getRusText());
+        setSamples(Sampler::getEngText(m_contentMode), Sampler::getRusText(m_contentMode));
         setFontSize(10);
         setFontFamily("Arial");
     }
@@ -231,6 +232,18 @@ int Field::tracking() const
     return m_tracking;
 }
 
+ContentMode Field::contentMode()
+{
+    return m_contentMode;
+}
+
+void Field::setContentMode(ContentMode mode)
+{
+    m_contentMode = mode;
+    setSamples(Sampler::getEngText(mode), Sampler::getRusText(mode));
+    setFontFamily(fontFamily());
+}
+
 void Field::setId(int id)
 {
     m_id = id;
@@ -271,6 +284,7 @@ void Field::keyPressEvent(QKeyEvent *k)
     && k->key() >= Qt::Key_Space
     && k->key() <= Qt::Key_ydiaeresis) {
         m_userChangedText = true;
+        m_contentMode = ContentMode::UserDefined;
     }
     QTextEdit::keyPressEvent(k);
 }
