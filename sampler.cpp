@@ -58,14 +58,15 @@ const QStringList Sampler::names = {
     "Pit",
     "Kurt",
     "Sharona",
+    "Melissa",
 };
 
 QStringList Sampler::texts = {
-    "Before 1960 95% of soft drinks sold in the U.S. are furnished in reusable bottles, but in 1960 aluminum cans are used for the first time."
+    "Before 1960 95% of soft drinks sold in the U.S. are furnished in reusable bottles."
     "Ernest Hemmingway commits suicide with shotgun.",
     "American U-2 spy plane, piloted by Francis Gary Powers, shot down over Russia",
     "Kennedy was assassinated in Dallas, Texas, on November 22, 1963",
-
+    "Donald Trump promises to dissolve his Trump Foundation charity, which is still under investigation.",
 };
 
 QStringList Sampler::textsRus = {
@@ -97,7 +98,7 @@ const QVector<Sample> Sampler::preSamples = {
     },
     {
         "Franklin Gothic Demi Cond", 24,
-        "Century Gothic", 11
+        "Century Gothic", 12
     },
     {
         "Tahoma", 18,
@@ -112,7 +113,7 @@ const QVector<Sample> Sampler::preSamples = {
         "Corbel", 11
     },
     {
-        "Arial Black", 20,
+        "Arial Black", 18,
         "Arial", 11
     },
     {
@@ -134,6 +135,10 @@ const QVector<Sample> Sampler::preSamples = {
     {
         "Clarendon", 20,
         "Times New Roman", 12
+    },
+    {
+        "Cooper Black", 22,
+        "Trebuchet MS", 13
     },
 };
 

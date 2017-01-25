@@ -1,6 +1,7 @@
 #include "stylesheet.h"
 
 #include <QObject>
+#include <QDebug>
 
 StyleSheet::StyleSheet(CStringRef className)
     : className(className)
@@ -25,6 +26,8 @@ CStringRef StyleSheet::get() const
     }
 
     sheet += "}";
+
+    sheet += pieces.join(' ');
 
     changed = false;
     return sheet;
@@ -68,5 +71,11 @@ static QString to2Hex(int val) {
 void StyleSheet::set(CStringRef key, int r, int g, int b)
 {
     attributes[key] = QString("#") + to2Hex(r) + to2Hex(g) + to2Hex(b);
+    changed = true;
+}
+
+void StyleSheet::addPiece(CStringRef piece)
+{
+    pieces << piece;
     changed = true;
 }
