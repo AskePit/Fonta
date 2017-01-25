@@ -106,10 +106,10 @@ private slots:
 
     void on_actionFonts_Cleaner_triggered();
 
-    void on_alignLeftButton_toggled(bool enabled);
-    void on_alignCenterButton_toggled(bool enabled);
-    void on_alignRightButton_toggled(bool enabled);
-    void on_alignJustifyButton_toggled(bool enabled);
+    void on_alignLeftButton_toggled();
+    void on_alignCenterButton_toggled();
+    void on_alignRightButton_toggled();
+    void on_alignJustifyButton_toggled();
 
 protected:
     void resizeEvent(QResizeEvent* event);

@@ -511,6 +511,27 @@ int WorkArea::fieldCount() const
     return m_fields.size();
 }
 
+QVector<Field*>::iterator WorkArea::begin()
+{
+    return m_fields.begin();
+}
+
+QVector<Field*>::const_iterator WorkArea::begin() const
+{
+    return m_fields.begin();
+}
+
+QVector<Field*>::iterator WorkArea::end()
+{
+    return m_fields.end();
+}
+
+QVector<Field*>::const_iterator WorkArea::end() const
+{
+    return m_fields.end();
+}
+
+
 void WorkArea::clear()
 {
     int size = m_fields.length();

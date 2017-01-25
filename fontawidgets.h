@@ -161,6 +161,11 @@ public:
     void popField();
     Field* operator[](int i);
     int fieldCount() const;
+    QVector<Field*>::iterator begin();
+    QVector<Field*>::const_iterator begin() const;
+    QVector<Field*>::iterator end();
+    QVector<Field*>::const_iterator end() const;
+
     void clear();
 
     void save(QJsonObject &json) const;

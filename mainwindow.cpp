@@ -323,8 +323,7 @@ void MainWindow::makeFieldConnected(Field* field) {
 }
 
 void MainWindow::makeFieldsConnected() {
-    for(int i = 0; i<m_currWorkArea->fieldCount(); ++i) {
-        Field* field = (*m_currWorkArea)[i];
+    for(auto *field : *m_currWorkArea) {
         makeFieldConnected(field);
     }
 }
@@ -811,32 +810,24 @@ void MainWindow::on_actionFonts_Cleaner_triggered()
     */
 }
 
-void MainWindow::on_alignLeftButton_toggled(bool enabled)
+void MainWindow::on_alignLeftButton_toggled()
 {
-    if(enabled) {
-        m_currField->alignText(Qt::AlignLeft);
-    }
+    m_currField->alignText(Qt::AlignLeft);
 }
 
-void MainWindow::on_alignCenterButton_toggled(bool enabled)
+void MainWindow::on_alignCenterButton_toggled()
 {
-    if(enabled) {
-        m_currField->alignText(Qt::AlignHCenter);
-    }
+    m_currField->alignText(Qt::AlignHCenter);
 }
 
-void MainWindow::on_alignRightButton_toggled(bool enabled)
+void MainWindow::on_alignRightButton_toggled()
 {
-    if(enabled) {
-        m_currField->alignText(Qt::AlignRight);
-    }
+    m_currField->alignText(Qt::AlignRight);
 }
 
-void MainWindow::on_alignJustifyButton_toggled(bool enabled)
+void MainWindow::on_alignJustifyButton_toggled()
 {
-    if(enabled) {
-        m_currField->alignText(Qt::AlignJustify);
-    }
+    m_currField->alignText(Qt::AlignJustify);
 }
 
 } // namespace fonta
