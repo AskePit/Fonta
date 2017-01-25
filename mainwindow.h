@@ -106,6 +106,11 @@ private slots:
 
     void on_actionFonts_Cleaner_triggered();
 
+    void on_alignLeftButton_clicked();
+    void on_alignCenterButton_clicked();
+    void on_alignRightButton_clicked();
+    void on_alignJustifyButton_clicked();
+
 protected:
     void resizeEvent(QResizeEvent* event);
 
@@ -116,18 +121,8 @@ private:
     QVector<WorkArea*> m_workAreas;
     WorkArea* m_currWorkArea;
     Field* m_currField;
-    FilterEdit* m_fontFinderEdit;
-
-    // alignment
-    QPushButton *m_topLeftButton;
-    QPushButton *m_topCenterButton;
-    QPushButton *m_topRightButton;
-    QPushButton *m_topJustifyButton;
-    QButtonGroup* m_alignButtosGroup;
 
     QPushButton *m_addTabButton;
-
-    void initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment);
 
     void saveGeometry();
     void loadGeometry();
@@ -139,9 +134,9 @@ private:
 
     void clearWorkAreas();
 
-    QString m_currentProjectFile;
-    void setCurrentProjectFile(CStringRef filename);
-    void resetCurrentProjectFile();
+    QString m_currFile;
+    void setCurrFile(CStringRef filename);
+    void resetCurrFile();
 
     void makeFieldConnected(Field* textEdit);
     void makeFieldsConnected();

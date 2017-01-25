@@ -604,9 +604,8 @@ void WorkArea::load(const QJsonObject &json)
     setSizes(sizesList);
 }
 
-FilterEdit::FilterEdit(QListWidget* listWidget, QWidget* parent)
+FilterEdit::FilterEdit(QWidget* parent)
     : QLineEdit(parent)
-    , listWidget(listWidget)
 {}
 
 void FilterEdit::keyPressEvent(QKeyEvent* event)
@@ -641,9 +640,9 @@ void FilterEdit::suppose(QChar typed)
         match = text().mid(0, selectStart) + typed;
     }
 
-    for(int i = 0; i < listWidget->count(); ++i)
+    for(int i = 0; i < m_listWidget->count(); ++i)
     {
-        QListWidgetItem* item = listWidget->item(i);
+        QListWidgetItem* item = m_listWidget->item(i);
         CStringRef fontName = item->text();
 
         if(fontName.startsWith(match, Qt::CaseInsensitive)) {
@@ -658,10 +657,10 @@ void FilterEdit::suppose(QChar typed)
 
 void FilterEdit::apply()
 {
-    QList<QListWidgetItem*> items = listWidget->findItems(text(), Qt::MatchExactly);
+    QList<QListWidgetItem*> items = m_listWidget->findItems(text(), Qt::MatchExactly);
     if(items.size() > 0) {
-        listWidget->setCurrentItem(items[0]);
-        listWidget->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
+        m_listWidget->setCurrentItem(items[0]);
+        m_listWidget->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
     }
 }
 

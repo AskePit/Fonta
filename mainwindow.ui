@@ -68,6 +68,9 @@
          </layout>
         </item>
         <item>
+         <widget class="fonta::FilterEdit" name="fontFinderEdit"/>
+        </item>
+        <item>
          <widget class="QListWidget" name="fontsList">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -549,6 +552,122 @@
             </widget>
            </item>
            <item>
+            <widget class="QPushButton" name="alignLeftButton">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="resources/pics.qrc">
+               <normaloff>:/pic/left.png</normaloff>:/pic/left.png</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">alignButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="alignCenterButton">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="resources/pics.qrc">
+               <normaloff>:/pic/center.png</normaloff>:/pic/center.png</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">alignButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="alignRightButton">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="resources/pics.qrc">
+               <normaloff>:/pic/right.png</normaloff>:/pic/right.png</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">alignButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="alignJustifyButton">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="resources/pics.qrc">
+               <normaloff>:/pic/justify.png</normaloff>:/pic/justify.png</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">alignButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
             <widget class="Line" name="line_2">
              <property name="minimumSize">
               <size>
@@ -957,6 +1076,10 @@
           <zorder>backColorButton</zorder>
           <zorder>textColorButton</zorder>
           <zorder>line_2</zorder>
+          <zorder>alignLeftButton</zorder>
+          <zorder>alignCenterButton</zorder>
+          <zorder>alignRightButton</zorder>
+          <zorder>alignJustifyButton</zorder>
          </widget>
         </item>
        </layout>
@@ -1119,7 +1242,17 @@
    <extends>QComboBox</extends>
    <header>fontawidgets.h</header>
   </customwidget>
+  <customwidget>
+   <class>fonta::FilterEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">fontawidgets.h</header>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources/pics.qrc"/>
+ </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="alignButtonGroup"/>
+ </buttongroups>
 </ui>

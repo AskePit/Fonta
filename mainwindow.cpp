@@ -19,13 +19,13 @@
 
 namespace fonta {
 
-const Version MainWindow::versionNumber = Version(0, 5, 2);
+const Version MainWindow::versionNumber = Version(0, 5, 3);
 
 MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_aboutDialog(NULL)
-    , m_currentProjectFile("")
+    , m_currFile("")
 {
     ui->setupUi(this);
 
@@ -37,21 +37,13 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     connect(ui->leadingBox->lineEdit(), boxEditSig, this, &MainWindow::on_leadingBox_edited);
     connect(ui->trackingBox->lineEdit(), boxEditSig, this, &MainWindow::on_trackingBox_edited);
 
-    m_alignButtosGroup = new QButtonGroup(this);
-    initAlignButton(m_topLeftButton, ":/pic/left.png", Qt::AlignLeft);
-    initAlignButton(m_topCenterButton, ":/pic/center.png", Qt::AlignHCenter);
-    initAlignButton(m_topRightButton, ":/pic/right.png", Qt::AlignRight);
-    initAlignButton(m_topJustifyButton, ":/pic/justify.png", Qt::AlignJustify);
-
     QStringList filterItems;
     for(int i = FilterMode::Start; i<FilterMode::End; ++i) {
         filterItems << FilterMode::toString(static_cast<FilterMode::type>(i));
     }
     ui->filterBox->addItems(filterItems);
 
-    m_fontFinderEdit = new FilterEdit(ui->fontsList, ui->fontsListLayoutWidget);
-    m_fontFinderEdit->setObjectName(QStringLiteral("fontFinderEdit"));
-    ui->fontsListLayout->insertWidget(1, m_fontFinderEdit);
+    ui->fontFinderEdit->setListWidget(ui->fontsList);
 
     QTabWidget *tabs = ui->tabWidget;
     QTabBar *bar = tabs->tabBar();
@@ -141,28 +133,6 @@ void MainWindow::loadGeometry()
     }
 
     settings.endGroup();
-}
-
-void MainWindow::initAlignButton(QPushButton*& button, CStringRef iconPath, Qt::Alignment alignment)
-{
-    const int size = 30;
-    static int pos = 2; // button position in layout
-
-    button = new QPushButton();
-    button->setMinimumSize(QSize(size, size));
-    button->setMaximumSize(QSize(size, size));
-    button->setText(QString());
-    button->setCheckable(true);
-    button->setFlat(false);
-    button->setIcon(QIcon(iconPath));
-    m_alignButtosGroup->addButton(button);
-    ui->horizontalLayout->insertWidget(pos++, button);
-
-    //ui->toolBar2->addWidget(button);
-
-    connect(button, &QPushButton::clicked, this, [=](){
-        m_currField->alignText(alignment);
-    });
 }
 
 void MainWindow::changeAddTabButtonGeometry()
@@ -386,7 +356,7 @@ void MainWindow::on_currentFieldChanged(Field* field)
     CStringRef family = m_currField->fontFamily();
 
     // show family
-    m_fontFinderEdit->setText(family);
+    ui->fontFinderEdit->setText(family);
 
     QList<QListWidgetItem*> items = ui->fontsList->findItems(family, Qt::MatchExactly);
     if(items.size() > 0) {
@@ -415,20 +385,16 @@ void MainWindow::on_currentFieldChanged(Field* field)
     // show alignment
     switch(m_currField->textAlignment()) {
         default:
-        case (Qt::AlignLeft): m_topLeftButton->setChecked(true); break;
-        case (Qt::AlignHCenter): m_topCenterButton->setChecked(true); break;
-        case (Qt::AlignRight): m_topRightButton->setChecked(true); break;
-        case (Qt::AlignJustify): m_topJustifyButton->setChecked(true); break;
+        case (Qt::AlignLeft): ui->alignLeftButton->setChecked(true); break;
+        case (Qt::AlignHCenter): ui->alignCenterButton->setChecked(true); break;
+        case (Qt::AlignRight): ui->alignRightButton->setChecked(true); break;
+        case (Qt::AlignJustify): ui->alignJustifyButton->setChecked(true); break;
     }
 }
 
 void MainWindow::on_fontsList_currentTextChanged(const QString &family)
 {
-    /*if(family.isEmpty()) {
-        return;
-    }*/
-
-    m_fontFinderEdit->setText(family);
+    ui->fontFinderEdit->setText(family);
 
     ui->styleBox->clear();
     ui->styleBox->addItems(fontaDB().styles(family));
@@ -591,7 +557,7 @@ void MainWindow::on_actionSave_as_triggered()
 
     if(!filename.isNull()) {
         save(filename);
-        setCurrentProjectFile(filename);
+        setCurrFile(filename);
 
         QFileInfo info(filename);
         fontaReg.setValue("OpenSaveFilePath", info.path());
@@ -632,7 +598,7 @@ void MainWindow::load(CStringRef fileName)
 void MainWindow::openFile(CStringRef filename)
 {
     load(filename);
-    setCurrentProjectFile(filename);
+    setCurrFile(filename);
 
     QFileInfo info(filename);
     QSettings fontaReg("PitM", "Fonta");
@@ -654,23 +620,23 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    if(m_currentProjectFile.isEmpty()) {
+    if(m_currFile.isEmpty()) {
         on_actionSave_as_triggered();
     } else {
-        save(m_currentProjectFile);
+        save(m_currFile);
     }
 }
 
-void MainWindow::setCurrentProjectFile(CStringRef filename)
+void MainWindow::setCurrFile(CStringRef filename)
 {
-    m_currentProjectFile = filename;
+    m_currFile = filename;
     QFileInfo fileInfo(filename);
     setWindowTitle(tr("Fonta - %1").arg(fileInfo.fileName()));
 }
 
-void MainWindow::resetCurrentProjectFile()
+void MainWindow::resetCurrFile()
 {
-    m_currentProjectFile.clear();
+    m_currFile.clear();
     setWindowTitle(tr("Fonta"));
 }
 
@@ -687,7 +653,7 @@ void MainWindow::clearWorkAreas()
 
 void MainWindow::on_actionNew_triggered()
 {
-    resetCurrentProjectFile();
+    resetCurrFile();
     clearWorkAreas();
     addTab();
 }
@@ -843,6 +809,26 @@ void MainWindow::on_actionFonts_Cleaner_triggered()
         callInfoDialog(tr("There is no fonts to uninstall!"));
     }
     */
+}
+
+void MainWindow::on_alignLeftButton_clicked()
+{
+    m_currField->alignText(Qt::AlignLeft);
+}
+
+void MainWindow::on_alignCenterButton_clicked()
+{
+    m_currField->alignText(Qt::AlignHCenter);
+}
+
+void MainWindow::on_alignRightButton_clicked()
+{
+    m_currField->alignText(Qt::AlignRight);
+}
+
+void MainWindow::on_alignJustifyButton_clicked()
+{
+    m_currField->alignText(Qt::AlignJustify);
 }
 
 } // namespace fonta
