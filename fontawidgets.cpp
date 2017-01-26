@@ -152,6 +152,7 @@ Field::Field(InitType initType, QWidget* parent)
     , m_tracking(0)
     , m_sheet("QTextEdit")
     , m_contentMode(ContentMode::News)
+    , m_languageContext(LanguageContext::Auto)
 {
     setFrameShape(QFrame::Box);
     setFrameShadow(QFrame::Plain);
@@ -241,11 +242,9 @@ ContentMode Field::contentMode()
     return m_contentMode;
 }
 
-void Field::setContentMode(ContentMode mode)
+LanguageContext Field::languageContext()
 {
-    m_contentMode = mode;
-    fetchSamples();
-    updateText();
+    return m_languageContext;
 }
 
 void Field::setId(int id)
@@ -275,12 +274,19 @@ void Field::updateText()
         return;
     }
 
-    bool cyr = fontaDB().isCyrillic(fontFamily());
+    switch(m_languageContext) {
+    default:
+    case LanguageContext::Auto: {
+        bool cyr = fontaDB().isCyrillic(fontFamily());
 
-    if(cyr) {
-        setText(m_rusText);
-    } else {
-        setText(m_engText);
+        if(cyr) {
+            setText(m_rusText);
+        } else {
+            setText(m_engText);
+        }
+    } break;
+    case LanguageContext::Eng: setText(m_engText); break;
+    case LanguageContext::Rus: setText(m_rusText); break;
     }
 
     // text alignment is reseted after setText();
@@ -407,6 +413,19 @@ void Field::setTracking(int val)
     setFont(newFont);
 }
 
+void Field::setContentMode(ContentMode mode)
+{
+    m_contentMode = mode;
+    fetchSamples();
+    updateText();
+}
+
+void Field::setLanguageContext(LanguageContext context)
+{
+    m_languageContext = context;
+    updateText();
+}
+
 void Field::save(QJsonObject &json) const
 {
     const QFont& f = font();
@@ -443,6 +462,7 @@ void Field::load(const QJsonObject &json)
     applySheet();
 
     m_contentMode = ContentMode::UserDefined;
+    m_languageContext = LanguageContext::Auto;
 }
 
 WorkArea::WorkArea(int id, QWidget* parent, QString name)

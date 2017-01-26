@@ -42,6 +42,13 @@ enum class ContentMode {
     UserDefined
 };
 
+enum class LanguageContext {
+    Auto,
+    Eng,
+    Rus,
+    UserDefined
+};
+
 inline QFont& mut_font(const QFont& f) { return const_cast<QFont&>(f); }
 
 int getDPI();

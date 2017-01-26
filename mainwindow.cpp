@@ -62,10 +62,15 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     connect(m_addTabButton, &QPushButton::clicked, [&](){ addTab(InitType::Sampled); });
     connect(m_addTabButton, &QPushButton::clicked, this, &MainWindow::changeAddTabButtonGeometry);
 
-    QActionGroup *fillGroup = new QActionGroup(this);
+    fillGroup = new QActionGroup(this);
     fillGroup->addAction(ui->actionFillNews);
     fillGroup->addAction(ui->actionFillPangram);
     fillGroup->addAction(ui->actionFillLoremIpsum);
+
+    contextGroup = new QActionGroup(this);
+    contextGroup->addAction(ui->actionAuto_Context);
+    contextGroup->addAction(ui->actionEng_Context);
+    contextGroup->addAction(ui->actionRus_Context);
 
     if(fileToOpen.isEmpty()) {
         addTab();
@@ -74,19 +79,6 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     }
 
     loadGeometry();
-
-    /*auto tbAddStretch = [](QToolBar &tb){
-        QWidget* empty = new QWidget();
-        empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-        tb.addWidget(empty);
-    };
-
-    auto addFixedSpace = [](QToolBar &tb){
-        QWidget* empty = new QWidget();
-        empty->setMinimumWidth(5);
-        empty->setMaximumWidth(5);
-        tb.addWidget(empty);
-    };*/
 }
 
 MainWindow::~MainWindow()
@@ -326,6 +318,7 @@ void MainWindow::renameTab(int id)
 void MainWindow::makeFieldConnected(Field* field) {
     connect(field, &Field::focussed, this, &MainWindow::on_currentFieldChanged);
     connect(field, &Field::contentBecameUserDefined, this, &MainWindow::resetFillActions);
+    connect(field, &Field::contentBecameUserDefined, this, &MainWindow::resetContextActions);
 }
 
 void MainWindow::makeFieldsConnected() {
@@ -396,8 +389,8 @@ void MainWindow::on_currentFieldChanged(Field* field)
         case (Qt::AlignJustify): ui->alignJustifyButton->setChecked(true); break;
     }
 
+    // show content mode
     switch(m_currField->contentMode()) {
-
         case (ContentMode::News): ui->actionFillNews->setChecked(true); break;
         case (ContentMode::Pangram): ui->actionFillPangram->setChecked(true); break;
         case (ContentMode::LoremIpsum): ui->actionFillLoremIpsum->setChecked(true); break;
@@ -405,13 +398,26 @@ void MainWindow::on_currentFieldChanged(Field* field)
             resetFillActions();
         }
     }
+
+    // show language context
+    updateContextGroup();
 }
 
-void MainWindow::resetFillActions()
+void MainWindow::updateContextGroup()
 {
-    ui->actionFillNews->setChecked(false);
-    ui->actionFillPangram->setChecked(false);
-    ui->actionFillLoremIpsum->setChecked(false);
+    if(m_currField->contentMode() != ContentMode::UserDefined) {
+        contextGroup->setEnabled(true);
+        switch(m_currField->languageContext()) {
+            case (LanguageContext::Auto): ui->actionAuto_Context->setChecked(true); break;
+            case (LanguageContext::Eng): ui->actionEng_Context->setChecked(true); break;
+            case (LanguageContext::Rus): ui->actionRus_Context->setChecked(true); break;
+            default: {
+                resetContextActions();
+            }
+        }
+    } else {
+        resetContextActions();
+    }
 }
 
 void MainWindow::on_fontsList_currentTextChanged(const QString &family)
@@ -856,17 +862,51 @@ void MainWindow::on_alignJustifyButton_toggled()
 void MainWindow::on_actionFillNews_triggered()
 {
     m_currField->setContentMode(ContentMode::News);
+    updateContextGroup();
 }
 
 void MainWindow::on_actionFillPangram_triggered()
 {
     m_currField->setContentMode(ContentMode::Pangram);
+    updateContextGroup();
 }
 
 void MainWindow::on_actionFillLoremIpsum_triggered()
 {
     m_currField->setContentMode(ContentMode::LoremIpsum);
+    updateContextGroup();
+}
 
+void MainWindow::resetFillActions()
+{
+    ui->actionFillNews->setChecked(false);
+    ui->actionFillPangram->setChecked(false);
+    ui->actionFillLoremIpsum->setChecked(false);
+}
+
+void MainWindow::on_actionAuto_Context_triggered()
+{
+    m_currField->setLanguageContext(LanguageContext::Auto);
+}
+
+void MainWindow::on_actionEng_Context_triggered()
+{
+    m_currField->setLanguageContext(LanguageContext::Eng);
+}
+
+void MainWindow::on_actionRus_Context_triggered()
+{
+    m_currField->setLanguageContext(LanguageContext::Rus);
+}
+
+void MainWindow::resetContextActions()
+{
+    ui->actionAuto_Context->setChecked(false);
+    ui->actionEng_Context->setChecked(false);
+    ui->actionRus_Context->setChecked(false);
+    contextGroup->setDisabled(true);
 }
 
 } // namespace fonta
+
+

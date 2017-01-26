@@ -94,7 +94,7 @@ public:
     float leading() const;
     int tracking() const;
     ContentMode contentMode();
-    void setContentMode(ContentMode mode);
+    LanguageContext languageContext();
 
     void setId(int id);
     void setFontFamily(CStringRef family);
@@ -104,6 +104,9 @@ public:
     void alignText(Qt::Alignment alignment);
     void setLeading(float val);
     void setTracking(int val);
+    void setContentMode(ContentMode mode);
+    void setLanguageContext(LanguageContext context);
+
     StyleSheet& sheet() const;
     void applySheet();
     void fetchSamples();
@@ -133,6 +136,7 @@ private:
     QString m_rusText;
 
     ContentMode m_contentMode;
+    LanguageContext m_languageContext;
 
     QWidget* m_surfaceWidget;
     QHBoxLayout* m_surfaceLayout;
