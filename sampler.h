@@ -12,8 +12,6 @@ class WorkArea;
 
 typedef void (*SampleLoader)(WorkArea&);
 
-class Sampler;
-
 struct Sample {
     QString family1;
     int size1;
@@ -30,7 +28,6 @@ public:
     static CStringRef getName();
     static CStringRef getEngText(ContentMode mode);
     static CStringRef getRusText(ContentMode mode);
-    static CStringRef getTextForFamily(CStringRef family, ContentMode mode);
     static void loadSample(WorkArea& area);
 
 private slots:
@@ -45,11 +42,10 @@ private:
     void fetchNews(QStringList &list, CStringRef url, CStringRef tag);
 
     static const QStringList names;
-    static QStringList texts;
+    static QStringList textsEng;
     static QStringList textsRus;
     static const QVector<Sample> preSamples;
     static QVector<Sample> samples;
-
 
     static QSet<int> namesPool;
     static QSet<int> textsEngPool;

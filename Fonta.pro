@@ -20,7 +20,8 @@ SOURCES += \
     widgets/field.cpp \
     widgets/workarea.cpp \
     widgets/filteredit.cpp \
-    widgets/combobox.cpp
+    widgets/combobox.cpp \
+    loremgenerator.cpp
 
 HEADERS += \
     fontadb.h \
@@ -36,7 +37,8 @@ HEADERS += \
     widgets/field.h \
     widgets/workarea.h \
     widgets/filteredit.h \
-    widgets/combobox.h
+    widgets/combobox.h \
+    loremgenerator.h
 
 FORMS += \
     mainwindow.ui
