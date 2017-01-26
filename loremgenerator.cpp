@@ -4,8 +4,9 @@
 
 namespace fonta {
 
-LoremGenerator::LoremGenerator(CStringRef text)
+LoremGenerator::LoremGenerator(CStringRef text, QChar delim)
     : m_text(text)
+    , m_delim(delim)
     , m_pos(0)
 {
     parse();
@@ -13,7 +14,7 @@ LoremGenerator::LoremGenerator(CStringRef text)
 
 void LoremGenerator::parse()
 {
-    m_lexemes = m_text.split(' ', QString::SkipEmptyParts);
+    m_lexemes = m_text.split(m_delim);
 }
 
 void LoremGenerator::setText(CStringRef text)
@@ -25,7 +26,7 @@ void LoremGenerator::setText(CStringRef text)
 
 QString LoremGenerator::get()
 {
-    QString res = m_lexemes[m_pos++] + ' ';
+    QString res = m_lexemes[m_pos++] + m_delim;
 
     if(m_pos >= m_lexemes.length()) {
         m_pos = 0;

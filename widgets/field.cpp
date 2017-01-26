@@ -3,9 +3,11 @@
 #include "togglepanel.h"
 #include "sampler.h"
 #include "fontadb.h"
+#include "loremgenerator.h"
 
 #include <QHBoxLayout>
 #include <QJsonObject>
+#include <QScrollBar>
 
 namespace fonta {
 
@@ -18,6 +20,7 @@ Field::Field(InitType initType, QWidget* parent)
     , m_sheet("QTextEdit")
     , m_contentMode(ContentMode::News)
     , m_languageContext(LanguageContext::Auto)
+    , m_textIsUpdating(false)
 {
     setFrameShape(QFrame::Box);
     setFrameShadow(QFrame::Plain);
@@ -133,11 +136,24 @@ void Field::fetchSamples()
     m_rusText = Sampler::getRusText(m_contentMode);
 }
 
+static QString truncWord(CStringRef str)
+{
+    int pos = str.lastIndexOf(' ', -2);
+
+    if(pos != -1) {
+        return str.left(pos);
+    } else {
+        return "";
+    }
+}
+
 void Field::updateText()
 {
     if(m_contentMode == ContentMode::UserDefined) {
         return;
     }
+
+    QString text;
 
     switch(m_languageContext) {
     default:
@@ -145,13 +161,34 @@ void Field::updateText()
         bool cyr = fontaDB().isCyrillic(fontFamily());
 
         if(cyr) {
-            setText(m_rusText);
+            text = m_rusText;
         } else {
-            setText(m_engText);
+            text = m_engText;
         }
     } break;
-    case LanguageContext::Eng: setText(m_engText); break;
-    case LanguageContext::Rus: setText(m_rusText); break;
+    case LanguageContext::Eng: text = m_engText; break;
+    case LanguageContext::Rus: text = m_rusText; break;
+    }
+
+    if(m_contentMode == ContentMode::LoremIpsum) {
+        m_textIsUpdating = true;
+        clear();
+        LoremGenerator g(text, '\n');
+
+        if(!verticalScrollBar()->isVisible()) {
+            while(!verticalScrollBar()->isVisible()) {
+                setText(toPlainText() + g.get());
+            }
+        }
+
+        while(verticalScrollBar()->isVisible()) {
+            setText(truncWord(toPlainText()));
+        }
+
+        m_textIsUpdating = false;
+
+    } else {
+        setText(text);
     }
 
     // text alignment is reseted after setText();
@@ -175,6 +212,15 @@ void Field::keyPressEvent(QKeyEvent *k)
             m_contentMode = ContentMode::UserDefined;
             emit contentBecameUserDefined();
         }
+    }
+}
+
+void Field::resizeEvent(QResizeEvent* event)
+{
+    QTextEdit::resizeEvent(event);
+
+    if(m_contentMode == ContentMode::LoremIpsum && !m_textIsUpdating) {
+        updateText();
     }
 }
 

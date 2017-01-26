@@ -8,7 +8,7 @@ namespace fonta {
 class LoremGenerator
 {
 public:
-    LoremGenerator(CStringRef text);
+    LoremGenerator(CStringRef text, QChar delim);
 
     void setText(CStringRef text);
     QString get();
@@ -16,6 +16,7 @@ public:
     void reset();
 private:
     QString m_text;
+    QChar m_delim;
     QStringList m_lexemes;
     int m_pos;
 
