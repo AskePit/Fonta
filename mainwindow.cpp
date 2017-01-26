@@ -1,7 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "fontawidgets.h"
+#include "widgets/combobox.h"
+#include "widgets/about.h"
+#include "widgets/workarea.h"
+#include "widgets/renametabedit.h"
+
 #include "sampler.h"
 #include "filterwizard.h"
 
@@ -908,5 +912,3 @@ void MainWindow::resetContextActions()
 }
 
 } // namespace fonta
-
-

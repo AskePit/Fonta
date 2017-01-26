@@ -55,6 +55,9 @@ int getDPI();
 inline float pt2px(float pt) { return pt*getDPI()/72.; }
 inline float inf() { return std::numeric_limits<float>::infinity(); }
 
+int callQuestionDialog(CStringRef message);
+void callInfoDialog(CStringRef message);
+
 #define decl_constexpr(x) constexpr decltype(x) x
 
 #define enum_class(x) class x { public: enum type

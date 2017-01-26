@@ -9,22 +9,34 @@ TEMPLATE = app
 SOURCES += \
     main.cpp\
     fontadb.cpp \
-    fontawidgets.cpp \
     types.cpp \
     sampler.cpp \
     filterwizard.cpp \
     stylesheet.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    widgets/about.cpp \
+    widgets/renametabedit.cpp \
+    widgets/togglepanel.cpp \
+    widgets/field.cpp \
+    widgets/workarea.cpp \
+    widgets/filteredit.cpp \
+    widgets/combobox.cpp
 
 HEADERS += \
     fontadb.h \
     panose.h \
-    fontawidgets.h \
     types.h \
     sampler.h \
     filterwizard.h \
     stylesheet.h \
-    mainwindow.h
+    mainwindow.h \
+    widgets/about.h \
+    widgets/renametabedit.h \
+    widgets/togglepanel.h \
+    widgets/field.h \
+    widgets/workarea.h \
+    widgets/filteredit.h \
+    widgets/combobox.h
 
 FORMS += \
     mainwindow.ui

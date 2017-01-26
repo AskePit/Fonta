@@ -1,11 +1,14 @@
 #ifndef SAMPLER_H
 #define SAMPLER_H
 
+#include "types.h"
+#include <QObject>
 #include <QSet>
 #include <QStringList>
-#include <fontawidgets.h>
 
 namespace fonta {
+
+class WorkArea;
 
 typedef void (*SampleLoader)(WorkArea&);
 
