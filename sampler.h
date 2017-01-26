@@ -49,7 +49,7 @@ private:
 
 
     static QSet<int> namesPool;
-    static QSet<int> textsPool;
+    static QSet<int> textsEngPool;
     static QSet<int> textsRusPool;
     static QSet<int> samplesPool;
 };

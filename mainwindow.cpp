@@ -325,6 +325,7 @@ void MainWindow::renameTab(int id)
 
 void MainWindow::makeFieldConnected(Field* field) {
     connect(field, &Field::focussed, this, &MainWindow::on_currentFieldChanged);
+    connect(field, &Field::contentBecameUserDefined, this, &MainWindow::resetFillActions);
 }
 
 void MainWindow::makeFieldsConnected() {
@@ -401,11 +402,16 @@ void MainWindow::on_currentFieldChanged(Field* field)
         case (ContentMode::Pangram): ui->actionFillPangram->setChecked(true); break;
         case (ContentMode::LoremIpsum): ui->actionFillLoremIpsum->setChecked(true); break;
         default: {
-            ui->actionFillNews->setChecked(false);
-            ui->actionFillPangram->setChecked(false);
-            ui->actionFillLoremIpsum->setChecked(false);
+            resetFillActions();
         }
     }
+}
+
+void MainWindow::resetFillActions()
+{
+    ui->actionFillNews->setChecked(false);
+    ui->actionFillPangram->setChecked(false);
+    ui->actionFillLoremIpsum->setChecked(false);
 }
 
 void MainWindow::on_fontsList_currentTextChanged(const QString &family)

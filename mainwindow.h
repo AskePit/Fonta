@@ -112,10 +112,10 @@ private slots:
     void on_alignJustifyButton_toggled();
 
     void on_actionFillNews_triggered();
-
     void on_actionFillPangram_triggered();
-
     void on_actionFillLoremIpsum_triggered();
+
+    void resetFillActions();
 
 protected:
     void resizeEvent(QResizeEvent* event);

@@ -248,7 +248,7 @@ void Sampler::fetchNewsSlot()
 
 QVector<Sample> Sampler::samples;
 QSet<int> Sampler::namesPool;
-QSet<int> Sampler::textsPool;
+QSet<int> Sampler::textsEngPool;
 QSet<int> Sampler::textsRusPool;
 QSet<int> Sampler::samplesPool;
 
@@ -341,7 +341,7 @@ CStringRef Sampler::getEngText(ContentMode mode)
     switch(mode) {
         default:
         case ContentMode::News: {
-            int i = getPoolsValue(textsPool, texts.length());
+            int i = getPoolsValue(textsEngPool, texts.length());
             return texts.at(i);
         } break;
         case ContentMode::Pangram: {
@@ -399,11 +399,11 @@ void Sampler::loadSample(WorkArea& area)
     area.setSizes({120, 100});
 
     field1.setFontSize(sample.size1);
-    field1.setSamples(getEngText(field1.contentMode()), getRusText(field1.contentMode()));
+    field1.fetchSamples();
     field1.setFontFamily(sample.family1);
 
     field2.setFontSize(sample.size2);
-    field2.setSamples(getEngText(field2.contentMode()), getRusText(field2.contentMode()));
+    field2.fetchSamples();
     field2.setFontFamily(sample.family2);
 }
 

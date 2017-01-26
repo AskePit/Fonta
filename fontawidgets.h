@@ -106,15 +106,15 @@ public:
     void setTracking(int val);
     StyleSheet& sheet() const;
     void applySheet();
-    void setSamples(CStringRef latin, CStringRef rus);
+    void fetchSamples();
+    void updateText();
 
     void save(QJsonObject &json) const;
     void load(const QJsonObject &json);
 
-    static constexpr bool showBorders = false;
-
 signals:
     void focussed(Field* field);
+    void contentBecameUserDefined();
 
 protected:
     void focusInEvent(QFocusEvent* e);
@@ -129,9 +129,8 @@ private:
     int m_tracking;
     mutable StyleSheet m_sheet;
 
-    QString m_latinText;
+    QString m_engText;
     QString m_rusText;
-    bool m_userChangedText;
 
     ContentMode m_contentMode;
 

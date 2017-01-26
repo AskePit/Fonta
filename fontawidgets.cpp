@@ -144,8 +144,6 @@ void TooglePanel::paintEvent(QPaintEvent *pe)
     QStyle::PE_Widget, &o, &p, this);
 }
 
-constexpr bool Field::showBorders;
-
 Field::Field(InitType initType, QWidget* parent)
     : QTextEdit(parent)
     , m_fontStyle("Normal")
@@ -153,18 +151,17 @@ Field::Field(InitType initType, QWidget* parent)
     , m_leading(inf())
     , m_tracking(0)
     , m_sheet("QTextEdit")
-    , m_userChangedText(false)
     , m_contentMode(ContentMode::News)
 {
     setFrameShape(QFrame::Box);
     setFrameShadow(QFrame::Plain);
-    setLineWidth(showBorders ? 1 : 0);
+    setLineWidth(0);
     setAcceptRichText(false);
     setLeading(m_leading);
     alignText(Qt::AlignLeft);
 
     if(initType == InitType::Sampled) {
-        setSamples(Sampler::getEngText(m_contentMode), Sampler::getRusText(m_contentMode));
+        fetchSamples();
         setFontSize(10);
         setFontFamily("Arial");
     }
@@ -189,8 +186,15 @@ Field::Field(InitType initType, QWidget* parent)
     m_surfaceLayout->addWidget(this);
 }
 
-void Field::toogle(bool toogle) { return m_tooglePanel->toogle(toogle); }
-QWidget* Field::surfaceWidget() { return m_surfaceWidget; }
+void Field::toogle(bool toogle)
+{
+    return m_tooglePanel->toogle(toogle);
+}
+
+QWidget* Field::surfaceWidget()
+{
+    return m_surfaceWidget;
+}
 
 int Field::id() const
 {
@@ -240,8 +244,8 @@ ContentMode Field::contentMode()
 void Field::setContentMode(ContentMode mode)
 {
     m_contentMode = mode;
-    setSamples(Sampler::getEngText(mode), Sampler::getRusText(mode));
-    setFontFamily(fontFamily());
+    fetchSamples();
+    updateText();
 }
 
 void Field::setId(int id)
@@ -259,10 +263,28 @@ void Field::applySheet()
     setStyleSheet(m_sheet.get());
 }
 
-void Field::setSamples(CStringRef latin, CStringRef rus)
+void Field::fetchSamples()
 {
-    m_latinText = latin;
-    m_rusText = rus;
+    m_engText = Sampler::getEngText(m_contentMode);
+    m_rusText = Sampler::getRusText(m_contentMode);
+}
+
+void Field::updateText()
+{
+    if(m_contentMode == ContentMode::UserDefined) {
+        return;
+    }
+
+    bool cyr = fontaDB().isCyrillic(fontFamily());
+
+    if(cyr) {
+        setText(m_rusText);
+    } else {
+        setText(m_engText);
+    }
+
+    // text alignment is reseted after setText();
+    alignText(textAlignment());
 }
 
 void Field::focusInEvent(QFocusEvent* e)
@@ -273,36 +295,22 @@ void Field::focusInEvent(QFocusEvent* e)
 
 void Field::keyPressEvent(QKeyEvent *k)
 {
-    Q_UNUSED(k);
-
-    bool ctrlChange = k->modifiers() == Qt::ControlModifier
-                  && (k->key() == Qt::Key_X || k->key() == Qt::Key_V);
-
-    // all printable keys
-    if((k->modifiers() != Qt::ControlModifier || ctrlChange)
-    && k->modifiers() != Qt::AltModifier
-    && k->key() >= Qt::Key_Space
-    && k->key() <= Qt::Key_ydiaeresis) {
-        m_userChangedText = true;
-        m_contentMode = ContentMode::UserDefined;
-    }
+    QString oldText = toPlainText();
     QTextEdit::keyPressEvent(k);
+    QString newText = toPlainText();
+
+    if(oldText != newText) {
+        if(m_contentMode != ContentMode::UserDefined) {
+            m_contentMode = ContentMode::UserDefined;
+            emit contentBecameUserDefined();
+        }
+    }
 }
 
 void Field::setFontFamily(CStringRef family)
 {
-    /*if(font().family() == family) {
+    if(font().family() == family) {
         return;
-    }*/
-
-    if(!m_userChangedText) {
-        bool cyr = fontaDB().isCyrillic(family);
-
-        if(cyr) {
-            setText(m_rusText);
-        } else {
-            setText(m_latinText);
-        }
     }
 
     QFont newFont(font());
@@ -318,6 +326,8 @@ void Field::setFontFamily(CStringRef family)
     } else if (s.length()) {
         setFontStyle(s.at(0));
     }
+
+    updateText();
 }
 
 void Field::setFontSize(float size)
@@ -431,6 +441,8 @@ void Field::load(const QJsonObject &json)
     sheet().set("color", json["textColor"].toString());
     sheet().set("background-color", json["backgroundColor"].toString());
     applySheet();
+
+    m_contentMode = ContentMode::UserDefined;
 }
 
 WorkArea::WorkArea(int id, QWidget* parent, QString name)
