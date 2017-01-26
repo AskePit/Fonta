@@ -8,6 +8,7 @@
 #include <QHBoxLayout>
 #include <QJsonObject>
 #include <QScrollBar>
+#include <QTimerEvent>
 
 namespace fonta {
 
@@ -20,7 +21,6 @@ Field::Field(InitType initType, QWidget* parent)
     , m_sheet("QTextEdit")
     , m_contentMode(ContentMode::News)
     , m_languageContext(LanguageContext::Auto)
-    , m_textIsUpdating(false)
 {
     setFrameShape(QFrame::Box);
     setFrameShadow(QFrame::Plain);
@@ -171,7 +171,6 @@ void Field::updateText()
     }
 
     if(m_contentMode == ContentMode::LoremIpsum) {
-        m_textIsUpdating = true;
         clear();
         LoremGenerator g(text, '\n');
 
@@ -184,9 +183,6 @@ void Field::updateText()
         while(verticalScrollBar()->isVisible()) {
             setText(truncWord(toPlainText()));
         }
-
-        m_textIsUpdating = false;
-
     } else {
         setText(text);
     }
@@ -215,13 +211,28 @@ void Field::keyPressEvent(QKeyEvent *k)
     }
 }
 
-void Field::resizeEvent(QResizeEvent* event)
+void Field::resizeEvent(QResizeEvent* e)
 {
-    QTextEdit::resizeEvent(event);
+    QTextEdit::resizeEvent(e);
 
-    if(m_contentMode == ContentMode::LoremIpsum && !m_textIsUpdating) {
+    if (m_timerId) {
+        killTimer(m_timerId);
+        m_timerId = 0;
+    }
+
+    if(m_contentMode == ContentMode::LoremIpsum) {
+        m_timerId = startTimer(100);
+    }
+}
+
+void Field::timerEvent(QTimerEvent* e)
+{
+    if(m_contentMode == ContentMode::LoremIpsum) {
         updateText();
     }
+
+    killTimer(e->timerId());
+    m_timerId = 0;
 }
 
 void Field::setFontFamily(CStringRef family)

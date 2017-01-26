@@ -60,7 +60,8 @@ signals:
 protected:
     void focusInEvent(QFocusEvent* e);
     void keyPressEvent(QKeyEvent *k);
-    void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent* e);
+    void timerEvent(QTimerEvent* e);
 
 private:
     QString m_fontStyle;
@@ -77,7 +78,7 @@ private:
     ContentMode m_contentMode;
     LanguageContext m_languageContext;
 
-    bool m_textIsUpdating;
+    int m_timerId;
 
     QWidget* m_surfaceWidget;
     QHBoxLayout* m_surfaceLayout;
