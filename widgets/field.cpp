@@ -156,18 +156,13 @@ void Field::updateText()
     QString text;
 
     switch(m_languageContext) {
-    default:
-    case LanguageContext::Auto: {
-        bool cyr = fontaDB().isCyrillic(fontFamily());
-
-        if(cyr) {
-            text = m_rusText;
-        } else {
-            text = m_engText;
-        }
-    } break;
-    case LanguageContext::Eng: text = m_engText; break;
-    case LanguageContext::Rus: text = m_rusText; break;
+        default:
+        case LanguageContext::Auto: {
+            bool cyr = fontaDB().isCyrillic(fontFamily());
+            text = cyr ? m_rusText : m_engText;
+        } break;
+        case LanguageContext::Eng: text = m_engText; break;
+        case LanguageContext::Rus: text = m_rusText; break;
     }
 
     if(m_contentMode == ContentMode::LoremIpsum) {
@@ -181,7 +176,12 @@ void Field::updateText()
         }
 
         while(verticalScrollBar()->isVisible()) {
-            setText(truncWord(toPlainText()));
+            QString s = truncWord(toPlainText());
+            setText(s);
+
+            if(s.isEmpty()) {
+                break;
+            }
         }
     } else {
         setText(text);
@@ -221,7 +221,7 @@ void Field::resizeEvent(QResizeEvent* e)
     }
 
     if(m_contentMode == ContentMode::LoremIpsum) {
-        m_timerId = startTimer(100);
+        m_timerId = startTimer(250);
     }
 }
 
@@ -267,6 +267,7 @@ void Field::setFontSize(float size)
     newFont.setLetterSpacing(QFont::AbsoluteSpacing, px);
 
     setFont(newFont);
+    updateText();
 }
 
 void Field::setFontStyle(CStringRef style)
@@ -280,6 +281,7 @@ void Field::setFontStyle(CStringRef style)
 
     setFont(newFont);
     m_fontStyle = style;
+    updateText();
 }
 
 void Field::setPreferableFontStyle(CStringRef style)
@@ -333,6 +335,7 @@ void Field::setTracking(int val)
     newFont.setKerning(true);
 
     setFont(newFont);
+    updateText();
 }
 
 void Field::setContentMode(ContentMode mode)
