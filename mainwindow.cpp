@@ -102,8 +102,8 @@ void MainWindow::saveGeometry()
     QSettings settings("PitM", "Fonta");
 
     settings.beginGroup("FontaWindow");
-    settings.setValue("size", size());
-    settings.setValue("pos", pos());
+    settings.setValue("geometry", QMainWindow::saveGeometry());
+    settings.setValue("windowState", saveState());
 
     cauto sizes = ui->fontsListSplitter->sizes();
     settings.setValue("fontsSplitterSizes0", sizes[0]);
@@ -116,18 +116,11 @@ void MainWindow::loadGeometry()
     QSettings settings("PitM", "Fonta");
 
     settings.beginGroup("FontaWindow");
-    QSize size = settings.value("size", QSize()).toSize();
-    QPoint pos = settings.value("pos", QPoint()).toPoint();
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("windowState").toByteArray());
+
     int size0 = settings.value("fontsSplitterSizes0", 100).toInt();
     int size1 = settings.value("fontsSplitterSizes1", 200).toInt();
-
-    if(size.isValid()) {
-        resize(size);
-    }
-
-    if(!pos.isNull()) {
-        move(pos);
-    }
 
     if(size0 != -1 && size1 != -1) {
         ui->fontsListSplitter->setSizes({size0, size1});
