@@ -71,11 +71,6 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     fillGroup->addAction(ui->actionFillPangram);
     fillGroup->addAction(ui->actionFillLoremIpsum);
 
-    contextGroup = new QActionGroup(this);
-    contextGroup->addAction(ui->actionAuto_Context);
-    contextGroup->addAction(ui->actionEng_Context);
-    contextGroup->addAction(ui->actionRus_Context);
-
     if(fileToOpen.isEmpty()) {
         addTab();
     } else {
@@ -83,6 +78,10 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     }
 
     loadGeometry();
+
+    // extend toolbar with language context buttons
+    // (they are buttons because of their more appropriate look)
+    extendToolBar();
 }
 
 MainWindow::~MainWindow()
@@ -127,6 +126,38 @@ void MainWindow::loadGeometry()
     }
 
     settings.endGroup();
+}
+
+void MainWindow::extendToolBar()
+{
+    int btnSize = 30;
+    contextGroup = new QButtonGroup(this);
+    autoButton = new QPushButton("Auto", this);
+    engButton = new QPushButton("En", this);
+    rusButton = new QPushButton("Ru", this);
+
+    auto addButton = [&](QPushButton *button, LanguageContext context){
+        button->setCheckable(true);
+        button->setFlat(true);
+
+        button->setMinimumHeight(btnSize);
+        button->setMaximumHeight(btnSize);
+        button->setMinimumWidth(btnSize);
+        button->setMaximumWidth(btnSize);
+        ui->toolBar->addWidget(button);
+
+        contextGroup->addButton(button);
+
+        connect(button, &QPushButton::toggled, [this, context](bool checked){
+            if(checked) {
+                m_currField->setLanguageContext(context);
+            }
+        });
+    };
+
+    addButton(autoButton, LanguageContext::Auto);
+    addButton(engButton, LanguageContext::Eng);
+    addButton(rusButton, LanguageContext::Rus);
 }
 
 void MainWindow::changeAddTabButtonGeometry()
@@ -315,7 +346,7 @@ void MainWindow::renameTab(int id)
 void MainWindow::makeFieldConnected(Field* field) {
     connect(field, &Field::focussed, this, &MainWindow::on_currentFieldChanged);
     connect(field, &Field::contentBecameUserDefined, this, &MainWindow::resetFillActions);
-    connect(field, &Field::contentBecameUserDefined, this, &MainWindow::resetContextActions);
+    connect(field, &Field::contentBecameUserDefined, this, &MainWindow::disableContextGroup);
 }
 
 void MainWindow::makeFieldsConnected() {
@@ -400,20 +431,43 @@ void MainWindow::on_currentFieldChanged(Field* field)
     updateContextGroup();
 }
 
+void MainWindow::enableContextGroup()
+{
+    contextGroup->setExclusive(false);
+    for(auto *b : contextGroup->buttons()) {
+        b->setEnabled(true);
+    }
+    contextGroup->setExclusive(true);
+}
+
+void MainWindow::disableContextGroup()
+{
+    contextGroup->setExclusive(false);
+    for(auto *b : contextGroup->buttons()) {
+        b->setChecked(false);
+    }
+    contextGroup->setExclusive(true);
+
+    for(auto *b : contextGroup->buttons()) {
+        b->setDisabled(true);
+    }
+}
+
 void MainWindow::updateContextGroup()
 {
     if(m_currField->contentMode() != ContentMode::UserDefined) {
-        contextGroup->setEnabled(true);
+        enableContextGroup();
+
         switch(m_currField->languageContext()) {
-            case (LanguageContext::Auto): ui->actionAuto_Context->setChecked(true); break;
-            case (LanguageContext::Eng): ui->actionEng_Context->setChecked(true); break;
-            case (LanguageContext::Rus): ui->actionRus_Context->setChecked(true); break;
+            case (LanguageContext::Auto): autoButton->setChecked(true); break;
+            case (LanguageContext::Eng): engButton->setChecked(true); break;
+            case (LanguageContext::Rus): rusButton->setChecked(true); break;
             default: {
-                resetContextActions();
+                disableContextGroup();
             }
         }
     } else {
-        resetContextActions();
+        disableContextGroup();
     }
 }
 
@@ -879,29 +933,6 @@ void MainWindow::resetFillActions()
     ui->actionFillNews->setChecked(false);
     ui->actionFillPangram->setChecked(false);
     ui->actionFillLoremIpsum->setChecked(false);
-}
-
-void MainWindow::on_actionAuto_Context_triggered()
-{
-    m_currField->setLanguageContext(LanguageContext::Auto);
-}
-
-void MainWindow::on_actionEng_Context_triggered()
-{
-    m_currField->setLanguageContext(LanguageContext::Eng);
-}
-
-void MainWindow::on_actionRus_Context_triggered()
-{
-    m_currField->setLanguageContext(LanguageContext::Rus);
-}
-
-void MainWindow::resetContextActions()
-{
-    ui->actionAuto_Context->setChecked(false);
-    ui->actionEng_Context->setChecked(false);
-    ui->actionRus_Context->setChecked(false);
-    contextGroup->setDisabled(true);
 }
 
 } // namespace fonta

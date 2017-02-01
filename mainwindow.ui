@@ -1151,6 +1151,12 @@
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
    </property>
+   <property name="iconSize">
+    <size>
+     <width>24</width>
+     <height>24</height>
+    </size>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -1161,9 +1167,6 @@
    <addaction name="actionFillPangram"/>
    <addaction name="actionFillLoremIpsum"/>
    <addaction name="separator"/>
-   <addaction name="actionAuto_Context"/>
-   <addaction name="actionEng_Context"/>
-   <addaction name="actionRus_Context"/>
   </widget>
   <action name="actionSave_as">
    <property name="text">
@@ -1296,39 +1299,6 @@
    </property>
    <property name="toolTip">
     <string>Fill with LoremIpsum</string>
-   </property>
-  </action>
-  <action name="actionAuto_Context">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Auto</string>
-   </property>
-   <property name="toolTip">
-    <string>Auto Context</string>
-   </property>
-  </action>
-  <action name="actionEng_Context">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>En</string>
-   </property>
-   <property name="toolTip">
-    <string>Eng Context</string>
-   </property>
-  </action>
-  <action name="actionRus_Context">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Ru</string>
-   </property>
-   <property name="toolTip">
-    <string>Rus Context</string>
    </property>
   </action>
  </widget>

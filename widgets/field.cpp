@@ -21,6 +21,7 @@ Field::Field(InitType initType, QWidget* parent)
     , m_sheet("QTextEdit")
     , m_contentMode(ContentMode::News)
     , m_languageContext(LanguageContext::Auto)
+    , m_timerId(0)
 {
     setFrameShape(QFrame::Box);
     setFrameShadow(QFrame::Plain);

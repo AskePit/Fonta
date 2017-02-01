@@ -12,6 +12,7 @@ class MainWindow;
 
 class QPushButton;
 class QActionGroup;
+class QButtonGroup;
 
 namespace fonta {
 
@@ -116,11 +117,9 @@ private slots:
     void on_actionFillLoremIpsum_triggered();
     void resetFillActions();
 
-    void on_actionAuto_Context_triggered();
-    void on_actionEng_Context_triggered();
-    void on_actionRus_Context_triggered();
     void updateContextGroup();
-    void resetContextActions();
+    void enableContextGroup();
+    void disableContextGroup();
 
 protected:
     void resizeEvent(QResizeEvent* event);
@@ -136,7 +135,11 @@ private:
     QPushButton *m_addTabButton;
 
     QActionGroup *fillGroup;
-    QActionGroup *contextGroup;
+
+    QButtonGroup *contextGroup;
+    QPushButton *autoButton;
+    QPushButton *engButton;
+    QPushButton *rusButton;
 
     void saveGeometry();
     void loadGeometry();
@@ -157,6 +160,8 @@ private:
 
     void setCurrWorkArea(int id);
     void updateAddRemoveButtons();
+
+    void extendToolBar();
 };
 
 } // namespace fonta
