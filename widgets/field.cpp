@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QScrollBar>
 #include <QTimerEvent>
+#include <QDebug>
 
 namespace fonta {
 
@@ -17,6 +18,7 @@ Field::Field(InitType initType, QWidget* parent)
     , m_fontStyle("Normal")
     , m_preferableFontStyle("Normal")
     , m_leading(inf())
+    , m_leadingChanged(false)
     , m_tracking(0)
     , m_sheet("QTextEdit")
     , m_contentMode(ContentMode::News)
@@ -27,7 +29,7 @@ Field::Field(InitType initType, QWidget* parent)
     setFrameShadow(QFrame::Plain);
     setLineWidth(0);
     setAcceptRichText(false);
-    setLeading(m_leading);
+
     alignText(Qt::AlignLeft);
 
     if(initType == InitType::Sampled) {
@@ -54,6 +56,8 @@ Field::Field(InitType initType, QWidget* parent)
 
     m_surfaceLayout->addWidget(m_tooglePanel);
     m_surfaceLayout->addWidget(this);
+
+    setLeading(m_leading);
 }
 
 void Field::toogle(bool toogle)
@@ -154,6 +158,8 @@ void Field::updateText()
         return;
     }
 
+    qDebug() << "update text";
+
     QString text;
 
     switch(m_languageContext) {
@@ -229,7 +235,13 @@ void Field::resizeEvent(QResizeEvent* e)
 void Field::timerEvent(QTimerEvent* e)
 {
     if(m_contentMode == ContentMode::LoremIpsum) {
-        updateText();
+        // leading change cause undesired resizeEvent which cause superfluous updateText() call (in Field::timerEvent) which erases leading
+        if(m_leadingChanged) {
+            m_leadingChanged = false;
+        } else {
+            updateText();
+            //setLeading(m_leading);
+        }
     }
 
     killTimer(e->timerId());
@@ -257,6 +269,7 @@ void Field::setFontFamily(CStringRef family)
     }
 
     updateText();
+    setLeading(m_leading);
 }
 
 void Field::setFontSize(float size)
@@ -269,6 +282,7 @@ void Field::setFontSize(float size)
 
     setFont(newFont);
     updateText();
+    setLeading(m_leading);
 }
 
 void Field::setFontStyle(CStringRef style)
@@ -283,6 +297,7 @@ void Field::setFontStyle(CStringRef style)
     setFont(newFont);
     m_fontStyle = style;
     updateText();
+    setLeading(m_leading);
 }
 
 void Field::setPreferableFontStyle(CStringRef style)
@@ -310,6 +325,7 @@ void Field::alignTextHorizontally(Qt::Alignment alignment)
 void Field::setLeading(float val)
 {
     m_leading = val;
+    updateText();
 
     QTextCursor cursor(textCursor());
     cursor.movePosition(QTextCursor::Start);
@@ -322,6 +338,7 @@ void Field::setLeading(float val)
         format.setLineHeight(val/font().pointSizeF()*100, QTextBlockFormat::ProportionalHeight);
     }
 
+    m_leadingChanged = true;
     cursor.mergeBlockFormat(format);
 }
 
@@ -337,6 +354,7 @@ void Field::setTracking(int val)
 
     setFont(newFont);
     updateText();
+    setLeading(m_leading);
 }
 
 void Field::setContentMode(ContentMode mode)
