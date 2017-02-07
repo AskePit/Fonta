@@ -49,6 +49,7 @@ public:
     void applySheet();
     void fetchSamples();
     void updateText();
+    void updateLoremText();
 
     void save(QJsonObject &json) const;
     void load(const QJsonObject &json);
@@ -85,6 +86,7 @@ private:
     QHBoxLayout* m_surfaceLayout;
     TooglePanel* m_tooglePanel;
 
+    void updateLeading();
     void alignTextHorizontally(Qt::Alignment alignment);
 };
 

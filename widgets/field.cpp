@@ -173,25 +173,51 @@ void Field::updateText()
     }
 
     if(m_contentMode == ContentMode::LoremIpsum) {
-        clear();
-        LoremGenerator g(text, '\n');
-
-        if(!verticalScrollBar()->isVisible()) {
-            while(!verticalScrollBar()->isVisible()) {
-                setText(toPlainText() + g.get());
-            }
-        }
-
-        while(verticalScrollBar()->isVisible()) {
-            QString s = truncWord(toPlainText());
-            setText(s);
-
-            if(s.isEmpty()) {
-                break;
-            }
-        }
+        updateLoremText();
     } else {
         setText(text);
+        alignText(textAlignment()); // text alignment is reseted after setText()
+    }
+}
+
+void Field::updateLoremText()
+{
+    if(m_contentMode != ContentMode::LoremIpsum) {
+        return;
+    }
+
+    QString text;
+
+    switch(m_languageContext) {
+        default:
+        case LanguageContext::Auto: {
+            bool cyr = fontaDB().isCyrillic(fontFamily());
+            text = cyr ? m_rusText : m_engText;
+        } break;
+        case LanguageContext::Eng: text = m_engText; break;
+        case LanguageContext::Rus: text = m_rusText; break;
+    }
+
+    clear();
+    LoremGenerator g(text, '\n');
+
+    if(!verticalScrollBar()->isVisible()) {
+        while(!verticalScrollBar()->isVisible()) {
+            setText(toPlainText() + g.get());
+            //m_leadingChanged = true;
+            updateLeading();
+        }
+    }
+
+    while(verticalScrollBar()->isVisible()) {
+        QString s = truncWord(toPlainText());
+        setText(s);
+        //m_leadingChanged = true;
+        updateLeading();
+
+        if(s.isEmpty()) {
+            break;
+        }
     }
 
     // text alignment is reseted after setText();
@@ -239,7 +265,7 @@ void Field::timerEvent(QTimerEvent* e)
         if(m_leadingChanged) {
             m_leadingChanged = false;
         } else {
-            updateText();
+            updateLoremText();
             //setLeading(m_leading);
         }
     }
@@ -268,8 +294,7 @@ void Field::setFontFamily(CStringRef family)
         setFontStyle(s.at(0));
     }
 
-    updateText();
-    setLeading(m_leading);
+    updateLoremText();
 }
 
 void Field::setFontSize(float size)
@@ -281,8 +306,7 @@ void Field::setFontSize(float size)
     newFont.setLetterSpacing(QFont::AbsoluteSpacing, px);
 
     setFont(newFont);
-    updateText();
-    setLeading(m_leading);
+    updateLoremText();
 }
 
 void Field::setFontStyle(CStringRef style)
@@ -296,8 +320,7 @@ void Field::setFontStyle(CStringRef style)
 
     setFont(newFont);
     m_fontStyle = style;
-    updateText();
-    setLeading(m_leading);
+    updateLoremText();
 }
 
 void Field::setPreferableFontStyle(CStringRef style)
@@ -324,21 +347,25 @@ void Field::alignTextHorizontally(Qt::Alignment alignment)
 
 void Field::setLeading(float val)
 {
+    qDebug() << "set Leading";
+
     m_leading = val;
-    updateText();
+    updateLoremText();
+    updateLeading();
+}
+
+void Field::updateLeading()
+{
+    qDebug() << "update Leading";
 
     QTextCursor cursor(textCursor());
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
     QTextBlockFormat format;
 
-    if(val == inf()) {
-        format.setLineHeight(120, QTextBlockFormat::ProportionalHeight);
-    } else {
-        format.setLineHeight(val/font().pointSizeF()*100, QTextBlockFormat::ProportionalHeight);
-    }
+    qreal lineHeight = (m_leading == inf()) ? 120 : m_leading/font().pointSizeF()*100;
+    format.setLineHeight(lineHeight, QTextBlockFormat::ProportionalHeight);
 
-    m_leadingChanged = true;
     cursor.mergeBlockFormat(format);
 }
 
@@ -353,21 +380,20 @@ void Field::setTracking(int val)
     newFont.setKerning(true);
 
     setFont(newFont);
-    updateText();
-    setLeading(m_leading);
+    updateLoremText();
 }
 
 void Field::setContentMode(ContentMode mode)
 {
     m_contentMode = mode;
     fetchSamples();
-    updateText();
+    updateLoremText();
 }
 
 void Field::setLanguageContext(LanguageContext context)
 {
     m_languageContext = context;
-    updateText();
+    updateLoremText();
 }
 
 void Field::save(QJsonObject &json) const
