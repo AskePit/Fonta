@@ -70,7 +70,6 @@ private:
     int m_id;
     Qt::Alignment m_alignment;
     float m_leading;
-    bool m_leadingChanged;
     int m_tracking;
     mutable StyleSheet m_sheet;
 

@@ -679,6 +679,8 @@ void MainWindow::openFile(CStringRef filename)
     load(filename);
     setCurrFile(filename);
 
+    changeAddTabButtonGeometry();
+
     QFileInfo info(filename);
     QSettings fontaReg("PitM", "Fonta");
     fontaReg.setValue("OpenSaveFilePath", info.filePath());

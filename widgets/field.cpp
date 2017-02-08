@@ -18,7 +18,6 @@ Field::Field(InitType initType, QWidget* parent)
     , m_fontStyle("Normal")
     , m_preferableFontStyle("Normal")
     , m_leading(inf())
-    , m_leadingChanged(false)
     , m_tracking(0)
     , m_sheet("QTextEdit")
     , m_contentMode(ContentMode::News)
@@ -158,8 +157,6 @@ void Field::updateText()
         return;
     }
 
-    qDebug() << "update text";
-
     QString text;
 
     switch(m_languageContext) {
@@ -176,6 +173,7 @@ void Field::updateText()
         updateLoremText();
     } else {
         setText(text);
+        updateLeading();
         alignText(textAlignment()); // text alignment is reseted after setText()
     }
 }
@@ -204,7 +202,7 @@ void Field::updateLoremText()
     if(!verticalScrollBar()->isVisible()) {
         while(!verticalScrollBar()->isVisible()) {
             setText(toPlainText() + g.get());
-            //m_leadingChanged = true;
+            // leading is reseted after setText();
             updateLeading();
         }
     }
@@ -212,7 +210,6 @@ void Field::updateLoremText()
     while(verticalScrollBar()->isVisible()) {
         QString s = truncWord(toPlainText());
         setText(s);
-        //m_leadingChanged = true;
         updateLeading();
 
         if(s.isEmpty()) {
@@ -262,12 +259,7 @@ void Field::timerEvent(QTimerEvent* e)
 {
     if(m_contentMode == ContentMode::LoremIpsum) {
         // leading change cause undesired resizeEvent which cause superfluous updateText() call (in Field::timerEvent) which erases leading
-        if(m_leadingChanged) {
-            m_leadingChanged = false;
-        } else {
-            updateLoremText();
-            //setLeading(m_leading);
-        }
+        updateLoremText();
     }
 
     killTimer(e->timerId());
@@ -294,7 +286,7 @@ void Field::setFontFamily(CStringRef family)
         setFontStyle(s.at(0));
     }
 
-    updateLoremText();
+    updateText();
 }
 
 void Field::setFontSize(float size)
@@ -347,8 +339,6 @@ void Field::alignTextHorizontally(Qt::Alignment alignment)
 
 void Field::setLeading(float val)
 {
-    qDebug() << "set Leading";
-
     m_leading = val;
     updateLoremText();
     updateLeading();
@@ -356,8 +346,6 @@ void Field::setLeading(float val)
 
 void Field::updateLeading()
 {
-    qDebug() << "update Leading";
-
     QTextCursor cursor(textCursor());
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
@@ -387,13 +375,13 @@ void Field::setContentMode(ContentMode mode)
 {
     m_contentMode = mode;
     fetchSamples();
-    updateLoremText();
+    updateText();
 }
 
 void Field::setLanguageContext(LanguageContext context)
 {
     m_languageContext = context;
-    updateLoremText();
+    updateText();
 }
 
 void Field::save(QJsonObject &json) const
