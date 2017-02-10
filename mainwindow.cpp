@@ -864,55 +864,6 @@ void MainWindow::on_actionNext_Tab_triggered()
     ui->tabWidget->setCurrentIndex(id);
 }
 
-void MainWindow::on_actionFonts_Cleaner_triggered()
-{
-    /*int ret = callQuestionDialog(tr("Do you want to uninstall all non-latin and non-cyrillic fonts?\nSymbolic fonts won't be removed."));
-
-    if (ret == QMessageBox::Cancel) {
-        return;
-    }*/
-
-    for(CStringRef family : fontaDB().families()) {
-        if(fontaDB().isNotLatinOrCyrillic(family)) {
-            qDebug() << family;
-        }
-    }
-
-    /*
-    QStringList families = fontaDB().families();
-    int i = 0;
-    int removed = 0;
-    while(1) {
-        if(i >= families.length()) {
-            break;
-        }
-
-        CStringRef family = families[i];
-        if(!fontaDB().isNotLatinOrCyrillic(family)) {
-            ++i;
-            continue;
-        } else {
-            qDebug() << family;
-
-            fontaDB().uninstall(family);
-            families = fontaDB().families();
-            i = 0;
-            ++removed;
-            if(removed > 10000) { // in case of unproper deletion
-                break;
-            }
-        }
-    }
-
-    if(removed) {
-        on_filterBox_currentIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
-        callInfoDialog(tr("%1 font(s) uninstalled!\nReboot your PC for changes to take effect").arg(QString::number(removed)));
-    } else {
-        callInfoDialog(tr("There is no fonts to uninstall!"));
-    }
-    */
-}
-
 void MainWindow::on_alignLeftButton_toggled()
 {
     m_currField->alignText(Qt::AlignLeft);

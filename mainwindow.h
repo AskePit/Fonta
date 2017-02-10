@@ -106,8 +106,6 @@ private slots:
     void on_actionClose_other_Tabs_triggered();
     void on_actionNext_Tab_triggered();
 
-    void on_actionFonts_Cleaner_triggered();
-
     void on_alignLeftButton_toggled();
     void on_alignCenterButton_toggled();
     void on_alignRightButton_toggled();
