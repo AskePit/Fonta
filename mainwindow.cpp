@@ -198,20 +198,23 @@ void MainWindow::showTabsContextMenu(const QPoint &point)
         return;
     }
 
-    int length = m_workAreas.size();
-    if(length <= 1) {
-        return;
-    }
-
     int tabIndex = ui->tabWidget->tabBar()->tabAt(point);
     ui->tabWidget->setCurrentIndex(tabIndex);
 
     QMenu menu(this);
 
     QAction remove(tr("Close Other Tabs"), this);
-    connect(&remove, &QAction::triggered, this, &MainWindow::closeOtherTabs);
-    connect(&remove, &QAction::triggered, this, &MainWindow::changeAddTabButtonGeometry);
-    menu.addAction(&remove);
+    int length = m_workAreas.size();
+    if(length > 1) {
+        connect(&remove, &QAction::triggered, this, &MainWindow::closeOtherTabs);
+        connect(&remove, &QAction::triggered, this, &MainWindow::changeAddTabButtonGeometry);
+        menu.addAction(&remove);
+        menu.addSeparator();
+    }
+
+    QAction clone(tr("Clone Tab"), this);
+    connect(&clone, &QAction::triggered, this, &MainWindow::cloneCurrTab);
+    menu.addAction(&clone);
 
     menu.exec(ui->tabWidget->tabBar()->mapToGlobal(point));
 }
@@ -334,6 +337,24 @@ void MainWindow::closeOtherTabs()
     }
 
     changeAddTabButtonGeometry();
+}
+
+void MainWindow::cloneCurrTab()
+{
+    WorkArea& protoArea = *m_currWorkArea;
+
+    addTab(InitType::Empty);
+
+    for(const Field* protoField : protoArea) {
+        Field* field = protoField->clone();
+        m_currWorkArea->addField(field);
+        makeFieldConnected(field);
+    }
+
+    m_currWorkArea->setSizes(protoArea.sizes());
+    m_currWorkArea->setCurrField((*m_currWorkArea)[0]);
+    m_currField = m_currWorkArea->currField();
+    m_currField->setFocus();
 }
 
 void MainWindow::renameTab(int id)

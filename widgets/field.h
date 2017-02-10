@@ -20,6 +20,9 @@ public:
     Field(InitType initType = InitType::Sampled, QWidget* parent = 0);
     virtual ~Field(){ }
 
+    Field& operator=(const Field &other);
+    Field* clone() const;
+
     void toogle(bool toogle);
     QWidget* surfaceWidget();
 

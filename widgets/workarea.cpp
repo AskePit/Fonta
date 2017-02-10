@@ -70,7 +70,11 @@ void WorkArea::setCurrField(Field* field)
 Field* WorkArea::addField(InitType initType)
 {    
     Field* field = new Field(initType, this);
+    return addField(field);
+}
 
+Field* WorkArea::addField(Field* field)
+{
     int id = m_fields.length();
 
     field->setId(id);

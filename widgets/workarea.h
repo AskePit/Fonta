@@ -27,6 +27,7 @@ public:
     void setCurrField(Field* field);
 
     Field* addField(InitType initType = InitType::Sampled);
+    Field* addField(Field* field);
     void popField();
     Field* operator[](int i);
     int fieldCount() const;

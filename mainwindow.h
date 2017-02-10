@@ -81,6 +81,7 @@ private slots:
     void closeTabPrompted(int i);
     void closeTab(int i);
     void closeOtherTabs();
+    void cloneCurrTab();
     void renameTab(int id);
 
     void showFontListContextMenu(const QPoint &point);

@@ -59,6 +59,35 @@ Field::Field(InitType initType, QWidget* parent)
     setLeading(m_leading);
 }
 
+Field& Field::operator=(const Field &other)
+{
+    m_fontStyle = other.m_fontStyle;
+    m_preferableFontStyle = other.m_preferableFontStyle;
+    m_leading = other.m_leading;
+    m_tracking = other.m_tracking;
+    m_sheet = other.m_sheet;
+    m_contentMode = other.m_contentMode;
+    m_languageContext = other.m_languageContext;
+    m_engText = other.m_engText;
+    m_rusText = other.m_rusText;
+    m_alignment = other.alignment();
+
+    setText(other.toPlainText());
+    setFont(other.font());
+    alignText(m_alignment);
+    updateLeading();
+
+    return *this;
+}
+
+Field* Field::clone() const
+{
+    Field* f = new Field(InitType::Empty);
+
+    *f = *this;
+    return f;
+}
+
 void Field::toogle(bool toogle)
 {
     return m_tooglePanel->toogle(toogle);
