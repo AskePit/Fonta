@@ -80,70 +80,32 @@ QStringList Sampler::textsRus = {
 };
 
 const QVector<Sample> Sampler::preSamples = {
-    {
-        "Georgia", 22,
-        "Verdana", 11
-    },
-    {
-        "Helvetica", 26,
-        "Garamond", 12
-    },
-    {
-        "Bodoni MT", 24,
-        "FuturaLight", 16
-    },
-    {
-        "Trebuchet MS", 18,
-        "Verdana", 9
-    },
-    {
-        "Century Schoolbook", 22,
-        "Century Gothic", 12
-    },
-    {
-        "Franklin Gothic Demi Cond", 24,
-        "Century Gothic", 12
-    },
-    {
-        "Tahoma", 18,
-        "Segoe UI", 11
-    },
-    {
-        "Franklin Gothic Demi", 20,
-        "Trebuchet MS", 12
-    },
-    {
-        "Trebuchet MS", 20,
-        "Corbel", 11
-    },
-    {
-        "Arial Black", 18,
-        "Arial", 11
-    },
-    {
-        "Impact", 22,
-        "Arial Narrow", 12
-    },
-    {
-        "Georgia", 20,
-        "Calibri", 11
-    },
-    {
-        "Segoe UI", 20,
-        "Arial", 11
-    },
-    {
-        "Terminal", 16,
-        "Terminal", 16
-    },
-    {
-        "Clarendon", 20,
-        "Times New Roman", 12
-    },
-    {
-        "Cooper Black", 22,
-        "Trebuchet MS", 13
-    },
+    { "Georgia", 22, "Verdana", 11 },
+    { "Helvetica", 26, "Garamond", 12 },
+    { "Bodoni MT", 24, "FuturaLight", 16 },
+    { "Bodoni MT", 24, "Futura Bk BT", 16 },
+    { "Bodoni MT", 24, "Futura PT", 16 },
+    { "Bodoni MT", 24, "Futura", 16 },
+    { "Trebuchet MS", 18, "Verdana", 9 },
+    { "Century Schoolbook", 21, "Century Gothic", 12 },
+    { "Franklin Gothic Demi Cond", 24, "Century Gothic", 12 },
+    { "Tahoma", 18, "Segoe UI", 11 },
+    { "Franklin Gothic Demi", 20, "Trebuchet MS", 12 },
+    { "Arial Black", 17, "Arial", 11 },
+    { "Impact", 21, "Arial Narrow", 12 },
+    { "Georgia", 18, "Calibri", 12 },
+    { "Segoe UI", 20, "Arial", 11 },
+    { "Clarendon", 17, "Times New Roman", 12 },
+    { "Clarendon", 20, "Chaparral Pro", 14 },
+    { "Cooper Black", 22, "Centaur", 17 },
+    { "Helvetica", 21, "Garamond", 15 },
+    { "Bodoni MT", 24, "Gill Sans MT", 16 },
+    { "Bodoni MT", 20, "Gill Sans MT", 14 },
+    { "Gill Sans MT", 20, "Centaur", 16 },
+    { "Centaur", 20, "Franklin Gothic Book", 12 },
+    { "Caslon", 20, "Franklin Gothic Book", 12 },
+    { "Baskerville Old Face", 19, "Franklin Gothic Book", 11 },
+    { "Gill Sans MT Condensed", 20, "Arial", 10 },
 };
 
 struct NewsData {
