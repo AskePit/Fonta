@@ -397,9 +397,13 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
         (void)lock;
     }
 
-    if(TTFs.contains(fontName)) {
-        TTFs[fontName].files << fileName;
-        return;
+    {
+        std::lock_guard<std::mutex> lock(readTTFMutex);
+        if(TTFs.contains(fontName)) {
+            TTFs[fontName].files << fileName;
+            return;
+        }
+        (void)lock;
     }
 
     TTF ttf;
