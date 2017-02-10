@@ -11,6 +11,7 @@ WorkArea::WorkArea(int id, QWidget* parent, QString name)
     : QSplitter(parent)
     , m_id(id)
     , m_name(name)
+    , m_currField(nullptr)
 {
     QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Expanding);
     sp.setHorizontalStretch(2);

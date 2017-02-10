@@ -63,6 +63,7 @@ struct TTF {
 
     TTF()
         : familyClass(FamilyClass::NO)
+        , familySubClass(0)
         , latin(false)
         , cyrillic(false)
         , monospaced(false)

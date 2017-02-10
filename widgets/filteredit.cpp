@@ -8,6 +8,7 @@ namespace fonta {
 
 FilterEdit::FilterEdit(QWidget* parent)
     : QLineEdit(parent)
+    , m_listWidget(nullptr)
 {}
 
 void FilterEdit::keyPressEvent(QKeyEvent* event)

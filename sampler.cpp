@@ -112,7 +112,10 @@ struct NewsData {
     QStringList *list;
     QString tag;
 
-    NewsData() {}
+    NewsData()
+        : list(nullptr)
+        , timer(nullptr)
+    {}
     NewsData(QStringList *list, const QString &tag)
         : list(list)
         , tag(tag)

@@ -213,7 +213,6 @@ static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 
     if(icomma == -1 && ipareth != -1) {
         s.truncate(ipareth);
-        fontName = s.trimmed();
     } else if(icomma != -1) {
         for(int i = icomma-1; i>=0; --i) {
             if(!s[i].isDigit()) {
