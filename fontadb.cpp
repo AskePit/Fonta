@@ -251,9 +251,13 @@ static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
         (void)lock;
     }
 
-    if(TTFs.contains(fontName)) {
-        TTFs[fontName].files << f.fileName();
-        return;
+    {
+        std::lock_guard<std::mutex> lock(readTTFMutex);
+        if(TTFs.contains(fontName)) {
+            TTFs[fontName].files << f.fileName();
+            return;
+        }
+        (void)lock;
     }
 
     TTF ttf;
@@ -442,9 +446,11 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
     ttf.latin = langBit(0) || langBit(1) || langBit(2) || langBit(3);
     ttf.cyrillic = langBit(9);
 
-    std::lock_guard<std::mutex> lock(readTTFMutex);
-    TTFs[fontName] = ttf;
-    (void)lock;
+    {
+        std::lock_guard<std::mutex> lock(readTTFMutex);
+        TTFs[fontName] = ttf;
+        (void)lock;
+    }
 }
 
 static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &nameBytes)
