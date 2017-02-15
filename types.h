@@ -3,19 +3,17 @@
 
 #include <QString>
 #include <QFont>
-#include <stdint.h>
 #include <limits>
 
+typedef quint8 u8;
+typedef quint16 u16;
+typedef quint32 u32;
+typedef quint64 u64;
 
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-
-typedef int8_t i8;
-typedef int16_t i16;
-typedef int32_t i32;
-typedef int64_t i64;
+typedef qint8 i8;
+typedef qint16 i16;
+typedef qint32 i32;
+typedef qint64 i64;
 
 using CStringRef = const QString&;
 #define cauto const auto&
