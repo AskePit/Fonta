@@ -101,8 +101,8 @@ namespace TTFTable {
 }
 
 // Forwards
-static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &nameBytes);
-static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
+static QString decodeFontName(u16 code, const char *string, u16 length);
+static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
 static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
 static void readTTC(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
 static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
@@ -112,6 +112,33 @@ static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[]);
 static std::mutex readTTFMutex;
 static std::mutex readFile2Fonts;
 
+template <typename T>
+inline T read(QFile &f)
+{
+    T data;
+    f.read((char*)&data, sizeof(T));
+    return data;
+}
+
+template <>
+inline u16 read(QFile &f)
+{
+    u16 data;
+    f.read((char*)&data, 2);
+    data = swap16(data);
+
+    return data;
+}
+
+template <>
+inline u32 read(QFile &f)
+{
+    u32 data;
+    f.read((char*)&data, 4);
+    data = swap32(data);
+
+    return data;
+}
 
 static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
@@ -120,7 +147,7 @@ static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2
 #endif
 
     QFile f(fileName);
-    if (!f.open(QIODevice::ReadOnly)) {
+    if (Q_UNLIKELY(!f.open(QIODevice::ReadOnly))) {
         qWarning() << "Couldn't open!";
         return;
     }
@@ -129,7 +156,7 @@ static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2
 
     if(fileName.endsWith(".ttc", Qt::CaseInsensitive)) {
         func = readTTC;
-    } else if(fileName.endsWith(".fon", Qt::CaseInsensitive)) {
+    } else if(Q_UNLIKELY(fileName.endsWith(".fon", Qt::CaseInsensitive))) {
         func = readFON;
     } else {
         func = readTTF;
@@ -142,23 +169,17 @@ static void readTTC(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
     f.seek(8);
 
-    u32 offsetTablesCount;
-    f.read((char*)&offsetTablesCount, 4);
-    offsetTablesCount = swap32(offsetTablesCount);
+    const u32 offsetTablesCount = read<u32>(f);
 
     std::vector<u32> offsets(offsetTablesCount);
     for(u32 i = 0; i<offsetTablesCount; ++i) {
-        u32 &offset = offsets[i];
-        f.read((char*)&offset, 4);
-        offset = swap32(offset);
+        offsets[i] = read<u32>(f);
     }
 
     for(u32 i = 0; i<offsetTablesCount; ++i) {
         f.seek(offsets[i] + 4);
 
-        u16 fontTablesCount;
-        f.read((char*)&fontTablesCount, 2);
-        fontTablesCount = swap16(fontTablesCount);
+        const u16 fontTablesCount = read<u16>(f);
 
         f.seek(offsets[i] + 12);
         TTFOffsetTable tablesMap[TTFTable::count];
@@ -170,7 +191,7 @@ static void readTTC(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
             }
         }
 
-        if(tablesCount != TTFTable::count) {
+        if(Q_UNLIKELY(tablesCount != TTFTable::count)) {
             qWarning() << "no necessary tables!";
             return;
         }
@@ -190,13 +211,13 @@ static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
     if(ibeg == -1) return;
     ++ibeg;
 
-    int iend = ba.indexOf('\0', ibeg);
+    const int iend = ba.indexOf('\0', ibeg);
     if(iend == -1) return;
 
     QString s(ba.mid(ibeg, iend-ibeg));
 
-    int ipareth = s.indexOf('(');
-    int icomma = s.indexOf(',');
+    const int ipareth = s.indexOf('(');
+    const int icomma = s.indexOf(',');
 
     QString fontName;
 
@@ -273,7 +294,7 @@ static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
         }
     }
 
-    if(tablesCount != TTFTable::count) {
+    if(Q_UNLIKELY(tablesCount != TTFTable::count)) {
         qWarning() << "no necessary tables!";
         return;
     }
@@ -283,8 +304,7 @@ static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 
 static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
 {
-    TTFOffsetTable offsetTable;
-    f.read((char*)&offsetTable, sizeof(TTFOffsetTable));
+    TTFOffsetTable offsetTable = read<TTFOffsetTable>(f);
 
     TTFTable::type tableType = TTFTable::NO;
 
@@ -306,7 +326,8 @@ static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
     }
 }
 
-static inline u16 getU16(const unsigned char *p)
+
+static inline u16 getU16(const char *p)
 {
     u16 val;
     val = *p++ << 8;
@@ -315,173 +336,49 @@ static inline u16 getU16(const unsigned char *p)
     return val;
 }
 
-static QString getEnglishName(const uchar *table, u32 bytes)
-{
-    QString i18n_name;
-    enum {
-        NameRecordSize = 12,
-        FamilyId = 1,
-        MS_LangIdEnglish = 0x009
-    };
-
-    // get the name table
-    quint16 count;
-    quint16 string_offset;
-    const unsigned char *names;
-
-    int microsoft_id = -1;
-    int apple_id = -1;
-    int unicode_id = -1;
-
-    if(getU16(table) != 0)
-        goto error;
-
-    count = getU16(table+2);
-    string_offset = getU16(table+4);
-    names = table + 6;
-
-    if(string_offset >= bytes || 6 + count*NameRecordSize > string_offset)
-        goto error;
-
-    for(int i = 0; i < count; ++i) {
-        // search for the correct name entry
-
-        u16 platform_id = getU16(names + i*NameRecordSize);
-        u16 encoding_id = getU16(names + 2 + i*NameRecordSize);
-        u16 language_id = getU16(names + 4 + i*NameRecordSize);
-        u16 name_id = getU16(names + 6 + i*NameRecordSize);
-
-        if(name_id != FamilyId)
-            continue;
-
-        enum {
-            PlatformId_Unicode = 0,
-            PlatformId_Apple = 1,
-            PlatformId_Microsoft = 3
-        };
-
-        u16 length = getU16(names + 8 + i*NameRecordSize);
-        u16 offset = getU16(names + 10 + i*NameRecordSize);
-        if(u32(string_offset + offset + length) >= bytes)
-            continue;
-
-        if ((platform_id == PlatformId_Microsoft
-            && (encoding_id == 0 || encoding_id == 1))
-            && (language_id & 0x3ff) == MS_LangIdEnglish
-            && microsoft_id == -1)
-            microsoft_id = i;
-            // not sure if encoding id 4 for Unicode is utf16 or ucs4...
-        else if(platform_id == PlatformId_Unicode && encoding_id < 4 && unicode_id == -1)
-            unicode_id = i;
-        else if(platform_id == PlatformId_Apple && encoding_id == 0 && language_id == 0)
-            apple_id = i;
-    }
-    {
-        bool unicode = false;
-        int id = -1;
-        if(microsoft_id != -1) {
-            id = microsoft_id;
-            unicode = true;
-        } else if(apple_id != -1) {
-            id = apple_id;
-            unicode = false;
-        } else if (unicode_id != -1) {
-            id = unicode_id;
-            unicode = true;
-        }
-        if(id != -1) {
-            u16 length = getU16(names + 8 + id*NameRecordSize);
-            u16 offset = getU16(names + 10 + id*NameRecordSize);
-            if(unicode) {
-                // utf16
-
-                length /= 2;
-                i18n_name.resize(length);
-                QChar *uc = (QChar *) i18n_name.unicode();
-                const unsigned char *string = table + string_offset + offset;
-                for(int i = 0; i < length; ++i)
-                    uc[i] = getU16(string + 2*i);
-            } else {
-                // Apple Roman
-
-                i18n_name.resize(length);
-                QChar *uc = (QChar *) i18n_name.unicode();
-                const unsigned char *string = table + string_offset + offset;
-                for(int i = 0; i < length; ++i)
-                    uc[i] = QLatin1Char(string[i]);
-            }
-        }
-    }
-  error:
-    //qDebug("got i18n name of '%s' for font '%s'", i18n_name.latin1(), familyName.toLocal8Bit().data());
-    return i18n_name;
-}
-
-static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
+static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
     /////////
     // name
     ///////
-    TTFOffsetTable &nameOffsetTable = tablesMap[TTFTable::NAME];
+    const TTFOffsetTable &nameOffsetTable = tablesMap[TTFTable::NAME];
     f.seek(nameOffsetTable.Offset);
 
-    TTFNameHeader nameHeader;
-    f.read((char*)&nameHeader, sizeof(TTFNameHeader));
+    TTFNameHeader nameHeader = read<TTFNameHeader>(f);
     nameHeader.RecordsCount = swap16(nameHeader.RecordsCount);
     nameHeader.StorageOffset = swap16(nameHeader.StorageOffset);
 
     TTFNameRecord nameRecord;
     TTFNameRecord lastNameRecord;
-    QByteArray nameBytes;
-    QString fontName;
+    char nameBytes[1024];
     bool properLanguage = false; // english-like language
 
-    enum {
-        NameRecordSize = 12,
-        FamilyId = 1,
-        MS_LangIdEnglish = 0x009
-    };
-
-    // get the name table
-    quint16 count;
-    quint16 string_offset;
-    const unsigned char *names;
-
-    int microsoft_id = -1;
-    int apple_id = -1;
-    int unicode_id = -1;
-
     for(int i = 0; i<nameHeader.RecordsCount; ++i) {
-        f.read((char*)&nameRecord, sizeof(TTFNameRecord));
+        nameRecord = read<TTFNameRecord>(f);
         nameRecord.NameID = swap16(nameRecord.NameID);
 
-        if(nameRecord.NameID != FamilyId) {
+        // 1 is FamilyID
+        if(nameRecord.NameID != 1) {
             continue;
         }
+
+        lastNameRecord = nameRecord;
 
         nameRecord.PlatformID = swap16(nameRecord.PlatformID);
         nameRecord.EncodingID = swap16(nameRecord.EncodingID);
         nameRecord.StringLength = swap16(nameRecord.StringLength);
         nameRecord.StringOffset = swap16(nameRecord.StringOffset);
 
-        enum {
-            PlatformId_Unicode = 0,
-            PlatformId_Apple = 1,
-            PlatformId_Microsoft = 3
-        };
-
         // save file position, so we can return to continue with search
-        quint64 nPos = f.pos();
+        const quint64 nPos = f.pos();
         f.seek(nameOffsetTable.Offset + nameHeader.StorageOffset + nameRecord.StringOffset);
 
-        nameBytes = f.read(nameRecord.StringLength);
+        f.read(nameBytes, nameRecord.StringLength);
 
         properLanguage = false;
 
-        u8 langCode = nameRecord.LanguageID >> 8; // notice that we did not do swapU16 on it!
-        /*if(nameRecord.PlatformID == 1) {
-            properLanguage = langCode <= 9; // English, French, German, Italian, Dutch, Swedish, Spanish, Danish, Portuguese, Norwegian
-        } else*/ if(nameRecord.PlatformID == 3) {
+        const u8 langCode = nameRecord.LanguageID >> 8; // notice that we did not do swapU16 on it!
+        if(nameRecord.PlatformID == 3) {
             properLanguage = langCode == 0x09 || // English
                              langCode == 0x07 || // German
                              langCode == 0x0C || // French
@@ -490,25 +387,22 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
         }
 
         if(properLanguage) {
-            fontName = decodeFontName(nameRecord.PlatformID, nameRecord.EncodingID, nameBytes);
-#ifdef FONTA_DETAILED_DEBUG
-            qDebug() << '\t' << nameRecord.PlatformID << nameRecord.EncodingID << langCode << fontName;
-#endif
             break;
-        } else {
-            lastNameRecord = nameRecord;
         }
 
         f.seek(nPos);
     }
 
-    if(!properLanguage) {
-        // use last record to extract font name
-        fontName = decodeFontName(lastNameRecord.PlatformID, lastNameRecord.EncodingID, nameBytes);
+    const u16 code = (lastNameRecord.PlatformID<<8) + lastNameRecord.EncodingID;
+    const QString fontName = decodeFontName(code, nameBytes, nameRecord.StringLength);
+
 #ifdef FONTA_DETAILED_DEBUG
+    if(properLanguage) {
+        qDebug() << '\t' << lastNameRecord.PlatformID << lastNameRecord.EncodingID << langCode << fontName;
+    } else {
         qDebug() << '\t' << "not proper!" << lastNameRecord.PlatformID << lastNameRecord.EncodingID << (lastNameRecord.LanguageID>>8) << fontName;
-#endif
     }
+#endif
 
     CStringRef fileName = f.fileName();
 
@@ -534,11 +428,10 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
     /////////
     // OS/2
     ///////
-    TTFOffsetTable& os2OffsetTable = tablesMap[TTFTable::OS2];
+    const TTFOffsetTable& os2OffsetTable = tablesMap[TTFTable::OS2];
     f.seek(os2OffsetTable.Offset);
 
-    TTFOS2Header os2Header;
-    f.read((char*)&os2Header, sizeof(TTFOS2Header));
+    TTFOS2Header os2Header = read<TTFOS2Header>(f);
     os2Header.FamilyClass = swap16(os2Header.FamilyClass);
     os2Header.UnicodeRange1 = swap32(os2Header.UnicodeRange1);
 
@@ -560,20 +453,38 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
     }
 }
 
-static QString decodeFontName(u16 platformID, u16 encodingID, const QByteArray &nameBytes)
+static QString decodeFontName(u16 code, const char *string, u16 length)
 {
-    u16 code = (platformID<<8) + encodingID;
+    QString i18n_name;
+
     switch(code) {
         case 0x0000:
         case 0x0003:
         case 0x0300:
         case 0x0302:
         case 0x030A:
-        case 0x0301: return QTextCodec::codecForMib(1013)->toUnicode(nameBytes); break;
+        case 0x0301: {
+            length /= 2;
+            i18n_name.resize(length);
+            QChar *uc = (QChar *) i18n_name.unicode();
 
+            for(int i = 0; i < length; ++i) {
+                uc[i] = getU16(string + 2*i);
+            }
+        } break;
         case 0x0100:
-        default:     return QTextCodec::codecForMib(106)->toUnicode(nameBytes); break;
+        default: {
+            i18n_name.resize(length);
+            QChar *uc = (QChar *) i18n_name.unicode();
+
+            for(int i = 0; i < length; ++i) {
+                uc[i] = QLatin1Char(string[i]);
+            }
+        } break;
     }
+
+    //qDebug() << i18n_name;
+    return i18n_name;
 }
 
 #ifndef FONTA_DETAILED_DEBUG

@@ -565,7 +565,6 @@ void MainWindow::on_filterBox_currentIndexChanged(int index)
             ss << pad << "Family Sub: " << info.fontaTFF.familySubClass << "\n";
             ss << pad << "Panose: " << info.fontaTFF.panose.getNumberAsString() << "\n";
             if(info.fontaTFF.cyrillic) ss << pad << "Cyrillic\n";
-            if(info.fontaTFF.monospaced) ss << pad << "Monospaced\n";
             ss << pad << "Files: " << info.fontaTFF.files.toList().join(' ') << "\n";
             if(!info.fontaTFF.linkedFonts.isEmpty()) {
                 ss << pad << "Linked fonts: " << info.fontaTFF.linkedFonts.toList().join(' ');
