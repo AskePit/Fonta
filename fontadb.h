@@ -52,7 +52,6 @@ struct TTF {
     int familySubClass;
     bool latin;
     bool cyrillic;
-    bool monospaced;
     Panose panose;
 
     // these fields are needed for resolving and control font dependencies while removing font from PC
@@ -66,7 +65,6 @@ struct TTF {
         , familySubClass(0)
         , latin(false)
         , cyrillic(false)
-        , monospaced(false)
         , panose(0)
     {}
 };

@@ -82,7 +82,6 @@ struct TTFPostHeader {
     u32 Version;
     u32 ItalicAngle;
     u32 Underline;
-    u32 isFixedPitch;
 };
 
 struct TTFOS2Header {
@@ -107,7 +106,6 @@ namespace TTFTable {
         NO = -1,
         NAME,
         OS2,
-        POST,
         count
     };
 }
@@ -307,10 +305,6 @@ static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
         tableType = TTFTable::OS2;
     }
 
-    if(memcmp(offsetTable.TableName, "post", 4) == 0) {
-        tableType = TTFTable::POST;
-    }
-
     if(tableType != TTFTable::NO) {
         offsetTable.Length = swapU32(offsetTable.Length);
         offsetTable.Offset = swapU32(offsetTable.Offset);
@@ -412,17 +406,6 @@ static void readFont(TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2Fo
     TTF ttf;
     ttf.files << fileName;
     //qDebug() << '\t' << fontName;
-
-    /////////
-    // post
-    ///////
-    TTFOffsetTable& postOffsetTable = tablesMap[TTFTable::POST];
-    f.seek(postOffsetTable.Offset);
-
-    TTFPostHeader postHeader;
-    f.read((char*)&postHeader, sizeof(TTFPostHeader));
-
-    ttf.monospaced = !!postHeader.isFixedPitch;
 
     /////////
     // OS/2
@@ -730,19 +713,17 @@ bool DB::isSansSerif(CStringRef family) const
 
 bool DB::isMonospaced(CStringRef family) const
 {
-    // 1
-    if(QtDB->isFixedPitch(family))
-        return true;
+    bool qt = false;
+    bool panose = false;
 
-    // 2
+    qt = QtDB->isFixedPitch(family);
+
     TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    if(getTTF(family, ttf)) {
+        panose = ttf.panose.isMonospaced();
+    }
 
-    if(ttf.panose.isMonospaced())
-        return true;
-
-    // 3
-    return ttf.monospaced;
+    return qt || panose;
 }
 
 bool DB::isScript(CStringRef family) const

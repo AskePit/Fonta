@@ -582,6 +582,7 @@ void MainWindow::on_filterBox_currentIndexChanged(int index)
 #endif
 
         ui->fontsList->addItem(item);
+        ui->statusBar->showMessage(QString("%1 fonts").arg(ui->fontsList->count()));
     }
 }
 
