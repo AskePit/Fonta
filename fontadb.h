@@ -138,7 +138,7 @@ public:
 
     bool isNonCyrillic(CStringRef family) const;
     bool isCyrillic(CStringRef family) const;
-    bool isNotLatinOrCyrillic(CStringRef family) const;
+    //bool isNotLatinOrCyrillic(CStringRef family) const;
 
     bool getTTF(CStringRef family, TTF& ttf) const;
     FullFontInfo getFullFontInfo(CStringRef family) const;

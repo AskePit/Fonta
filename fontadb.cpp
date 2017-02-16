@@ -39,14 +39,6 @@ static void getFontFiles(QStringList &out)
     }
 }
 
-static inline u16 swap16(u16 x) {
-    return qFromBigEndian<u16>(x);
-}
-
-static inline u32 swap32(u32 x) {
-    return qFromBigEndian<u32>(x);
-}
-
 #pragma pack(push, 1)
 
 struct TTFOffsetTable {
@@ -112,30 +104,92 @@ static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[]);
 static std::mutex readTTFMutex;
 static std::mutex readFile2Fonts;
 
+template <typename T> inline void swap(T &x);
+
+template <> inline void swap<u16>(u16 &x)
+{
+    x = quint16( 0
+                 | ((x & 0x00ff) << 8)
+                 | ((x & 0xff00) >> 8) );
+}
+
+template <> inline void swap<i16>(i16 &x)
+{
+    x = qbswap<quint16>(quint16(x));
+}
+
+template <> inline void swap<u32>(u32 &x)
+{
+    x = 0
+        | ((x & 0x000000ff) << 24)
+        | ((x & 0x0000ff00) << 8)
+        | ((x & 0x00ff0000) >> 8)
+        | ((x & 0xff000000) >> 24);
+}
+
+
 template <typename T>
-inline T read(QFile &f)
+inline T read_raw(QFile &f)
 {
     T data;
     f.read((char*)&data, sizeof(T));
-    return data;
-}
-
-template <>
-inline u16 read(QFile &f)
-{
-    u16 data;
-    f.read((char*)&data, 2);
-    data = swap16(data);
 
     return data;
 }
 
-template <>
-inline u32 read(QFile &f)
+template <typename T> inline T read(QFile &f)
 {
-    u32 data;
-    f.read((char*)&data, 4);
-    data = swap32(data);
+    T data = read_raw<T>(f);
+    swap(data);
+
+    return data;
+}
+
+template <>
+inline TTFOffsetTable read<TTFOffsetTable>(QFile &f)
+{
+    auto data = read_raw<TTFOffsetTable>(f);
+
+    swap(data.Offset);
+    swap(data.Length);
+    // do NOT swap TableName and CheckSum
+
+    return data;
+}
+
+template <>
+inline TTFNameHeader read<TTFNameHeader>(QFile &f)
+{
+    auto data = read_raw<TTFNameHeader>(f);
+
+    swap(data.RecordsCount);
+    swap(data.StorageOffset);
+
+    return data;
+}
+
+template <>
+inline TTFNameRecord read<TTFNameRecord>(QFile &f)
+{
+    auto data = read_raw<TTFNameRecord>(f);
+
+    swap(data.PlatformID);
+    swap(data.EncodingID);
+    // swap(data.LanguageID); // Notice that we did not do swap LanguageID!
+    swap(data.NameID);
+    swap(data.StringLength);
+    swap(data.StringOffset);
+
+    return data;
+}
+
+template <>
+inline TTFOS2Header read<TTFOS2Header>(QFile &f)
+{
+    auto data = read_raw<TTFOS2Header>(f);
+
+    swap(data.FamilyClass);
+    swap(data.UnicodeRange1);
 
     return data;
 }
@@ -304,7 +358,7 @@ static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
 
 static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
 {
-    TTFOffsetTable offsetTable = read<TTFOffsetTable>(f);
+    cauto offsetTable = read<TTFOffsetTable>(f);
 
     TTFTable::type tableType = TTFTable::NO;
 
@@ -317,23 +371,11 @@ static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
     }
 
     if(tableType != TTFTable::NO) {
-        offsetTable.Length = swap32(offsetTable.Length);
-        offsetTable.Offset = swap32(offsetTable.Offset);
         tablesMap[tableType] = offsetTable;
         return true;
     } else {
         return false;
     }
-}
-
-
-static inline u16 getU16(const char *p)
-{
-    u16 val;
-    val = *p++ << 8;
-    val |= *p;
-
-    return val;
 }
 
 static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
@@ -344,41 +386,32 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
     const TTFOffsetTable &nameOffsetTable = tablesMap[TTFTable::NAME];
     f.seek(nameOffsetTable.Offset);
 
-    TTFNameHeader nameHeader = read<TTFNameHeader>(f);
-    nameHeader.RecordsCount = swap16(nameHeader.RecordsCount);
-    nameHeader.StorageOffset = swap16(nameHeader.StorageOffset);
+    cauto nameHeader = read<TTFNameHeader>(f);
 
     TTFNameRecord nameRecord;
-    TTFNameRecord lastNameRecord;
-    char nameBytes[1024];
     bool properLanguage = false; // english-like language
+    const quint64 fileSize = f.size();
+    quint64 nameOffset = 0;
 
-    for(int i = 0; i<nameHeader.RecordsCount; ++i) {
-        nameRecord = read<TTFNameRecord>(f);
-        nameRecord.NameID = swap16(nameRecord.NameID);
+    //qDebug() << "count: " << nameHeader.RecordsCount;
+    for(u16 i = 0; i<nameHeader.RecordsCount; ++i) {
+        cauto record = read<TTFNameRecord>(f);
 
         // 1 is FamilyID
-        if(nameRecord.NameID != 1) {
+        if(record.NameID != 1) {
             continue;
         }
 
-        lastNameRecord = nameRecord;
+        const quint64 offset = nameOffsetTable.Offset + nameHeader.StorageOffset + record.StringOffset;
+        if(Q_UNLIKELY(offset > fileSize - (nameRecord.StringLength+1))) {
+            continue;
+        }
 
-        nameRecord.PlatformID = swap16(nameRecord.PlatformID);
-        nameRecord.EncodingID = swap16(nameRecord.EncodingID);
-        nameRecord.StringLength = swap16(nameRecord.StringLength);
-        nameRecord.StringOffset = swap16(nameRecord.StringOffset);
+        nameRecord = record;
+        nameOffset = offset;
 
-        // save file position, so we can return to continue with search
-        const quint64 nPos = f.pos();
-        f.seek(nameOffsetTable.Offset + nameHeader.StorageOffset + nameRecord.StringOffset);
-
-        f.read(nameBytes, nameRecord.StringLength);
-
-        properLanguage = false;
-
-        const u8 langCode = nameRecord.LanguageID >> 8; // notice that we did not do swapU16 on it!
-        if(nameRecord.PlatformID == 3) {
+        const u8 langCode = record.LanguageID >> 8; // notice that we did not do swap LanguageID bytes! See swap<TTFNameRecord>()
+        if(record.PlatformID == 3) {
             properLanguage = langCode == 0x09 || // English
                              langCode == 0x07 || // German
                              langCode == 0x0C || // French
@@ -389,18 +422,25 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
         if(properLanguage) {
             break;
         }
-
-        f.seek(nPos);
     }
 
-    const u16 code = (lastNameRecord.PlatformID<<8) + lastNameRecord.EncodingID;
+    const u16 MAX_NAME_SIZE = 1024;
+    if(Q_UNLIKELY(nameRecord.StringLength > MAX_NAME_SIZE)) {
+        nameRecord.StringLength = 1024;
+    }
+
+    char nameBytes[MAX_NAME_SIZE];
+    f.seek(nameOffset);
+    f.read(nameBytes, nameRecord.StringLength);
+
+    const u16 code = (nameRecord.PlatformID<<8) + nameRecord.EncodingID;
     const QString fontName = decodeFontName(code, nameBytes, nameRecord.StringLength);
 
 #ifdef FONTA_DETAILED_DEBUG
     if(properLanguage) {
-        qDebug() << '\t' << lastNameRecord.PlatformID << lastNameRecord.EncodingID << langCode << fontName;
+        qDebug() << '\t' << nameRecord.PlatformID << nameRecord.EncodingID << (nameRecord.LanguageID>>8) << fontName;
     } else {
-        qDebug() << '\t' << "not proper!" << lastNameRecord.PlatformID << lastNameRecord.EncodingID << (lastNameRecord.LanguageID>>8) << fontName;
+        qDebug() << '\t' << "not proper!" << nameRecord.PlatformID << nameRecord.EncodingID << (nameRecord.LanguageID>>8) << fontName;
     }
 #endif
 
@@ -431,9 +471,7 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
     const TTFOffsetTable& os2OffsetTable = tablesMap[TTFTable::OS2];
     f.seek(os2OffsetTable.Offset);
 
-    TTFOS2Header os2Header = read<TTFOS2Header>(f);
-    os2Header.FamilyClass = swap16(os2Header.FamilyClass);
-    os2Header.UnicodeRange1 = swap32(os2Header.UnicodeRange1);
+    cauto os2Header = read<TTFOS2Header>(f);
 
     ttf.panose = os2Header.panose;
     ttf.familyClass = (FamilyClass::type)(os2Header.FamilyClass >> 8);
@@ -451,6 +489,15 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
         TTFs[fontName] = ttf;
         (void)lock;
     }
+}
+
+static inline u16 getU16(const char *p)
+{
+    u16 val;
+    val = *p++ << 8;
+    val |= *p;
+
+    return val;
 }
 
 static QString decodeFontName(u16 code, const char *string, u16 length)
@@ -1028,7 +1075,7 @@ bool DB::isCyrillic(CStringRef family) const
     return ttf.cyrillic;
 }
 
-bool DB::isNotLatinOrCyrillic(CStringRef family) const
+/*bool DB::isNotLatinOrCyrillic(CStringRef family) const
 {
     cauto systems = QtDB->writingSystems(family);
     if(systems.contains(QFontDatabase::Cyrillic)
@@ -1041,6 +1088,6 @@ bool DB::isNotLatinOrCyrillic(CStringRef family) const
     if(!getTTF(family, ttf)) return false;
 
     return !ttf.latin && !ttf.cyrillic;
-}
+}*/
 
 } // namespace fonta
