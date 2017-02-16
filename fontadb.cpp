@@ -42,6 +42,14 @@ static void getFontFiles(QStringList &out)
 #pragma pack(push, 1)
 
 struct TTFOffsetTable {
+    u32 SfntVersion;
+    u16 NumTables;
+    u16 SearchRange;
+    u16 EntrySelector;
+    u16 RangeShift;
+};
+
+struct TTFTableRecord {
     char TableName[4];
     u32 CheckSum;
     u32 Offset;
@@ -92,15 +100,6 @@ namespace TTFTable {
     };
 }
 
-// Forwards
-static QString decodeFontName(u16 code, const char *string, u16 length);
-static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
-static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
-static void readTTC(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
-static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts);
-static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2Fonts);
-static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[]);
-
 static std::mutex readTTFMutex;
 static std::mutex readFile2Fonts;
 
@@ -128,133 +127,135 @@ template <> inline void swap<u32>(u32 &x)
 }
 
 
-template <typename T>
-inline T read_raw(QFile &f)
+class FontReader
 {
-    T data;
-    f.read((char*)&data, sizeof(T));
+public:
+    FontReader(TTFMap &TTFs, File2FontsMap &File2Fonts);
+    ~FontReader();
 
-    return data;
+    void readFile(CStringRef fileName);
+
+private:
+    TTFMap &TTFs;
+    File2FontsMap &File2Fonts;
+
+    QFile f;
+    TTFTableRecord tablesMap[TTFTable::count];
+
+    bool readTablesMap();
+    void readTTF();
+    void readTTC();
+    void readFON();
+    void readFont();
+
+    template <typename T>
+    inline T read_raw()
+    {
+        T data;
+        f.read((char*)&data, sizeof(T));
+
+        return data;
+    }
+
+    template <typename T> inline T read()
+    {
+        T data = read_raw<T>();
+        swap(data);
+
+        return data;
+    }
+
+    template <>
+    inline TTFOffsetTable read<TTFOffsetTable>()
+    {
+        auto data = read_raw<TTFOffsetTable>();
+        swap(data.NumTables); // this is the only usefull field
+        return data;
+    }
+
+    template <>
+    inline TTFTableRecord read<TTFTableRecord>()
+    {
+        auto data = read_raw<TTFTableRecord>();
+
+        swap(data.Offset);
+        swap(data.Length);
+        // do NOT swap TableName and CheckSum
+
+        return data;
+    }
+
+    template <>
+    inline TTFNameHeader read<TTFNameHeader>()
+    {
+        auto data = read_raw<TTFNameHeader>();
+
+        swap(data.RecordsCount);
+        swap(data.StorageOffset);
+
+        return data;
+    }
+
+    template <>
+    inline TTFNameRecord read<TTFNameRecord>()
+    {
+        auto data = read_raw<TTFNameRecord>();
+
+        swap(data.PlatformID);
+        swap(data.EncodingID);
+        // swap(data.LanguageID); // Notice that we did not do swap LanguageID!
+        swap(data.NameID);
+        swap(data.StringLength);
+        swap(data.StringOffset);
+
+        return data;
+    }
+
+    template <>
+    inline TTFOS2Header read<TTFOS2Header>()
+    {
+        auto data = read_raw<TTFOS2Header>();
+
+        swap(data.FamilyClass);
+        swap(data.UnicodeRange1);
+
+        return data;
+    }
+};
+
+FontReader::FontReader(TTFMap &TTFs, File2FontsMap &File2Fonts)
+    : TTFs(TTFs)
+    , File2Fonts(File2Fonts)
+{}
+
+FontReader::~FontReader()
+{
+    f.close();
 }
 
-template <typename T> inline T read(QFile &f)
-{
-    T data = read_raw<T>(f);
-    swap(data);
-
-    return data;
-}
-
-template <>
-inline TTFOffsetTable read<TTFOffsetTable>(QFile &f)
-{
-    auto data = read_raw<TTFOffsetTable>(f);
-
-    swap(data.Offset);
-    swap(data.Length);
-    // do NOT swap TableName and CheckSum
-
-    return data;
-}
-
-template <>
-inline TTFNameHeader read<TTFNameHeader>(QFile &f)
-{
-    auto data = read_raw<TTFNameHeader>(f);
-
-    swap(data.RecordsCount);
-    swap(data.StorageOffset);
-
-    return data;
-}
-
-template <>
-inline TTFNameRecord read<TTFNameRecord>(QFile &f)
-{
-    auto data = read_raw<TTFNameRecord>(f);
-
-    swap(data.PlatformID);
-    swap(data.EncodingID);
-    // swap(data.LanguageID); // Notice that we did not do swap LanguageID!
-    swap(data.NameID);
-    swap(data.StringLength);
-    swap(data.StringOffset);
-
-    return data;
-}
-
-template <>
-inline TTFOS2Header read<TTFOS2Header>(QFile &f)
-{
-    auto data = read_raw<TTFOS2Header>(f);
-
-    swap(data.FamilyClass);
-    swap(data.UnicodeRange1);
-
-    return data;
-}
-
-static void readFontFile(CStringRef fileName, TTFMap &TTFs, File2FontsMap &File2Fonts)
+void FontReader::readFile(CStringRef fileName)
 {
 #ifdef FONTA_DETAILED_DEBUG
     qDebug() << qPrintable(QFileInfo(fileName).fileName()) << ":";
 #endif
 
-    QFile f(fileName);
+    f.setFileName(fileName);
+
     if (Q_UNLIKELY(!f.open(QIODevice::ReadOnly))) {
         qWarning() << "Couldn't open!";
         return;
     }
 
-    std::function<void(QFile &, QHash<QString, TTF> &, File2FontsMap &)> func;
-
     if(fileName.endsWith(".ttc", Qt::CaseInsensitive)) {
-        func = readTTC;
-    } else if(Q_UNLIKELY(fileName.endsWith(".fon", Qt::CaseInsensitive))) {
-        func = readFON;
+        readTTC();
+    } else if(fileName.endsWith(".fon", Qt::CaseInsensitive)) {
+        readFON();
     } else {
-        func = readTTF;
-    }
-
-    func(f, TTFs, File2Fonts);
-}
-
-static void readTTC(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
-{
-    f.seek(8);
-
-    const u32 offsetTablesCount = read<u32>(f);
-
-    std::vector<u32> offsets(offsetTablesCount);
-    for(u32 i = 0; i<offsetTablesCount; ++i) {
-        offsets[i] = read<u32>(f);
-    }
-
-    for(u32 i = 0; i<offsetTablesCount; ++i) {
-        f.seek(offsets[i] + 4);
-
-        const u16 fontTablesCount = read<u16>(f);
-
-        f.seek(offsets[i] + 12);
-        TTFOffsetTable tablesMap[TTFTable::count];
-        int tablesCount = 0;
-        for(int j = 0; j<fontTablesCount; ++j) {
-            tablesCount += (int)readTablesMap(f, tablesMap);
-            if(tablesCount == TTFTable::count) {
-                break;
-            }
-        }
-
-        if(Q_UNLIKELY(tablesCount != TTFTable::count)) {
-            qWarning() << "no necessary tables!";
-            return;
-        }
-
-        readFont(tablesMap, f, TTFs, File2Fonts);
+        readTTF();
     }
 }
 
-static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
+void FontReader::readFON()
 {
     QByteArray ba = f.readAll();
 
@@ -334,15 +335,29 @@ static void readFON(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
     }
 }
 
-static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
+void FontReader::readTTC()
 {
-    f.seek(12);
+    f.seek(8);
 
-    TTFOffsetTable tablesMap[TTFTable::count];
+    const u32 offsetTablesCount = read<u32>();
+
+    std::vector<u32> offsets(offsetTablesCount);
+    f.read((char*)offsets.data(), offsetTablesCount*sizeof(u32));
+    std::for_each(offsets.begin(), offsets.end(), swap<u32>);
+
+    for(const u32 offset : offsets) {
+        f.seek(offset);
+        readTTF();
+    }
+}
+
+void FontReader::readTTF()
+{
+    cauto ttcHeader = read<TTFOffsetTable>();
 
     int tablesCount = 0;
-    while(!f.atEnd()) {
-        tablesCount += (int)readTablesMap(f, tablesMap);
+    for(int i = 0; i<ttcHeader.NumTables; ++i) {
+        tablesCount += (int)readTablesMap();
         if(tablesCount == TTFTable::count) {
             break;
         }
@@ -353,12 +368,12 @@ static void readTTF(QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
         return;
     }
 
-    readFont(tablesMap, f, TTFs, File2Fonts);
+    readFont();
 }
 
-static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
+bool FontReader::readTablesMap()
 {
-    cauto offsetTable = read<TTFOffsetTable>(f);
+    cauto offsetTable = read<TTFTableRecord>();
 
     TTFTable::type tableType = TTFTable::NO;
 
@@ -378,15 +393,57 @@ static bool readTablesMap(QFile &f, TTFOffsetTable tablesMap[])
     }
 }
 
-static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, File2FontsMap &File2Fonts)
+static inline u16 getU16(const char *p)
+{
+    u16 val;
+    val = *p++ << 8;
+    val |= *p;
+
+    return val;
+}
+
+static QString decodeFontName(u16 code, const char *string, u16 length)
+{
+    QString i18n_name;
+
+    switch(code) {
+        case 0x0000:
+        case 0x0003:
+        case 0x0300:
+        case 0x0302:
+        case 0x030A:
+        case 0x0301: {
+            length /= 2;
+            i18n_name.resize(length);
+            QChar *uc = (QChar *) i18n_name.unicode();
+
+            for(int i = 0; i < length; ++i) {
+                uc[i] = getU16(string + 2*i);
+            }
+        } break;
+        case 0x0100:
+        default: {
+            i18n_name.resize(length);
+            QChar *uc = (QChar *) i18n_name.unicode();
+
+            for(int i = 0; i < length; ++i) {
+                uc[i] = QLatin1Char(string[i]);
+            }
+        } break;
+    }
+
+    return i18n_name;
+}
+
+void FontReader::readFont()
 {
     /////////
     // name
     ///////
-    const TTFOffsetTable &nameOffsetTable = tablesMap[TTFTable::NAME];
+    const TTFTableRecord &nameOffsetTable = tablesMap[TTFTable::NAME];
     f.seek(nameOffsetTable.Offset);
 
-    cauto nameHeader = read<TTFNameHeader>(f);
+    cauto nameHeader = read<TTFNameHeader>();
 
     TTFNameRecord nameRecord;
     bool properLanguage = false; // english-like language
@@ -395,7 +452,7 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
 
     //qDebug() << "count: " << nameHeader.RecordsCount;
     for(u16 i = 0; i<nameHeader.RecordsCount; ++i) {
-        cauto record = read<TTFNameRecord>(f);
+        cauto record = read<TTFNameRecord>();
 
         // 1 is FamilyID
         if(record.NameID != 1) {
@@ -419,7 +476,7 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
                              langCode == 0x3B;   // Scandinavic
         }
 
-        if(properLanguage) {
+        if(Q_UNLIKELY(properLanguage)) {
             break;
         }
     }
@@ -468,10 +525,10 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
     /////////
     // OS/2
     ///////
-    const TTFOffsetTable& os2OffsetTable = tablesMap[TTFTable::OS2];
+    const TTFTableRecord& os2OffsetTable = tablesMap[TTFTable::OS2];
     f.seek(os2OffsetTable.Offset);
 
-    cauto os2Header = read<TTFOS2Header>(f);
+    cauto os2Header = read<TTFOS2Header>();
 
     ttf.panose = os2Header.panose;
     ttf.familyClass = (FamilyClass::type)(os2Header.FamilyClass >> 8);
@@ -491,55 +548,13 @@ static void readFont(const TTFOffsetTable tablesMap[], QFile &f, TTFMap &TTFs, F
     }
 }
 
-static inline u16 getU16(const char *p)
-{
-    u16 val;
-    val = *p++ << 8;
-    val |= *p;
-
-    return val;
-}
-
-static QString decodeFontName(u16 code, const char *string, u16 length)
-{
-    QString i18n_name;
-
-    switch(code) {
-        case 0x0000:
-        case 0x0003:
-        case 0x0300:
-        case 0x0302:
-        case 0x030A:
-        case 0x0301: {
-            length /= 2;
-            i18n_name.resize(length);
-            QChar *uc = (QChar *) i18n_name.unicode();
-
-            for(int i = 0; i < length; ++i) {
-                uc[i] = getU16(string + 2*i);
-            }
-        } break;
-        case 0x0100:
-        default: {
-            i18n_name.resize(length);
-            QChar *uc = (QChar *) i18n_name.unicode();
-
-            for(int i = 0; i < length; ++i) {
-                uc[i] = QLatin1Char(string[i]);
-            }
-        } break;
-    }
-
-    //qDebug() << i18n_name;
-    return i18n_name;
-}
-
 #ifndef FONTA_DETAILED_DEBUG
 
 static void loadTTFChunk(const QStringList &out, int from, int to, TTFMap &TTFs, File2FontsMap &File2Fonts)
 {
     for(int i = from; i<=to; ++i) {
-        readFontFile(out[i], TTFs, File2Fonts);
+        FontReader reader(TTFs, File2Fonts);
+        reader.readFile(out[i]);
     }
 }
 #endif
@@ -606,7 +621,8 @@ DB::DB()
     }
 #else
     for(int i = 0; i<out.size(); ++i) {
-        readFontFile(out[i], TTFs, File2Fonts);
+        FontReader reader(TTFs, File2Fonts);
+        reader.readFile(out[i]);
     }
 #endif
 
