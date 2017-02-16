@@ -215,7 +215,7 @@ private:
     QFile f;
     TTFTableRecord tablesMap[TTFTable::count];
 
-    bool readTablesMap();
+    bool readTablesMap(u8 *data);
     void readTTF();
     void readTTC();
     void readFON();
@@ -347,9 +347,9 @@ void FontReader::readTTC()
 
     std::vector<u32> offsets(offsetTablesCount);
     f.read((char*)offsets.data(), offsetTablesCount*sizeof(u32));
-    std::for_each(offsets.begin(), offsets.end(), swap<u32>);
 
-    for(const u32 offset : offsets) {
+    for(u32 offset : offsets) {
+        swap<u32>(offset);
         f.seek(offset);
         readTTF();
     }
@@ -359,13 +359,22 @@ void FontReader::readTTF()
 {
     cauto ttcHeader = read<TTFOffsetTable>();
 
+    int dataSize = ttcHeader.NumTables*sizeof(TTFTableRecord);
+    u8 *data = new u8[dataSize];
+    f.read((char*)data, dataSize);
+
+    u8 *dataPtr = data;
+
     int tablesCount = 0;
     for(int i = 0; i<ttcHeader.NumTables; ++i) {
-        tablesCount += (int)readTablesMap();
+        tablesCount += (int)readTablesMap(dataPtr);
         if(tablesCount == TTFTable::count) {
             break;
         }
+        dataPtr += sizeof(TTFTableRecord);
     }
+
+    delete data;
 
     if(Q_UNLIKELY(tablesCount != TTFTable::count)) {
         qWarning() << "no necessary tables!";
@@ -375,22 +384,23 @@ void FontReader::readTTF()
     readFont();
 }
 
-bool FontReader::readTablesMap()
+bool FontReader::readTablesMap(u8 *data)
 {
-    cauto offsetTable = read<TTFTableRecord>();
-
+    TTFTableRecord *table = (TTFTableRecord*)data;
     TTFTable::type tableType = TTFTable::NO;
 
-    if(memcmp(offsetTable.TableName, "name", 4) == 0) {
+    if(memcmp(table->TableName, "name", 4) == 0) {
         tableType = TTFTable::NAME;
     }
 
-    if(memcmp(offsetTable.TableName, "OS/2", 4) == 0) {
+    if(memcmp(table->TableName, "OS/2", 4) == 0) {
         tableType = TTFTable::OS2;
     }
 
     if(tableType != TTFTable::NO) {
-        tablesMap[tableType] = offsetTable;
+        tablesMap[tableType] = *table;
+        swap(tablesMap[tableType].Offset);
+        swap(tablesMap[tableType].Length);
         return true;
     } else {
         return false;
@@ -620,7 +630,7 @@ DB::DB()
         }
     }
 
-    for(auto& f : futurs) {
+    for(auto &f : futurs) {
         f.join();
     }
 #else
