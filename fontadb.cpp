@@ -126,6 +126,79 @@ template <> inline void swap<u32>(u32 &x)
         | ((x & 0xff000000) >> 24);
 }
 
+template <typename T>
+inline T read_raw(QFile &f)
+{
+    T data;
+    f.read((char*)&data, sizeof(T));
+
+    return data;
+}
+
+template <typename T> inline T read(QFile &f)
+{
+    T data = read_raw<T>(f);
+    swap(data);
+
+    return data;
+}
+
+template <>
+inline TTFOffsetTable read<TTFOffsetTable>(QFile &f)
+{
+    auto data = read_raw<TTFOffsetTable>(f);
+    swap(data.NumTables); // this is the only usefull field
+    return data;
+}
+
+template <>
+inline TTFTableRecord read<TTFTableRecord>(QFile &f)
+{
+    auto data = read_raw<TTFTableRecord>(f);
+
+    swap(data.Offset);
+    swap(data.Length);
+    // do NOT swap TableName and CheckSum
+
+    return data;
+}
+
+template <>
+inline TTFNameHeader read<TTFNameHeader>(QFile &f)
+{
+    auto data = read_raw<TTFNameHeader>(f);
+
+    swap(data.RecordsCount);
+    swap(data.StorageOffset);
+
+    return data;
+}
+
+template <>
+inline TTFNameRecord read<TTFNameRecord>(QFile &f)
+{
+    auto data = read_raw<TTFNameRecord>(f);
+
+    swap(data.PlatformID);
+    swap(data.EncodingID);
+    // swap(data.LanguageID); // Notice that we did not do swap LanguageID!
+    swap(data.NameID);
+    swap(data.StringLength);
+    swap(data.StringOffset);
+
+    return data;
+}
+
+template <>
+inline TTFOS2Header read<TTFOS2Header>(QFile &f)
+{
+    auto data = read_raw<TTFOS2Header>(f);
+
+    swap(data.FamilyClass);
+    swap(data.UnicodeRange1);
+
+    return data;
+}
 
 class FontReader
 {
@@ -148,78 +221,9 @@ private:
     void readFON();
     void readFont();
 
-    template <typename T>
-    inline T read_raw()
-    {
-        T data;
-        f.read((char*)&data, sizeof(T));
-
-        return data;
-    }
-
     template <typename T> inline T read()
     {
-        T data = read_raw<T>();
-        swap(data);
-
-        return data;
-    }
-
-    template <>
-    inline TTFOffsetTable read<TTFOffsetTable>()
-    {
-        auto data = read_raw<TTFOffsetTable>();
-        swap(data.NumTables); // this is the only usefull field
-        return data;
-    }
-
-    template <>
-    inline TTFTableRecord read<TTFTableRecord>()
-    {
-        auto data = read_raw<TTFTableRecord>();
-
-        swap(data.Offset);
-        swap(data.Length);
-        // do NOT swap TableName and CheckSum
-
-        return data;
-    }
-
-    template <>
-    inline TTFNameHeader read<TTFNameHeader>()
-    {
-        auto data = read_raw<TTFNameHeader>();
-
-        swap(data.RecordsCount);
-        swap(data.StorageOffset);
-
-        return data;
-    }
-
-    template <>
-    inline TTFNameRecord read<TTFNameRecord>()
-    {
-        auto data = read_raw<TTFNameRecord>();
-
-        swap(data.PlatformID);
-        swap(data.EncodingID);
-        // swap(data.LanguageID); // Notice that we did not do swap LanguageID!
-        swap(data.NameID);
-        swap(data.StringLength);
-        swap(data.StringOffset);
-
-        return data;
-    }
-
-    template <>
-    inline TTFOS2Header read<TTFOS2Header>()
-    {
-        auto data = read_raw<TTFOS2Header>();
-
-        swap(data.FamilyClass);
-        swap(data.UnicodeRange1);
-
-        return data;
+        return fonta::read<T>(f);
     }
 };
 
