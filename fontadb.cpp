@@ -261,69 +261,74 @@ void FontReader::readFile(CStringRef fileName)
 
 void FontReader::readFON()
 {
-    QByteArray ba = f.readAll();
+    f.seek(60);
+    u16 headOffset = read_raw<u16>(f) + 4;
 
-    int ibeg = ba.indexOf("FONTRES");
-    if(ibeg == -1) return;
+    f.seek(headOffset);
+    u16 fontresOffset = read_raw<u16>(f);
 
-    ibeg = ba.indexOf(':', ibeg);
-    if(ibeg == -1) return;
-    ++ibeg;
+    f.seek(headOffset + 28);
+    u16 length = read_raw<u16>(f);
 
-    const int iend = ba.indexOf('\0', ibeg);
-    if(iend == -1) return;
+    f.seek(headOffset + fontresOffset - 1);
 
-    QString s(ba.mid(ibeg, iend-ibeg));
+    char *bytes = new char[length];
+    f.read(bytes, length);
 
-    const int ipareth = s.indexOf('(');
-    const int icomma = s.indexOf(',');
+    QString name(bytes);
 
-    QString fontName;
+    delete bytes;
+
+    QStringRef nameRef(&name);
+    nameRef = nameRef.mid(name.indexOf(':') + 1);
+
+    const int ipareth = nameRef.indexOf('(');
+    const int icomma = nameRef.indexOf(',');
 
     if(icomma == -1 && ipareth != -1) {
-        s.truncate(ipareth);
+        nameRef.truncate(ipareth);
     } else if(icomma != -1) {
         for(int i = icomma-1; i>=0; --i) {
-            if(!s[i].isDigit()) {
-                s.truncate(i+1);
+            if(!nameRef[i].isDigit()) {
+                nameRef.truncate(i+1);
                 break;
             }
         }
     }
 
-    int i = s.indexOf("Font for ");
+    int i = nameRef.indexOf("Font for ");
     if(i != -1) {
-        s.truncate(i);
+        nameRef.truncate(i);
     }
 
-    i = s.indexOf(" Font ");
+    i = nameRef.indexOf(" Font ");
     if(i != -1) {
-        s.truncate(i);
+        nameRef.truncate(i);
     }
 
-    i = s.indexOf(" for ");
+    i = nameRef.indexOf(" for ");
     if(i != -1) {
-        s.truncate(i);
+        nameRef.truncate(i);
     }
 
-    fontName = s.trimmed();
+    name = nameRef.trimmed().toString();
 
 #ifdef FONTA_DETAILED_DEBUG
-    qDebug() << '\t' << fontName;
+    qDebug() << '\t' << name;
 #endif
 
     CStringRef fileName = f.fileName();
 
     {
         std::lock_guard<std::mutex> lock(readFile2Fonts);
-        File2Fonts[fileName] << fontName;
+        File2Fonts[fileName] << name;
         (void)lock;
     }
 
     {
         std::lock_guard<std::mutex> lock(readTTFMutex);
-        if(TTFs.contains(fontName)) {
-            TTFs[fontName].files << f.fileName();
+        if(TTFs.contains(name)) {
+            TTFs[name].files << f.fileName();
             return;
         }
         (void)lock;
@@ -334,7 +339,7 @@ void FontReader::readFON()
 
     {
         std::lock_guard<std::mutex> lock(readTTFMutex);
-        TTFs[fontName] = ttf;
+        TTFs[name] = ttf;
         (void)lock;
     }
 }
