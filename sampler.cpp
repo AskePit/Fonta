@@ -66,7 +66,7 @@ const QStringList Sampler::names = {
 };
 
 QStringList Sampler::textsEng = {
-    "Before 1960 95% of soft drinks sold in the U.S. are furnished in reusable bottles."
+    "Before 1960 95% of soft drinks sold in the U.S. are furnished in reusable bottles.",
     "Ernest Hemmingway commits suicide with shotgun.",
     "American U-2 spy plane, piloted by Francis Gary Powers, shot down over Russia",
     "Kennedy was assassinated in Dallas, Texas, on November 22, 1963",
