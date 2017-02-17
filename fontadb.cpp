@@ -179,10 +179,6 @@ inline TTFNameRecord read<TTFNameRecord>(QFile &f)
 {
     auto data = read_raw<TTFNameRecord>(f);
 
-    swap(data.PlatformID);
-    swap(data.EncodingID);
-    // swap(data.LanguageID); // Notice that we did not do swap LanguageID!
-    swap(data.NameID);
     swap(data.StringLength);
     swap(data.StringOffset);
 
@@ -194,7 +190,6 @@ inline TTFOS2Header read<TTFOS2Header>(QFile &f)
 {
     auto data = read_raw<TTFOS2Header>(f);
 
-    swap(data.FamilyClass);
     swap(data.UnicodeRange1);
 
     return data;
@@ -352,9 +347,9 @@ void FontReader::readTTC()
 
     std::vector<u32> offsets(offsetTablesCount);
     f.read((char*)offsets.data(), offsetTablesCount*sizeof(u32));
-    std::for_each(offsets.begin(), offsets.end(), swap<u32>);
 
-    for(const u32 offset : offsets) {
+    for(u32 offset : offsets) {
+        swap(offset);
         f.seek(offset);
         readTTF();
     }
@@ -464,7 +459,7 @@ void FontReader::readFont()
         cauto record = read<TTFNameRecord>();
 
         // 1 is FamilyID
-        if(record.NameID != 1) {
+        if(record.NameID != 0x0100) {
             continue;
         }
 
@@ -477,7 +472,7 @@ void FontReader::readFont()
         nameOffset = offset;
 
         const u8 langCode = record.LanguageID >> 8; // notice that we did not do swap LanguageID bytes! See swap<TTFNameRecord>()
-        if(record.PlatformID == 3) {
+        if(record.PlatformID == 0x0300) {
             properLanguage = langCode == 0x09 || // English
                              langCode == 0x07 || // German
                              langCode == 0x0C || // French
@@ -499,7 +494,7 @@ void FontReader::readFont()
     f.seek(nameOffset);
     f.read(nameBytes, nameRecord.StringLength);
 
-    const u16 code = (nameRecord.PlatformID<<8) + nameRecord.EncodingID;
+    const u16 code = (nameRecord.PlatformID & 0xFF00) + (nameRecord.EncodingID >> 8);
     const QString fontName = decodeFontName(code, nameBytes, nameRecord.StringLength);
 
 #ifdef FONTA_DETAILED_DEBUG
@@ -540,8 +535,8 @@ void FontReader::readFont()
     cauto os2Header = read<TTFOS2Header>();
 
     ttf.panose = os2Header.panose;
-    ttf.familyClass = (FamilyClass::type)(os2Header.FamilyClass >> 8);
-    ttf.familySubClass = (int)(os2Header.FamilyClass & 0xFF);
+    ttf.familyClass = (FamilyClass::type)(os2Header.FamilyClass & 0xFF);
+    ttf.familySubClass = (int)(os2Header.FamilyClass >> 8);
 
 
     cauto langBit = [&os2Header](int bit) {
