@@ -1,7 +1,6 @@
 #include "FontaDB.h"
 
 #include <QDirIterator>
-#include <QTextCodec>
 #include <thread>
 
 #ifdef FONTA_MEASURES
@@ -107,14 +106,9 @@ template <typename T> inline void swap(T &x);
 
 template <> inline void swap<u16>(u16 &x)
 {
-    x = quint16( 0
-                 | ((x & 0x00ff) << 8)
-                 | ((x & 0xff00) >> 8) );
-}
-
-template <> inline void swap<i16>(i16 &x)
-{
-    x = qbswap<quint16>(quint16(x));
+    x = u16( 0
+             | ((x & 0x00ff) << 8)
+             | ((x & 0xff00) >> 8) );
 }
 
 template <> inline void swap<u32>(u32 &x)
@@ -179,12 +173,9 @@ inline TTFNameRecord read<TTFNameRecord>(QFile &f)
 {
     auto data = read_raw<TTFNameRecord>(f);
 
-    swap(data.PlatformID);
-    swap(data.EncodingID);
-    // swap(data.LanguageID); // Notice that we did not do swap LanguageID!
-    swap(data.NameID);
     swap(data.StringLength);
     swap(data.StringOffset);
+    // Notice that we did not do swap PlatformID, EncodingID, LanguageID, NameID!
 
     return data;
 }
@@ -194,8 +185,8 @@ inline TTFOS2Header read<TTFOS2Header>(QFile &f)
 {
     auto data = read_raw<TTFOS2Header>(f);
 
-    swap(data.FamilyClass);
     swap(data.UnicodeRange1);
+    // do not swap family class
 
     return data;
 }
@@ -215,7 +206,7 @@ private:
     QFile f;
     TTFTableRecord tablesMap[TTFTable::count];
 
-    bool readTablesMap(u8 *data);
+    bool readTablesMap(const u8 *const data);
     void readTTF();
     void readTTC();
     void readFON();
@@ -261,69 +252,74 @@ void FontReader::readFile(CStringRef fileName)
 
 void FontReader::readFON()
 {
-    QByteArray ba = f.readAll();
+    f.seek(60);
+    u16 headOffset = read_raw<u16>(f) + 4;
 
-    int ibeg = ba.indexOf("FONTRES");
-    if(ibeg == -1) return;
+    f.seek(headOffset);
+    u16 fontresOffset = read_raw<u16>(f);
 
-    ibeg = ba.indexOf(':', ibeg);
-    if(ibeg == -1) return;
-    ++ibeg;
+    f.seek(headOffset + 28);
+    u16 length = read_raw<u16>(f);
 
-    const int iend = ba.indexOf('\0', ibeg);
-    if(iend == -1) return;
+    f.seek(headOffset + fontresOffset - 1);
 
-    QString s(ba.mid(ibeg, iend-ibeg));
+    char *bytes = new char[length];
+    f.read(bytes, length);
 
-    const int ipareth = s.indexOf('(');
-    const int icomma = s.indexOf(',');
+    QString name(bytes);
 
-    QString fontName;
+    delete bytes;
+
+    QStringRef nameRef(&name);
+    nameRef = nameRef.mid(name.indexOf(':') + 1);
+
+    const int ipareth = nameRef.indexOf('(');
+    const int icomma = nameRef.indexOf(',');
 
     if(icomma == -1 && ipareth != -1) {
-        s.truncate(ipareth);
+        nameRef.truncate(ipareth);
     } else if(icomma != -1) {
         for(int i = icomma-1; i>=0; --i) {
-            if(!s[i].isDigit()) {
-                s.truncate(i+1);
+            if(!nameRef[i].isDigit()) {
+                nameRef.truncate(i+1);
                 break;
             }
         }
     }
 
-    int i = s.indexOf("Font for ");
+    int i = nameRef.indexOf("Font for ");
     if(i != -1) {
-        s.truncate(i);
+        nameRef.truncate(i);
     }
 
-    i = s.indexOf(" Font ");
+    i = nameRef.indexOf(" Font ");
     if(i != -1) {
-        s.truncate(i);
+        nameRef.truncate(i);
     }
 
-    i = s.indexOf(" for ");
+    i = nameRef.indexOf(" for ");
     if(i != -1) {
-        s.truncate(i);
+        nameRef.truncate(i);
     }
 
-    fontName = s.trimmed();
+    name = nameRef.trimmed().toString();
 
 #ifdef FONTA_DETAILED_DEBUG
-    qDebug() << '\t' << fontName;
+    qDebug() << '\t' << name;
 #endif
 
     CStringRef fileName = f.fileName();
 
     {
         std::lock_guard<std::mutex> lock(readFile2Fonts);
-        File2Fonts[fileName] << fontName;
+        File2Fonts[fileName] << name;
         (void)lock;
     }
 
     {
         std::lock_guard<std::mutex> lock(readTTFMutex);
-        if(TTFs.contains(fontName)) {
-            TTFs[fontName].files << f.fileName();
+        if(TTFs.contains(name)) {
+            TTFs[name].files << f.fileName();
             return;
         }
         (void)lock;
@@ -334,7 +330,7 @@ void FontReader::readFON()
 
     {
         std::lock_guard<std::mutex> lock(readTTFMutex);
-        TTFs[fontName] = ttf;
+        TTFs[name] = ttf;
         (void)lock;
     }
 }
@@ -350,8 +346,9 @@ void FontReader::readTTC()
 
     for(u32 offset : offsets) {
         swap<u32>(offset);
-        f.seek(offset);
-        readTTF();
+        if(Q_LIKELY(f.seek(offset))) {
+            readTTF();
+        }
     }
 }
 
@@ -359,7 +356,11 @@ void FontReader::readTTF()
 {
     cauto ttcHeader = read<TTFOffsetTable>();
 
-    int dataSize = ttcHeader.NumTables*sizeof(TTFTableRecord);
+    qint64 dataSize = ttcHeader.NumTables*sizeof(TTFTableRecord);
+    if(Q_UNLIKELY(dataSize > f.size())) {
+        return;
+    }
+
     u8 *data = new u8[dataSize];
     f.read((char*)data, dataSize);
 
@@ -384,9 +385,9 @@ void FontReader::readTTF()
     readFont();
 }
 
-bool FontReader::readTablesMap(u8 *data)
+bool FontReader::readTablesMap(const u8 *const data)
 {
-    TTFTableRecord *table = (TTFTableRecord*)data;
+    const TTFTableRecord *const table = (TTFTableRecord*)data;
     TTFTable::type tableType = TTFTable::NO;
 
     if(memcmp(table->TableName, "name", 4) == 0) {
@@ -420,6 +421,8 @@ static QString decodeFontName(u16 code, const char *string, u16 length)
 {
     QString i18n_name;
 
+    // HB is Platform
+    // LB is Encoding
     switch(code) {
         case 0x0000:
         case 0x0003:
@@ -455,7 +458,9 @@ void FontReader::readFont()
     // name
     ///////
     const TTFTableRecord &nameOffsetTable = tablesMap[TTFTable::NAME];
-    f.seek(nameOffsetTable.Offset);
+    if(Q_UNLIKELY(!f.seek(nameOffsetTable.Offset))) {
+        return;
+    }
 
     cauto nameHeader = read<TTFNameHeader>();
 
@@ -464,12 +469,11 @@ void FontReader::readFont()
     const quint64 fileSize = f.size();
     quint64 nameOffset = 0;
 
-    //qDebug() << "count: " << nameHeader.RecordsCount;
     for(u16 i = 0; i<nameHeader.RecordsCount; ++i) {
         cauto record = read<TTFNameRecord>();
 
         // 1 is FamilyID
-        if(record.NameID != 1) {
+        if(record.NameID != 0x0100) {
             continue;
         }
 
@@ -482,7 +486,7 @@ void FontReader::readFont()
         nameOffset = offset;
 
         const u8 langCode = record.LanguageID >> 8; // notice that we did not do swap LanguageID bytes! See swap<TTFNameRecord>()
-        if(record.PlatformID == 3) {
+        if(record.PlatformID == 0x0300) { // Windows platform
             properLanguage = langCode == 0x09 || // English
                              langCode == 0x07 || // German
                              langCode == 0x0C || // French
@@ -504,14 +508,14 @@ void FontReader::readFont()
     f.seek(nameOffset);
     f.read(nameBytes, nameRecord.StringLength);
 
-    const u16 code = (nameRecord.PlatformID<<8) + nameRecord.EncodingID;
+    const u16 code = (nameRecord.PlatformID & 0xFF00) + (nameRecord.EncodingID >> 8);
     const QString fontName = decodeFontName(code, nameBytes, nameRecord.StringLength);
 
 #ifdef FONTA_DETAILED_DEBUG
     if(properLanguage) {
-        qDebug() << '\t' << nameRecord.PlatformID << nameRecord.EncodingID << (nameRecord.LanguageID>>8) << fontName;
+        qDebug() << '\t' << (nameRecord.PlatformID>>8) << (nameRecord.EncodingID>>8) << (nameRecord.LanguageID>>8) << fontName;
     } else {
-        qDebug() << '\t' << "not proper!" << nameRecord.PlatformID << nameRecord.EncodingID << (nameRecord.LanguageID>>8) << fontName;
+        qDebug() << '\t' << "not proper!" << (nameRecord.PlatformID>>8) << (nameRecord.EncodingID>>8) << (nameRecord.LanguageID>>8) << fontName;
     }
 #endif
 
@@ -545,9 +549,10 @@ void FontReader::readFont()
     cauto os2Header = read<TTFOS2Header>();
 
     ttf.panose = os2Header.panose;
-    ttf.familyClass = (FamilyClass::type)(os2Header.FamilyClass >> 8);
-    ttf.familySubClass = (int)(os2Header.FamilyClass & 0xFF);
 
+    // notice we did not swap family class, so LowByte is FamilyClass, HighByte is FamilySubclass
+    ttf.familyClass = (FamilyClass::type)(os2Header.FamilyClass & 0xFF);
+    ttf.familySubClass = (int)(os2Header.FamilyClass >> 8);
 
     cauto langBit = [&os2Header](int bit) {
         return !!(os2Header.UnicodeRange1 & (1<<bit));
