@@ -368,6 +368,7 @@ void MainWindow::makeFieldConnected(Field* field) {
     connect(field, &Field::focussed, this, &MainWindow::on_currentFieldChanged);
     connect(field, &Field::contentBecameUserDefined, this, &MainWindow::resetFillActions);
     connect(field, &Field::contentBecameUserDefined, this, &MainWindow::disableContextGroup);
+    connect(field, &Field::swapRequested, this, &MainWindow::swapFonts);
 }
 
 void MainWindow::makeFieldsConnected() {
@@ -397,9 +398,9 @@ void MainWindow::on_removeFieldButton_clicked()
     updateAddRemoveButtons();
 }
 
-void MainWindow::on_currentFieldChanged(Field* field)
+void MainWindow::on_currentFieldChanged()
 {
-    m_currField = field;
+    m_currField = qobject_cast<Field *>(sender());
     CStringRef family = m_currField->fontFamily();
 
     // show family
@@ -907,6 +908,29 @@ void MainWindow::resetFillActions()
     ui->actionFillNews->setChecked(false);
     ui->actionFillPangram->setChecked(false);
     ui->actionFillLoremIpsum->setChecked(false);
+}
+
+void MainWindow::swapFonts()
+{
+    Field *requester = qobject_cast<Field *>(sender());
+
+    if(m_currWorkArea->count() == 2) {
+        Field *f1 = (*m_currWorkArea)[0];
+        Field *f2 = (*m_currWorkArea)[1];
+
+        QString family1 = f1->fontFamily();
+        QString family2 = f2->fontFamily();
+
+        f1->setFontFamily(family2);
+        f2->setFontFamily(family1);
+
+        ui->fontFinderEdit->setText(requester->fontFamily());
+        QList<QListWidgetItem*> items = ui->fontsList->findItems(requester->fontFamily(), Qt::MatchExactly);
+        if(items.size() > 0) {
+            ui->fontsList->setCurrentItem(items[0]);
+            ui->fontsList->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
+        }
+    }
 }
 
 } // namespace fonta

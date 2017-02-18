@@ -58,8 +58,12 @@ public:
     void load(const QJsonObject &json);
 
 signals:
-    void focussed(Field* field);
+    void focussed();
     void contentBecameUserDefined();
+    void swapRequested();
+
+public slots:
+    void showContextMenu(const QPoint &point);
 
 protected:
     void focusInEvent(QFocusEvent* e);
