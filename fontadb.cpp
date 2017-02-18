@@ -1,7 +1,6 @@
 #include "FontaDB.h"
 
 #include <QDirIterator>
-#include <QTextCodec>
 #include <thread>
 
 #ifdef FONTA_MEASURES
@@ -487,7 +486,7 @@ void FontReader::readFont()
 
     const u16 MAX_NAME_SIZE = 1024;
     if(Q_UNLIKELY(nameRecord.StringLength > MAX_NAME_SIZE)) {
-        nameRecord.StringLength = 1024;
+        nameRecord.StringLength = MAX_NAME_SIZE;
     }
 
     char nameBytes[MAX_NAME_SIZE];
