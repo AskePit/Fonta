@@ -66,6 +66,7 @@ private slots:
     void on_addFieldButton_clicked();
     void on_removeFieldButton_clicked();
     void on_currentFieldChanged();
+    void updateFontFamily();
 
     void on_sizeBox_edited();
     void on_sizeBox_activated(const QString &arg1);
@@ -163,6 +164,9 @@ private:
     void updateAddRemoveButtons();
 
     void extendToolBar();
+
+    Field *m_swapRequester;
+    void swapBlockState(bool enable);
 };
 
 } // namespace fonta

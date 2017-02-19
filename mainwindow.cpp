@@ -30,6 +30,7 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     , ui(new Ui::MainWindow)
     , m_aboutDialog(NULL)
     , m_currFile("")
+    , m_swapRequester(nullptr)
 {
     ui->setupUi(this);
 
@@ -401,16 +402,14 @@ void MainWindow::on_removeFieldButton_clicked()
 void MainWindow::on_currentFieldChanged()
 {
     m_currField = qobject_cast<Field *>(sender());
-    CStringRef family = m_currField->fontFamily();
 
-    // show family
-    ui->fontFinderEdit->setText(family);
-
-    QList<QListWidgetItem*> items = ui->fontsList->findItems(family, Qt::MatchExactly);
-    if(items.size() > 0) {
-        ui->fontsList->setCurrentItem(items[0]);
-        ui->fontsList->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
+    if(m_swapRequester) {
+        m_currField->swapFamiliesWith(m_swapRequester);
+        swapBlockState(false);
+        m_swapRequester = nullptr;
     }
+
+    updateFontFamily();
 
     // show size
     ui->sizeBox->lineEdit()->setText(QString::number(m_currField->fontSize()) + " pt");
@@ -451,6 +450,20 @@ void MainWindow::on_currentFieldChanged()
 
     // show language context
     updateContextGroup();
+}
+
+void MainWindow::updateFontFamily()
+{
+    CStringRef family = m_currField->fontFamily();
+
+    // show family
+    ui->fontFinderEdit->setText(family);
+
+    QList<QListWidgetItem*> items = ui->fontsList->findItems(family, Qt::MatchExactly);
+    if(items.size() > 0) {
+        ui->fontsList->setCurrentItem(items[0]);
+        ui->fontsList->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
+    }
 }
 
 void MainWindow::enableContextGroup()
@@ -910,26 +923,52 @@ void MainWindow::resetFillActions()
     ui->actionFillLoremIpsum->setChecked(false);
 }
 
+static void setEnabled(QLayout *layout, bool enabled)
+{
+    for(int i = 0; i<layout->count(); ++i) {
+        QLayoutItem *item = layout->itemAt(i);
+
+        QWidget *w = item->widget();
+        if(w) {
+            w->setEnabled(enabled);
+            continue;
+        }
+
+        QLayout *l = item->layout();
+        setEnabled(l, enabled);
+    }
+}
+
+static void setDisabled(QLayout *layout, bool enabled)
+{
+    setEnabled(layout, !enabled);
+}
+
+void MainWindow::swapBlockState(bool enable)
+{
+    ::fonta::setDisabled(ui->fontsListLayout, enable);
+    ui->bottomWidget->setDisabled(enable);
+    ui->toolBar->setDisabled(enable);
+    ui->menuBar->setDisabled(enable);
+    ui->tabWidget->tabBar()->setDisabled(enable);
+}
+
 void MainWindow::swapFonts()
 {
-    Field *requester = qobject_cast<Field *>(sender());
+    int fieldsCount = m_currWorkArea->count();
+    if(fieldsCount == 1) {
+        return;
+    }
 
-    if(m_currWorkArea->count() == 2) {
+    if(fieldsCount == 2) {
         Field *f1 = (*m_currWorkArea)[0];
         Field *f2 = (*m_currWorkArea)[1];
 
-        QString family1 = f1->fontFamily();
-        QString family2 = f2->fontFamily();
-
-        f1->setFontFamily(family2);
-        f2->setFontFamily(family1);
-
-        ui->fontFinderEdit->setText(requester->fontFamily());
-        QList<QListWidgetItem*> items = ui->fontsList->findItems(requester->fontFamily(), Qt::MatchExactly);
-        if(items.size() > 0) {
-            ui->fontsList->setCurrentItem(items[0]);
-            ui->fontsList->scrollToItem(items[0], QAbstractItemView::PositionAtCenter);
-        }
+        f1->swapFamiliesWith(f2);
+        updateFontFamily();
+    } else {
+        swapBlockState(true);
+        m_swapRequester = qobject_cast<Field *>(sender());
     }
 }
 

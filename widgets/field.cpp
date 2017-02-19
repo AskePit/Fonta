@@ -102,6 +102,18 @@ QWidget* Field::surfaceWidget()
     return m_surfaceWidget;
 }
 
+void Field::swapFamiliesWith(Field *other)
+{
+    Field *f1 = this;
+    Field *f2 = other;
+
+    QString family1 = f1->fontFamily();
+    QString family2 = f2->fontFamily();
+
+    f1->setFontFamily(family2);
+    f2->setFontFamily(family1);
+}
+
 int Field::id() const
 {
     return m_id;

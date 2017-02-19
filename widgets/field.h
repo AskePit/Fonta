@@ -26,6 +26,8 @@ public:
     void toogle(bool toogle);
     QWidget* surfaceWidget();
 
+    void swapFamiliesWith(Field *other);
+
     int id() const;
     QString fontFamily() const;
     float fontSize() const;

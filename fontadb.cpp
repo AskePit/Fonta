@@ -224,7 +224,9 @@ private:
 FontReader::FontReader(TTFMap &TTFs, File2FontsMap &File2Fonts)
     : TTFs(TTFs)
     , File2Fonts(File2Fonts)
-{}
+{
+    memset(tablesMap, 0, TTFTable::count*sizeof(TTFTableRecord));
+}
 
 FontReader::~FontReader()
 {
@@ -271,7 +273,7 @@ void FontReader::readFON()
 
     QString name(bytes);
 
-    delete bytes;
+    delete [] bytes;
 
     QStringRef nameRef(&name);
     nameRef = nameRef.mid(name.indexOf(':') + 1);
