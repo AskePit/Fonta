@@ -65,7 +65,8 @@ private slots:
     void on_fontsList_currentTextChanged(const QString &currentText);
     void on_addFieldButton_clicked();
     void on_removeFieldButton_clicked();
-    void on_currentFieldChanged(Field* textEdit);
+    void on_currentFieldChanged();
+    void updateFontFamily();
 
     void on_sizeBox_edited();
     void on_sizeBox_activated(const QString &arg1);
@@ -120,6 +121,8 @@ private slots:
     void enableContextGroup();
     void disableContextGroup();
 
+    void swapFonts();
+
 protected:
     void resizeEvent(QResizeEvent* event);
 
@@ -161,6 +164,9 @@ private:
     void updateAddRemoveButtons();
 
     void extendToolBar();
+
+    Field *m_swapRequester;
+    void swapBlockState(bool enable);
 };
 
 } // namespace fonta

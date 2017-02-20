@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QScrollBar>
 #include <QTimerEvent>
+#include <QMenu>
 #include <QDebug>
 
 namespace fonta {
@@ -57,6 +58,9 @@ Field::Field(InitType initType, QWidget* parent)
     m_surfaceLayout->addWidget(this);
 
     setLeading(m_leading);
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QTextEdit::customContextMenuRequested, this, &Field::showContextMenu);
 }
 
 Field& Field::operator=(const Field &other)
@@ -96,6 +100,18 @@ void Field::toogle(bool toogle)
 QWidget* Field::surfaceWidget()
 {
     return m_surfaceWidget;
+}
+
+void Field::swapFamiliesWith(Field *other)
+{
+    Field *f1 = this;
+    Field *f2 = other;
+
+    QString family1 = f1->fontFamily();
+    QString family2 = f2->fontFamily();
+
+    f1->setFontFamily(family2);
+    f2->setFontFamily(family1);
 }
 
 int Field::id() const
@@ -253,7 +269,7 @@ void Field::updateLoremText()
 void Field::focusInEvent(QFocusEvent* e)
 {
     QTextEdit::focusInEvent(e);
-    emit(focussed(this));
+    emit(focussed());
 }
 
 void Field::keyPressEvent(QKeyEvent *k)
@@ -450,6 +466,17 @@ void Field::load(const QJsonObject &json)
 
     m_contentMode = ContentMode::UserDefined;
     m_languageContext = LanguageContext::Auto;
+}
+
+void Field::showContextMenu(const QPoint &point)
+{
+    QMenu menu;
+
+    QAction swapAction(tr("Swap Fonts"), this);
+    connect(&swapAction, &QAction::triggered, this, &Field::swapRequested);
+
+    menu.addAction(&swapAction);
+    menu.exec(mapToGlobal(point));
 }
 
 } // namespace fonta

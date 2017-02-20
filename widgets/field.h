@@ -26,6 +26,8 @@ public:
     void toogle(bool toogle);
     QWidget* surfaceWidget();
 
+    void swapFamiliesWith(Field *other);
+
     int id() const;
     QString fontFamily() const;
     float fontSize() const;
@@ -58,8 +60,12 @@ public:
     void load(const QJsonObject &json);
 
 signals:
-    void focussed(Field* field);
+    void focussed();
     void contentBecameUserDefined();
+    void swapRequested();
+
+public slots:
+    void showContextMenu(const QPoint &point);
 
 protected:
     void focusInEvent(QFocusEvent* e);

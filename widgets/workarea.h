@@ -45,7 +45,7 @@ private:
     void loadSample(CStringRef jsonTxt);
 
 private slots:
-    void on_currentFieldChanged(Field* field);
+    void on_currentFieldChanged();
 
 private:
     int m_id;

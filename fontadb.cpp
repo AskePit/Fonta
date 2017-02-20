@@ -15,7 +15,9 @@
 #include <QtEndian>
 #include <QStandardPaths>
 #include <QSettings>
+#include <QProcess>
 #include <mutex>
+#include <windows.h>
 
 namespace fonta {
 
@@ -221,7 +223,9 @@ private:
 FontReader::FontReader(TTFMap &TTFs, File2FontsMap &File2Fonts)
     : TTFs(TTFs)
     , File2Fonts(File2Fonts)
-{}
+{
+    memset(tablesMap, 0, TTFTable::count*sizeof(TTFTableRecord));
+}
 
 FontReader::~FontReader()
 {
@@ -268,7 +272,7 @@ void FontReader::readFON()
 
     QString name(bytes);
 
-    delete bytes;
+    delete [] bytes;
 
     QStringRef nameRef(&name);
     nameRef = nameRef.mid(name.indexOf(':') + 1);
@@ -345,7 +349,7 @@ void FontReader::readTTC()
     f.read((char*)offsets.data(), offsetTablesCount*sizeof(u32));
 
     for(u32 offset : offsets) {
-        swap<u32>(offset);
+        swap(offset);
         if(Q_LIKELY(f.seek(offset))) {
             readTTF();
         }
@@ -501,7 +505,7 @@ void FontReader::readFont()
 
     const u16 MAX_NAME_SIZE = 1024;
     if(Q_UNLIKELY(nameRecord.StringLength > MAX_NAME_SIZE)) {
-        nameRecord.StringLength = 1024;
+        nameRecord.StringLength = MAX_NAME_SIZE;
     }
 
     char nameBytes[MAX_NAME_SIZE];
@@ -580,32 +584,23 @@ static void loadTTFChunk(const QStringList &out, int from, int to, TTFMap &TTFs,
 
 DB::DB()
 {
-    // QFontDatabase seems to use all font files from C:/Windows/Fonts.
-    // It's impossible todelete any file while programm is running.
-    // Solution: read files to be deleted from registry at Fonta
-    // startup exactly before QFontDatabase creation and try to delete them.
+    QtDB = new QFontDatabase;
+
     {
         QSettings fontaReg("PitM", "Fonta");
-        QStringList filesToDelete = fontaReg.value("FilesToDelete").toStringList();
-        for(int i = 0; i<filesToDelete.count(); ++i) {
-            CStringRef f = filesToDelete[i];
+        QStringList uninstalledFonts = fontaReg.value("FontaUninstalledFonts").toStringList();
+        for(int i = 0; i<uninstalledFonts.count(); ++i) {
+            CStringRef f = uninstalledFonts[i];
 
-            QFile file(f);
-            bool ok = true;
-            ok &= file.setPermissions(QFile::ReadOther | QFile::WriteOther);
-            ok &= file.remove();
-
-            if(ok) {
-                filesToDelete.removeAt(i);
+            if(!QtDB->families().contains(f)) {
+                uninstalledFonts.removeAt(i);
                 --i;
             }
         }
 
         // files that couldn't be deleted go back to registry
-        fontaReg.setValue("FilesToDelete", filesToDelete);
+        fontaReg.setValue("FontaUninstalledFonts", uninstalledFonts);
     }
-
-    QtDB = new QFontDatabase;
 
     QStringList out;
     getFontFiles(out);
@@ -623,7 +618,7 @@ DB::DB()
     std::vector<std::thread> futurs;
 
     int from = 0;
-    int to = std::min(chunkN, out.size()-1);
+    int to = min(chunkN, out.size()-1);
     for(int i = 0; i<cores; ++i) {
         futurs.push_back( std::thread(loadTTFChunk, std::ref(out), from, to, std::ref(TTFs), std::ref(File2Fonts)) );
         from = to+1;
@@ -726,13 +721,14 @@ void DB::uninstall(CStringRef family)
         }
     }
 
-
     QStringList uninstalledList = uninstalled();
     uninstalledList << family;
     uninstalledList << linkedFonts(family);
     uninstalledList.removeDuplicates();
 
-    QSettings uninstalledReg("HKEY_LOCAL_MACHINE", QSettings::NativeFormat);
+    qDebug() << uninstalledList;
+
+    QSettings uninstalledReg("PitM", "Fonta");
     uninstalledReg.setValue("FontaUninstalledFonts", uninstalledList);
 
     QStringList filesToDeleteList = filesToDelete();
@@ -741,11 +737,23 @@ void DB::uninstall(CStringRef family)
 
     QSettings fontaReg("PitM", "Fonta");
     fontaReg.setValue("FilesToDelete", filesToDeleteList);
+
+    for(CStringRef f : files) {
+        bool did = RemoveFontResourceW(f.toStdWString().c_str());
+
+        if(did) {
+            SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+        }
+    }
+
+    QProcess p;
+    p.start("cmd.exe", QStringList() << "/c" << "fonts_cleaner.bat");
+    p.waitForFinished();
 }
 
 QStringList DB::uninstalled() const
 {
-    QSettings uninstalledReg("HKEY_LOCAL_MACHINE", QSettings::NativeFormat);
+    QSettings uninstalledReg("PitM", "Fonta");
     return uninstalledReg.value("FontaUninstalledFonts", QStringList()).toStringList();
 }
 

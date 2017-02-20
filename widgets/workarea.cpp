@@ -133,10 +133,10 @@ void WorkArea::clear()
     }
 }
 
-void WorkArea::on_currentFieldChanged(Field* changedField)
+void WorkArea::on_currentFieldChanged()
 {
     for(auto field : m_fields) {
-        if(field == changedField) {
+        if(field == qobject_cast<Field *>(sender())) {
             m_currField = field;
             field->toogle(true);
         } else {

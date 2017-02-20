@@ -64,3 +64,4 @@ DEFINES *= \
     #FONTA_DETAILED_DEBUG \
     FONTA_MEASURES
 
+LIBS += -lgdi32 -luser32

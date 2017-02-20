@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QStyleFactory>
 #include <QCommandLineParser>
+#include <QProcess>
 #include <ctime>
 #include "sampler.h"
 
