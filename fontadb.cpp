@@ -17,7 +17,6 @@
 #include <QSettings>
 #include <QProcess>
 #include <mutex>
-#include <windows.h>
 
 namespace fonta {
 
@@ -618,7 +617,7 @@ DB::DB()
     std::vector<std::thread> futurs;
 
     int from = 0;
-    int to = min(chunkN, out.size()-1);
+    int to = std::min(chunkN, out.size()-1);
     for(int i = 0; i<cores; ++i) {
         futurs.push_back( std::thread(loadTTFChunk, std::ref(out), from, to, std::ref(TTFs), std::ref(File2Fonts)) );
         from = to+1;
@@ -704,32 +703,17 @@ void DB::uninstall(CStringRef family)
      *    This info'll be used at program startup when files are avaliable for deleting (see FontaDB constructor).
      */
 
-    QSettings fontsReg("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts", QSettings::NativeFormat);
-    cauto files = fontaDB().fontFiles(family); // "C:/Windows/Fonts/arial.ttf"
-
-    for(CStringRef f : files) {
-        cauto regKeys = fontsReg.allKeys(); // "Arial (TrueType)"="arial.ttf"
-
-        QFileInfo info(f);
-        const QString name = info.fileName();
-
-        for(CStringRef key : regKeys) {
-            const QString value = fontsReg.value(key).toString();
-            if(QString::compare(name, value, Qt::CaseInsensitive) == 0) {
-                fontsReg.remove(key);
-            }
-        }
-    }
-
+    // Register Uninstalled Fonts
     QStringList uninstalledList = uninstalled();
     uninstalledList << family;
     uninstalledList << linkedFonts(family);
     uninstalledList.removeDuplicates();
 
-    qDebug() << uninstalledList;
-
     QSettings uninstalledReg("PitM", "Fonta");
     uninstalledReg.setValue("FontaUninstalledFonts", uninstalledList);
+
+    // Register Files to Remove
+    cauto files = fontaDB().fontFiles(family); // "C:/Windows/Fonts/arial.ttf"
 
     QStringList filesToDeleteList = filesToDelete();
     filesToDeleteList << files;
@@ -738,14 +722,8 @@ void DB::uninstall(CStringRef family)
     QSettings fontaReg("PitM", "Fonta");
     fontaReg.setValue("FilesToDelete", filesToDeleteList);
 
-    for(CStringRef f : files) {
-        bool did = RemoveFontResourceW(f.toStdWString().c_str());
-
-        if(did) {
-            SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-        }
-    }
-
+    // Call external fonts_cleaner.exe tool to actually remove fonts.
+    // This tool requests admin privileges to perform it's actions.
     QProcess p;
     p.start("cmd.exe", QStringList() << "/c" << "fonts_cleaner.bat");
     p.waitForFinished();

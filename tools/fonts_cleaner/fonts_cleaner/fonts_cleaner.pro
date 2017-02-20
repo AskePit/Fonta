@@ -2,6 +2,7 @@ QT += core
 QT -= gui
 
 CONFIG += c++11
+CONFIG -= embed_manifest_exe
 
 TARGET = fonts_cleaner
 CONFIG += console
@@ -22,3 +23,5 @@ build_all:!build_pass {
 }
 
 QMAKE_CXXFLAGS += -O2
+
+LIBS += -lgdi32 -luser32

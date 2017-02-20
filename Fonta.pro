@@ -1,6 +1,6 @@
 QT += core gui widgets network xml
 
-CONFIG += c++11 #console
+CONFIG += c++11
 
 TARGET = Fonta
 TEMPLATE = app
@@ -48,10 +48,6 @@ RESOURCES_DIR = resources
 RESOURCES += \
     $${RESOURCES_DIR}/pics.qrc
 
-RC_FILE += \
-    #$${RESOURCES_DIR}/AdminManifest.rc
-    $${RESOURCES_DIR}/version.rc
-
 build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
@@ -63,5 +59,3 @@ DEFINES *= \
     QT_USE_QSTRINGBUILDER \
     #FONTA_DETAILED_DEBUG \
     FONTA_MEASURES
-
-LIBS += -lgdi32 -luser32

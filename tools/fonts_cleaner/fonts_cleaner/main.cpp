@@ -1,14 +1,67 @@
-#include <QCoreApplication>
 #include <QSettings>
-#include <QDebug>
 #include <QFile>
+#include <QFileInfo>
+#include <QDebug>
+#include <windows.h>
+
+using CStringRef = const QString&;
+#define cauto const auto&
+
+inline void clearLog()
+{
+    QFile f("log.txt");
+    f.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    f.close();
+}
+
+inline void report(CStringRef &m) {
+    QFile f("log.txt");
+    f.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream out(&f);
+    out << m << "\n";
+    f.close();
+}
 
 int main()
 {
+    clearLog();
+
+    report("Started");
     QSettings fontaReg("PitM", "Fonta");
-    QStringList filesToDelete = fontaReg.value("FilesToDelete").toStringList();
-    for(int i = 0; i<filesToDelete.count(); ++i) {
-        const QString &f = filesToDelete[i];
+    QSettings winReg("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts", QSettings::NativeFormat);
+
+    QStringList files = fontaReg.value("FilesToDelete").toStringList();
+
+    report("Reg phase");
+    for(CStringRef f : files) {
+        // WinAPI deletion
+        bool did = RemoveFontResourceW(f.toStdWString().c_str());
+        if(did) {
+            SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+            report(QString("RemoveFontResourceW for %1 done").arg(f));
+        } else {
+            report(QString("RemoveFontResourceW for %1 failed!").arg(f));
+        }
+
+        // Fonts registry cleanup
+        cauto regKeys = winReg.allKeys(); // "Arial (TrueType)"="arial.ttf"
+
+        QFileInfo info(f);
+        const QString name = info.fileName();
+
+        for(CStringRef key : regKeys) {
+            const QString value = winReg.value(key).toString();
+            if(QString::compare(name, value, Qt::CaseInsensitive) == 0) {
+                report(QString("Try to remove %1 reg key!").arg(key));
+                winReg.remove(key);
+            }
+        }
+    }
+
+    report("Physical deletion phase");
+    // Physical files deletion
+    for(int i = 0; i<files.count(); ++i) {
+        const QString &f = files[i];
 
         QFile file(f);
         bool ok = true;
@@ -16,15 +69,16 @@ int main()
         ok &= file.remove();
 
         if(ok) {
-            filesToDelete.removeAt(i);
+            files.removeAt(i);
             --i;
         } else {
-            qDebug() << QString("could not remove %1 file").arg(f);
+            report(QString("Could not remove %1 file!").arg(f));
         }
     }
 
+    report("Finished");
     // files that couldn't be deleted go back to registry
-    fontaReg.setValue("FilesToDelete", filesToDelete);
+    fontaReg.setValue("FilesToDelete", files);
 
     return 0;
 }
