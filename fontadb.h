@@ -149,6 +149,8 @@ private:
     QFontDatabase *QtDB;
     TTFMap TTFs;
     File2FontsMap File2Fonts;
+
+    void updateUninstalledFonts();
 };
 
 inline DB& fontaDB() { return DB::getInstance(); }

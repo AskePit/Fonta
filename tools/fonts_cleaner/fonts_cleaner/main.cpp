@@ -24,7 +24,7 @@ inline void report(CStringRef &m) {
 
 int main()
 {
-    clearLog();
+    //clearLog();
 
     report("Started");
     QSettings fontaReg("PitM", "Fonta");
@@ -35,9 +35,9 @@ int main()
     report("Reg phase");
     for(CStringRef f : files) {
         // WinAPI deletion
+        report(QString("RemoveFontResourceW for %1...").arg(f));
         bool did = RemoveFontResourceW(f.toStdWString().c_str());
         if(did) {
-            SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
             report(QString("RemoveFontResourceW for %1 done").arg(f));
         } else {
             report(QString("RemoveFontResourceW for %1 failed!").arg(f));
@@ -76,9 +76,14 @@ int main()
         }
     }
 
-    report("Finished");
+
     // files that couldn't be deleted go back to registry
     fontaReg.setValue("FilesToDelete", files);
+
+    /*report("Broadcast changes");
+    SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);*/
+
+    report("Finished");
 
     return 0;
 }

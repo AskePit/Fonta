@@ -585,21 +585,7 @@ DB::DB()
 {
     QtDB = new QFontDatabase;
 
-    {
-        QSettings fontaReg("PitM", "Fonta");
-        QStringList uninstalledFonts = fontaReg.value("FontaUninstalledFonts").toStringList();
-        for(int i = 0; i<uninstalledFonts.count(); ++i) {
-            CStringRef f = uninstalledFonts[i];
-
-            if(!QtDB->families().contains(f)) {
-                uninstalledFonts.removeAt(i);
-                --i;
-            }
-        }
-
-        // files that couldn't be deleted go back to registry
-        fontaReg.setValue("FontaUninstalledFonts", uninstalledFonts);
-    }
+    updateUninstalledFonts();
 
     QStringList out;
     getFontFiles(out);
@@ -657,6 +643,23 @@ DB::DB()
 DB::~DB()
 {
     delete QtDB;
+}
+
+void DB::updateUninstalledFonts()
+{
+    QSettings fontaReg("PitM", "Fonta");
+    QStringList uninstalledFonts = fontaReg.value("FontaUninstalledFonts").toStringList();
+    for(int i = 0; i<uninstalledFonts.count(); ++i) {
+        CStringRef f = uninstalledFonts[i];
+
+        if(!QtDB->families().contains(f)) {
+            uninstalledFonts.removeAt(i);
+            --i;
+        }
+    }
+
+    // files that couldn't be deleted go back to registry
+    fontaReg.setValue("FontaUninstalledFonts", uninstalledFonts);
 }
 
 QStringList DB::families() const
