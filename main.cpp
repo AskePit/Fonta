@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         d.bar->setValue(val);
     });
     QObject::connect(&fonta::fontaDB(), &fonta::DB::loadFinished, &d, &QDialog::accept);
-    QTimer::singleShot(50, &fonta::fontaDB(), &fonta::DB::load);
+    QTimer::singleShot(250, &fonta::fontaDB(), &fonta::DB::load);
 
     d.exec();
 
