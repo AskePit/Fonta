@@ -181,8 +181,8 @@ void Field::applySheet()
 
 void Field::fetchSamples()
 {
-    m_engText = Sampler::getEngText(m_contentMode);
-    m_rusText = Sampler::getRusText(m_contentMode);
+    m_engText = Sampler::instance()->getEngText(m_contentMode);
+    m_rusText = Sampler::instance()->getRusText(m_contentMode);
 }
 
 static QString truncWord(CStringRef str)

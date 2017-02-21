@@ -25,10 +25,10 @@ class Sampler : public QObject
 public:
     static Sampler *instance();
 
-    static CStringRef getName();
-    static CStringRef getEngText(ContentMode mode);
-    static CStringRef getRusText(ContentMode mode);
-    static void loadSample(WorkArea& area);
+    CStringRef getName();
+    CStringRef getEngText(ContentMode mode);
+    CStringRef getRusText(ContentMode mode);
+    void loadSample(WorkArea& area);
 
 private slots:
     void fetchNewsSlot();

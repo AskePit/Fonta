@@ -38,15 +38,9 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     connect(ui->fontsList, &QListWidget::customContextMenuRequested, this, &MainWindow::showFontListContextMenu);
 
     cauto boxEditSig = &QLineEdit::returnPressed;
-    connect(ui->sizeBox->lineEdit(), boxEditSig, this, &MainWindow::on_sizeBox_edited);
-    connect(ui->leadingBox->lineEdit(), boxEditSig, this, &MainWindow::on_leadingBox_edited);
-    connect(ui->trackingBox->lineEdit(), boxEditSig, this, &MainWindow::on_trackingBox_edited);
-
-    QStringList filterItems;
-    for(int i = FilterMode::Start; i<FilterMode::End; ++i) {
-        filterItems << FilterMode::toString(static_cast<FilterMode::type>(i));
-    }
-    ui->filterBox->addItems(filterItems);
+    connect(ui->sizeBox->lineEdit(), boxEditSig, this, &MainWindow::onSizeBoxEdited);
+    connect(ui->leadingBox->lineEdit(), boxEditSig, this, &MainWindow::onLeadingBoxEdited);
+    connect(ui->trackingBox->lineEdit(), boxEditSig, this, &MainWindow::onTrackingBoxEdited);
 
     ui->fontFinderEdit->setListWidget(ui->fontsList);
 
@@ -72,17 +66,26 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     fillGroup->addAction(ui->actionFillPangram);
     fillGroup->addAction(ui->actionFillLoremIpsum);
 
-    if(fileToOpen.isEmpty()) {
-        addTab();
-    } else {
-        openFile(fileToOpen);
-    }
-
     loadGeometry();
 
     // extend toolbar with language context buttons
     // (they are buttons because of their more appropriate look)
     extendToolBar();
+
+    QStringList filterItems;
+    for(int i = FilterMode::Start; i<FilterMode::End; ++i) {
+        filterItems << FilterMode::toString(static_cast<FilterMode::type>(i));
+    }
+    ui->filterBox->addItems(filterItems);
+
+    connect(ui->filterBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::currentFilterBoxIndexChanged);
+    currentFilterBoxIndexChanged(0);
+
+    if(fileToOpen.isEmpty()) {
+        addTab();
+    } else {
+        openFile(fileToOpen);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -232,7 +235,7 @@ void MainWindow::uninstallFont(const QString &fontName)
 
     if (ret == QMessageBox::Ok) {
         fontaDB().uninstall(fontName);
-        on_filterBox_currentIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
+        currentFilterBoxIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
         callInfoDialog(tr("Font(s) uninstalled!\nReboot your PC for changes to take effect"));
         return;
     }
@@ -246,7 +249,8 @@ void MainWindow::addTab(InitType initType)
     QVBoxLayout* horizontalLayout = new QVBoxLayout(tab);
     horizontalLayout->setSpacing(0);
     horizontalLayout->setContentsMargins(0, 0, 0, 0);
-    m_currWorkArea = new WorkArea(id, tab, Sampler::getName());
+
+    m_currWorkArea = new WorkArea(id, tab, Sampler::instance()->getName());
 
     if(initType == InitType::Sampled) {
         m_currWorkArea->createSample();
@@ -517,7 +521,7 @@ void MainWindow::on_fontsList_currentTextChanged(const QString &family)
     ui->styleBox->setCurrentText(m_currField->fontStyle());
 }
 
-void MainWindow::on_sizeBox_edited()
+void MainWindow::onSizeBoxEdited()
 {
     on_sizeBox_activated(ui->sizeBox->lineEdit()->text());
 }
@@ -528,7 +532,7 @@ void MainWindow::on_sizeBox_activated(const QString &arg1)
     m_currField->setFontSize(val);
 }
 
-void MainWindow::on_filterBox_currentIndexChanged(int index)
+void MainWindow::currentFilterBoxIndexChanged(int index)
 {
     if(ui->filterBox->currentText() == "Custom") {
         return;
@@ -604,7 +608,7 @@ void MainWindow::on_styleBox_activated(CStringRef style)
     m_currField->setPreferableFontStyle(style);
 }
 
-void MainWindow::on_leadingBox_edited()
+void MainWindow::onLeadingBoxEdited()
 {
     on_leadingBox_activated(ui->leadingBox->lineEdit()->text());
 }
@@ -619,7 +623,7 @@ void MainWindow::on_leadingBox_activated(CStringRef arg1)
     m_currField->setLeading(val);
 }
 
-void MainWindow::on_trackingBox_edited()
+void MainWindow::onTrackingBoxEdited()
 {
     on_trackingBox_activated(ui->trackingBox->lineEdit()->text());
 }

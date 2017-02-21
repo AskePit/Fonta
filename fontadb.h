@@ -84,20 +84,25 @@ struct FullFontInfo {
 using TTFMap = QHash<QString, TTF>;
 using File2FontsMap = QHash<QString, QSet<QString>>;
 
-class DB
+class DB : public QObject
 {
+    Q_OBJECT
+
 private:
     DB();
-    DB(DB const&);
-    void operator=(DB const&);
+    DB(const DB &) = delete;
+    void operator=(const DB &) = delete;
+    static DB *mInstance;
+
+signals:
+    void emitProgress(int i);
+    void loadFinished(int i = 0);
 
 public:
-    static DB &getInstance()
-    {
-        static DB instance;
-        return instance;
-    }
+    static DB *instance();
     ~DB();
+
+    void load();
 
     QStringList families() const;
     QStringList styles(CStringRef family) const { return QtDB->styles(family); }
@@ -150,10 +155,18 @@ private:
     TTFMap TTFs;
     File2FontsMap File2Fonts;
 
+    int loadedFiles = 0;
+    int filesCount = 0;
+    int progress = 0;
+
+#ifndef FONTA_DETAILED_DEBUG
+    void loadTTFChunk(const QStringList &out, int from, int to);
+#endif
+
     void updateUninstalledFonts();
 };
 
-inline DB& fontaDB() { return DB::getInstance(); }
+inline DB& fontaDB() { return *DB::instance(); }
 inline QFontDatabase& qtDB() { return fontaDB().getQtDB(); }
 
 } // namespace fonta

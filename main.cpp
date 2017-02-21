@@ -1,10 +1,16 @@
-#include "mainwindow.h"
 #include <QApplication>
 #include <QStyleFactory>
 #include <QCommandLineParser>
-#include <QProcess>
+#include <QIcon>
+#include <QTimer>
+#include <QProgressBar>
+#include <QLayout>
+#include <QLabel>
+#include <QDialog>
+
 #include <ctime>
-#include "sampler.h"
+#include "fontadb.h"
+#include "mainwindow.h"
 
 struct Args {
     QString file;
@@ -14,7 +20,35 @@ struct Args {
     {}
 };
 
-Args getArgs(QApplication &app)
+class LoadDialog : public QDialog
+{
+public:
+    LoadDialog();
+    QProgressBar *bar;
+};
+
+LoadDialog::LoadDialog()
+{
+    setWindowFlags(Qt::CustomizeWindowHint);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+
+    //QLabel *lbl = new QLabel(tr("Fonts load:"));
+
+    bar = new QProgressBar;
+    bar->setMinimumHeight(50);
+    bar->setMinimumWidth(100);
+    bar->setWindowFlags(Qt::Widget);
+    bar->setRange(0, 100);
+    bar->setValue(0);
+
+    //mainLayout->addWidget(lbl);
+    mainLayout->addWidget(bar);
+
+    setLayout(mainLayout);
+}
+
+static Args getArgs(QApplication &app)
 {
     Args args;
     QCommandLineParser parser;
@@ -36,9 +70,18 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/pic/logo.png"));
 
-    cauto args = getArgs(a);
+    LoadDialog d;
 
-    fonta::Sampler::instance();
+    // dirty hack with lambda. fontaDB emits signals from std::threads and it works for Releases for some reason
+    QObject::connect(&fonta::fontaDB(), &fonta::DB::emitProgress, [&](int val){
+        d.bar->setValue(val);
+    });
+    QObject::connect(&fonta::fontaDB(), &fonta::DB::loadFinished, &d, &QDialog::accept);
+    QTimer::singleShot(50, &fonta::fontaDB(), &fonta::DB::load);
+
+    d.exec();
+
+    cauto args = getArgs(a);
     fonta::MainWindow w(args.file);
     w.show();
 

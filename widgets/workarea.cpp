@@ -27,7 +27,7 @@ WorkArea::WorkArea(int id, QWidget* parent, QString name)
 
 void WorkArea::createSample()
 {
-    Sampler::loadSample(*this);
+    Sampler::instance()->loadSample(*this);
 
     m_fields[0]->setFocus();
     m_currField = m_fields[0];

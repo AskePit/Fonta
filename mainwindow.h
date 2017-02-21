@@ -68,13 +68,13 @@ private slots:
     void on_currentFieldChanged();
     void updateFontFamily();
 
-    void on_sizeBox_edited();
+    void onSizeBoxEdited();
     void on_sizeBox_activated(const QString &arg1);
-    void on_leadingBox_edited();
+    void onLeadingBoxEdited();
     void on_leadingBox_activated(const QString &arg1);
-    void on_trackingBox_edited();
+    void onTrackingBoxEdited();
     void on_trackingBox_activated(const QString &arg1);
-    void on_filterBox_currentIndexChanged(int index);
+    void currentFilterBoxIndexChanged(int index);
     void on_styleBox_activated(const QString &arg1);
 
     void showTabsContextMenu(const QPoint &point);

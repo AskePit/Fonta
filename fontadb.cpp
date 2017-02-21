@@ -16,6 +16,7 @@
 #include <QStandardPaths>
 #include <QSettings>
 #include <QProcess>
+#include <QProgressBar>
 #include <mutex>
 
 namespace fonta {
@@ -572,16 +573,39 @@ void FontReader::readFont()
 
 #ifndef FONTA_DETAILED_DEBUG
 
-static void loadTTFChunk(const QStringList &out, int from, int to, TTFMap &TTFs, File2FontsMap &File2Fonts)
+void DB::loadTTFChunk(const QStringList &out, int from, int to)
 {
     for(int i = from; i<=to; ++i) {
         FontReader reader(TTFs, File2Fonts);
         reader.readFile(out[i]);
+
+#ifdef QT_NO_DEBUG
+        int newProgress = (int)((++loadedFiles)/(float)filesCount*100);
+        if(progress != newProgress) {
+            progress = newProgress;
+            emit emitProgress(progress);
+        }
+#endif
     }
 }
 #endif
 
+DB *DB::mInstance = nullptr;
+
+DB *DB::instance() {
+    if (mInstance == nullptr) {
+        mInstance = new DB;
+    }
+
+    return mInstance;
+}
+
 DB::DB()
+{
+
+}
+
+void DB::load()
 {
     QtDB = new QFontDatabase;
 
@@ -589,6 +613,8 @@ DB::DB()
 
     QStringList out;
     getFontFiles(out);
+
+    filesCount = out.length();
 
 #ifdef FONTA_MEASURES
     QElapsedTimer timer;
@@ -605,7 +631,7 @@ DB::DB()
     int from = 0;
     int to = std::min(chunkN, out.size()-1);
     for(int i = 0; i<cores; ++i) {
-        futurs.push_back( std::thread(loadTTFChunk, std::ref(out), from, to, std::ref(TTFs), std::ref(File2Fonts)) );
+        futurs.push_back( std::thread(&DB::loadTTFChunk, this, std::ref(out), from, to) );
         from = to+1;
 
         if(i+1 >= (cores-1)) {
@@ -638,6 +664,8 @@ DB::DB()
     qDebug() << timer.elapsed() << "milliseconds to load fonts";
     qDebug() << TTFs.size() << "fonts loaded";
 #endif
+
+    emit loadFinished();
 }
 
 DB::~DB()
