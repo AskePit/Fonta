@@ -2,6 +2,7 @@
 
 #include <QDirIterator>
 #include <thread>
+#include <QThread>
 
 #ifdef FONTA_MEASURES
 #include <QElapsedTimer>
@@ -16,7 +17,6 @@
 #include <QStandardPaths>
 #include <QSettings>
 #include <QProcess>
-#include <QProgressBar>
 #include <mutex>
 
 namespace fonta {
@@ -573,22 +573,17 @@ void FontReader::readFont()
 
 #ifndef FONTA_DETAILED_DEBUG
 
-void DB::loadTTFChunk(const QStringList &out, int from, int to)
+void LoadThread::load()
 {
     for(int i = from; i<=to; ++i) {
         FontReader reader(TTFs, File2Fonts);
         reader.readFile(out[i]);
-
-#ifdef QT_NO_DEBUG
-        int newProgress = (int)((++loadedFiles)/(float)filesCount*100);
-        if(progress != newProgress) {
-            progress = newProgress;
-            emit emitProgress(progress);
-        }
-#endif
+        emit fileLoaded();
     }
 }
+
 #endif
+
 
 DB *DB::mInstance = nullptr;
 
@@ -626,12 +621,21 @@ void DB::load()
     if(!cores) cores = 4;
     const int chunkN = out.size() / cores;
 
-    std::vector<std::thread> futurs;
+    std::vector<QThread *> threads;
 
     int from = 0;
     int to = std::min(chunkN, out.size()-1);
     for(int i = 0; i<cores; ++i) {
-        futurs.push_back( std::thread(&DB::loadTTFChunk, this, std::ref(out), from, to) );
+        QThread *thread = new QThread(this);
+        LoadThread *worker = new LoadThread(out, from, to, TTFs, File2Fonts);
+        worker->moveToThread(thread);
+
+        connect(thread, &QThread::started, worker, &LoadThread::load);
+        connect(worker, &LoadThread::fileLoaded, this, &DB::updateProgress, Qt::DirectConnection);
+
+        thread->start();
+
+        threads.push_back(thread);
         from = to+1;
 
         if(i+1 >= (cores-1)) {
@@ -641,8 +645,10 @@ void DB::load()
         }
     }
 
-    for(auto &f : futurs) {
-        f.join();
+    for(auto *t : threads) {
+        t->quit();
+        t->wait();
+        t->deleteLater();
     }
 #else
     for(int i = 0; i<out.size(); ++i) {
@@ -666,6 +672,15 @@ void DB::load()
 #endif
 
     emit loadFinished();
+}
+
+void DB::updateProgress()
+{
+    int newProgress = (int)((++loadedFiles)/(float)filesCount*100);
+    if(progress != newProgress) {
+        progress = newProgress;
+        emit emitProgress(progress);
+    }
 }
 
 DB::~DB()

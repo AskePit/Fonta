@@ -70,17 +70,16 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/pic/logo.png"));
 
+    // At first call dialog with fonts load progress bar
     LoadDialog d;
 
-    // dirty hack with lambda. fontaDB emits signals from std::threads and it works for Releases for some reason
-    QObject::connect(&fonta::fontaDB(), &fonta::DB::emitProgress, [&](int val){
-        d.bar->setValue(val);
-    });
-    QObject::connect(&fonta::fontaDB(), &fonta::DB::loadFinished, &d, &QDialog::accept);
+    QObject::connect(&fonta::fontaDB(), &fonta::DB::emitProgress, d.bar, &QProgressBar::setValue);
+    QObject::connect(&fonta::fontaDB(), &fonta::DB::loadFinished, &d, &QDialog::accept, Qt::QueuedConnection);
     QTimer::singleShot(250, &fonta::fontaDB(), &fonta::DB::load);
 
     d.exec();
 
+    // And only then call MainWindow
     cauto args = getArgs(a);
     fonta::MainWindow w(args.file);
     w.show();

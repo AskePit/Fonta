@@ -94,6 +94,9 @@ private:
     void operator=(const DB &) = delete;
     static DB *mInstance;
 
+private slots:
+    void updateProgress();
+
 signals:
     void emitProgress(int i);
     void loadFinished(int i = 0);
@@ -159,11 +162,36 @@ private:
     int filesCount = 0;
     int progress = 0;
 
-#ifndef FONTA_DETAILED_DEBUG
-    void loadTTFChunk(const QStringList &out, int from, int to);
-#endif
+
 
     void updateUninstalledFonts();
+};
+
+class LoadThread : public QObject
+{
+    Q_OBJECT
+
+public:
+    LoadThread(const QStringList &out, int from, int to, TTFMap &TTFs, File2FontsMap &File2Fonts)
+        : out(out)
+        , from(from)
+        , to(to)
+        , TTFs(TTFs)
+        , File2Fonts(File2Fonts)
+    {}
+
+public slots:
+    void load();
+
+signals:
+    void fileLoaded();
+
+private:
+    const QStringList &out;
+    int from;
+    int to;
+    TTFMap &TTFs;
+    File2FontsMap &File2Fonts;
 };
 
 inline DB& fontaDB() { return *DB::instance(); }
