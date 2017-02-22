@@ -41,12 +41,12 @@ void Canvas::paintEvent(QPaintEvent *e)
     p.setPen(Qt::NoPen);
 
 
-    int wdth = width();
-    int hght = height();
-    int cw = wdth/2;
-    int ch = hght/2;
+    qreal wdth = width();
+    qreal hght = height();
+    qreal cw = wdth/2.;
+    qreal ch = hght/2.;
 
-    int r = d/2;
+    qreal r = d/2.;
 
     p.drawEllipse(cw-r, ch-r, d, d);
 
@@ -54,15 +54,15 @@ void Canvas::paintEvent(QPaintEvent *e)
     qreal ang = 0;
 
     for(int i = 0; i<n; ++i, ang += diff) {
-        QPointF pinC = translate(QPointF(cw, ch-r), QPointF(cw, ch), ang);
+        QPointF pinC = translate(QPointF(cw, ch+r), QPointF(cw, ch), ang);
 
-        QPointF tl = translate(QPointF(pinC.x()-w/2, pinC.y()-h), pinC, ang);
-        QPointF tr = translate(QPointF(pinC.x()+w/2, pinC.y()-h), pinC, ang);
-        QPointF bl = translate(QPointF(pinC.x()-w/2, pinC.y()+h*(a/20)), pinC, ang);
-        QPointF br = translate(QPointF(pinC.x()+w/2, pinC.y()+h*(a/20)), pinC, ang);
+        QPointF tl = translate(QPointF(pinC.x()-w/2., pinC.y()-h), pinC, ang);
+        QPointF tr = translate(QPointF(pinC.x()+w/2., pinC.y()-h), pinC, ang);
+        QPointF bl = translate(QPointF(pinC.x()-w/2., pinC.y()+h/**(a/20.)*/), pinC, ang);
+        QPointF br = translate(QPointF(pinC.x()+w/2., pinC.y()+h/**(a/20.)*/), pinC, ang);
 
-        bl = translate(bl, tl, +a-90);
-        br = translate(br, tr, -a+90);
+        bl = translate(bl, tl, -a+90);
+        br = translate(br, tr, +a-90);
 
         QPointF points[4] = { tl, tr, br, bl };
 
