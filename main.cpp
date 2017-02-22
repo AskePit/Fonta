@@ -64,6 +64,8 @@ static Args getArgs(QApplication &app)
 
 int main(int argc, char *argv[])
 {
+    using namespace fonta;
+
     QApplication::setStyle(QStyleFactory::create("Fusion"));
     srand(time(NULL));
 
@@ -73,15 +75,15 @@ int main(int argc, char *argv[])
     // At first call dialog with fonts load progress bar
     LoadDialog d;
 
-    QObject::connect(&fonta::fontaDB(), &fonta::DB::emitProgress, d.bar, &QProgressBar::setValue);
-    QObject::connect(&fonta::fontaDB(), &fonta::DB::loadFinished, &d, &QDialog::accept, Qt::QueuedConnection);
-    QTimer::singleShot(250, &fonta::fontaDB(), &fonta::DB::load);
+    QObject::connect(&fontaDB(), &DB::emitProgress, d.bar, &QProgressBar::setValue);
+    QObject::connect(&fontaDB(), &DB::loadFinished, &d, &QDialog::accept, Qt::QueuedConnection);
+    QTimer::singleShot(250, &fontaDB(), &DB::load);
 
     d.exec();
 
     // And only then call MainWindow
     cauto args = getArgs(a);
-    fonta::MainWindow w(args.file);
+    MainWindow w(args.file);
     w.show();
 
     return a.exec();
