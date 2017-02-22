@@ -9,11 +9,11 @@ class Canvas : public QWidget
 public:
     explicit Canvas(QWidget *parent = 0);
 
-    int d = 100;
-    int n = 6;
-    int h = 10;
-    int w = 10;
-    int a = 90;
+    int d = 250;
+    int n = 5;
+    int h = 20;
+    int w = 95;
+    int a = 110;
 
 signals:
 

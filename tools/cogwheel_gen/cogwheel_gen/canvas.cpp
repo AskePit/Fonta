@@ -37,8 +37,8 @@ void Canvas::paintEvent(QPaintEvent *e)
 
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    //p.setBrush(QColor(70, 70, 70));
-    //p.setPen(Qt::NoPen);
+    p.setBrush(QColor(70, 70, 70));
+    p.setPen(Qt::NoPen);
 
 
     int wdth = width();
@@ -52,8 +52,21 @@ void Canvas::paintEvent(QPaintEvent *e)
 
     qreal diff = 360/(double)n;
     qreal ang = 0;
+
     for(int i = 0; i<n; ++i, ang += diff) {
-        p.setPen(QPen(QBrush(QColor(70, 70, 70)), 5));
-        p.drawPoint(translate(QPointF(cw, ch-r), QPointF(cw, ch), ang));
+        QPointF pinC = translate(QPointF(cw, ch-r), QPointF(cw, ch), ang);
+
+        QPointF tl = translate(QPointF(pinC.x()-w/2, pinC.y()-h), pinC, ang);
+        QPointF tr = translate(QPointF(pinC.x()+w/2, pinC.y()-h), pinC, ang);
+        QPointF bl = translate(QPointF(pinC.x()-w/2, pinC.y()+h*(a/20)), pinC, ang);
+        QPointF br = translate(QPointF(pinC.x()+w/2, pinC.y()+h*(a/20)), pinC, ang);
+
+        bl = translate(bl, tl, +a-90);
+        br = translate(br, tr, -a+90);
+
+        QPointF points[4] = { tl, tr, br, bl };
+
+        p.drawPolygon(points, 4);
+
     }
 }
