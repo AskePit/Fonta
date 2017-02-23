@@ -236,7 +236,6 @@ void MainWindow::uninstallFont(const QString &fontName)
     if (ret == QMessageBox::Ok) {
         fontaDB().uninstall(fontName);
         currentFilterBoxIndexChanged(ui->filterBox->currentIndex()); // force fonts list update
-        callInfoDialog(tr("Font(s) uninstalled!\nReboot your PC for changes to take effect"));
         return;
     }
 }
