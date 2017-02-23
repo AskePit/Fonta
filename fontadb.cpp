@@ -21,6 +21,8 @@
 
 namespace fonta {
 
+const TTF TTF::null = TTF();
+
 static void getFontFiles(QStringList &out)
 {
     cauto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
@@ -330,11 +332,12 @@ void FontReader::readFON()
     }
 
     TTF ttf;
-    ttf.files << fileName;
+    ttf.valid = true;
+    ttf.files << std::move(fileName);
 
     {
         std::lock_guard<std::mutex> lock(readTTFMutex);
-        TTFs[name] = ttf;
+        TTFs[name] = std::move(ttf);
         (void)lock;
     }
 }
@@ -541,7 +544,8 @@ void FontReader::readFont()
     }
 
     TTF ttf;
-    ttf.files << fileName;
+    ttf.valid = true;
+    ttf.files << std::move(fileName);
     //qDebug() << '\t' << fontName;
 
     /////////
@@ -566,7 +570,7 @@ void FontReader::readFont()
 
     {
         std::lock_guard<std::mutex> lock(readTTFMutex);
-        TTFs[fontName] = ttf;
+        TTFs[fontName] = std::move(ttf);
         (void)lock;
     }
 }
@@ -658,12 +662,12 @@ void DB::load()
 #endif
 
     // analyse fonts on common files
-    for(cauto fontName : TTFs.keys()) {
-        auto &TTF = TTFs[fontName];
+    for(cauto fontName : TTFs) {
+        auto &TTF = TTFs[fontName.first];
         for(cauto f : TTF.files) {
             TTF.linkedFonts.unite(File2Fonts[f]);
         }
-        TTF.linkedFonts.remove(fontName); // remove itself
+        TTF.linkedFonts.remove(fontName.first); // remove itself
     }
 
 #ifdef FONTA_MEASURES
@@ -718,8 +722,8 @@ QStringList DB::families() const
 
 QStringList DB::linkedFonts(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) {
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
         return QStringList();
     }
 
@@ -728,8 +732,8 @@ QStringList DB::linkedFonts(CStringRef family) const
 
 QStringList DB::fontFiles(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) {
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
         return QStringList();
     }
 
@@ -787,21 +791,21 @@ QStringList DB::filesToDelete() const
     return fontaReg.value("FilesToDelete", QStringList()).toStringList();
 }
 
-bool DB::getTTF(CStringRef family, TTF& ttf) const {
-    if(!TTFs.contains(family))
-        return false;
+const TTF &DB::getTTF(CStringRef family) const {
+    if(!TTFs.contains(family)) {
+        return TTF::null;
+    }
 
-    ttf = TTFs[family];
-    return true;
+    return TTFs.at(family);
 }
 
 FullFontInfo DB::getFullFontInfo(CStringRef family) const
 {
     FullFontInfo fullInfo;
 
-    TTF ttf;
-    fullInfo.TTFExists = getTTF(family, ttf);
-    fullInfo.fontaTFF = ttf;
+    const TTF &ttf = getTTF(family);
+    fullInfo.TTFExists = ttf.isValid();
+    fullInfo.fontaTFF = &ttf;
 
     fullInfo.qtInfo.cyrillic = QtDB->writingSystems(family).contains(QFontDatabase::Cyrillic);
     fullInfo.qtInfo.symbolic = QtDB->writingSystems(family).contains(QFontDatabase::Symbol);
@@ -829,8 +833,10 @@ static bool _isSerif(const TTF& ttf)
 bool DB::isSerif(CStringRef family) const
 {
     // 1
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return _isSerif(ttf);
 }
@@ -854,8 +860,10 @@ static bool _isSansSerif(const TTF& ttf)
 bool DB::isSansSerif(CStringRef family) const
 {
     // 1
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return _isSansSerif(ttf);
 }
@@ -867,8 +875,8 @@ bool DB::isMonospaced(CStringRef family) const
 
     qt = QtDB->isFixedPitch(family);
 
-    TTF ttf;
-    if(getTTF(family, ttf)) {
+    const TTF &ttf = getTTF(family);
+    if(ttf.isValid()) {
         panose = ttf.panose.isMonospaced();
     }
 
@@ -878,8 +886,10 @@ bool DB::isMonospaced(CStringRef family) const
 bool DB::isScript(CStringRef family) const
 {
     // 1
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(ttf.familyClass == FamilyClass::SCRIPT) {
         return true;
@@ -896,8 +906,10 @@ bool DB::isScript(CStringRef family) const
 bool DB::isDecorative(CStringRef family) const
 {
     // 1
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(ttf.familyClass == FamilyClass::ORNAMENTAL) {
         return true;
@@ -918,8 +930,10 @@ bool DB::isSymbolic(CStringRef family) const
         return true;*/
 
     // 2
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(ttf.familyClass == FamilyClass::SYMBOL) {
         return true;
@@ -937,8 +951,10 @@ bool DB::isSymbolic(CStringRef family) const
 
 bool DB::isOldStyle(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(ttf.familyClass != FamilyClass::OLDSTYLE_SERIF) return false;
 
@@ -948,8 +964,10 @@ bool DB::isOldStyle(CStringRef family) const
 
 bool DB::isTransitional(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return ttf.familyClass == FamilyClass::TRANSITIONAL_SERIF
        || (ttf.familyClass == FamilyClass::CLARENDON_SERIF && (ttf.familySubClass == 2 || ttf.familySubClass == 3 || ttf.familySubClass == 4))
@@ -959,16 +977,20 @@ bool DB::isTransitional(CStringRef family) const
 
 bool DB::isModern(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return ttf.familyClass == FamilyClass::MODERN_SERIF;
 }
 
 bool DB::isSlab(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return ttf.familyClass == FamilyClass::SLAB_SERIF
        || (ttf.familyClass == FamilyClass::CLARENDON_SERIF && (ttf.familySubClass != 2 && ttf.familySubClass != 3 && ttf.familySubClass != 4));
@@ -976,8 +998,10 @@ bool DB::isSlab(CStringRef family) const
 
 bool DB::isCoveSerif(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSerif(ttf)) return false;
 
@@ -991,8 +1015,10 @@ bool DB::isCoveSerif(CStringRef family) const
 
 bool DB::isSquareSerif(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSerif(ttf)) return false;
 
@@ -1006,8 +1032,10 @@ bool DB::isSquareSerif(CStringRef family) const
 
 bool DB::isBoneSerif(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSerif(ttf)) return false;
 
@@ -1020,8 +1048,10 @@ bool DB::isBoneSerif(CStringRef family) const
 
 bool DB::isAsymmetricSerif(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSerif(ttf)) return false;
 
@@ -1034,8 +1064,10 @@ bool DB::isAsymmetricSerif(CStringRef family) const
 
 bool DB::isTriangleSerif(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSerif(ttf)) return false;
 
@@ -1049,8 +1081,10 @@ bool DB::isTriangleSerif(CStringRef family) const
 
 bool DB::isGrotesque(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return ttf.familyClass == FamilyClass::SANS_SERIF &&
             (ttf.familySubClass == 1
@@ -1062,8 +1096,10 @@ bool DB::isGrotesque(CStringRef family) const
 
 bool DB::isGeometric(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return ttf.familyClass == FamilyClass::SANS_SERIF &&
             (ttf.familySubClass == 3
@@ -1072,8 +1108,10 @@ bool DB::isGeometric(CStringRef family) const
 
 bool DB::isHumanist(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return ttf.familyClass == FamilyClass::SANS_SERIF &&
             (ttf.familySubClass == 2);
@@ -1082,8 +1120,10 @@ bool DB::isHumanist(CStringRef family) const
 
 bool DB::isNormalSans(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSansSerif(ttf)) return false;
 
@@ -1098,8 +1138,10 @@ bool DB::isNormalSans(CStringRef family) const
 
 bool DB::isRoundedSans(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSansSerif(ttf)) return false;
 
@@ -1112,8 +1154,10 @@ bool DB::isRoundedSans(CStringRef family) const
 
 bool DB::isFlarredSans(CStringRef family) const
 {
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     if(!_isSansSerif(ttf)) return false;
 
@@ -1136,8 +1180,10 @@ bool DB::isCyrillic(CStringRef family) const
         return true;
 
     // 2
-    TTF ttf;
-    if(!getTTF(family, ttf)) return false;
+    const TTF &ttf = getTTF(family);
+    if(ttf.isNull()) {
+        return false;
+    }
 
     return ttf.cyrillic;
 }

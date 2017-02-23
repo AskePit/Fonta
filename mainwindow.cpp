@@ -579,13 +579,13 @@ void MainWindow::currentFilterBoxIndexChanged(int index)
 
         if(info.TTFExists) {
             ss << "TTF:\n";
-            ss << pad << "Family:     " << FamilyClass::toString(info.fontaTFF.familyClass) << "\n";
-            ss << pad << "Family Sub: " << info.fontaTFF.familySubClass << "\n";
-            ss << pad << "Panose: " << info.fontaTFF.panose.getNumberAsString() << "\n";
-            if(info.fontaTFF.cyrillic) ss << pad << "Cyrillic\n";
-            ss << pad << "Files: " << info.fontaTFF.files.toList().join(' ') << "\n";
-            if(!info.fontaTFF.linkedFonts.isEmpty()) {
-                ss << pad << "Linked fonts: " << info.fontaTFF.linkedFonts.toList().join(' ');
+            ss << pad << "Family:     " << FamilyClass::toString(info.fontaTFF->familyClass) << "\n";
+            ss << pad << "Family Sub: " << info.fontaTFF->familySubClass << "\n";
+            ss << pad << "Panose: " << info.fontaTFF->panose.getNumberAsString() << "\n";
+            if(info.fontaTFF->cyrillic) ss << pad << "Cyrillic\n";
+            ss << pad << "Files: " << info.fontaTFF->files.toList().join(' ') << "\n";
+            if(!info.fontaTFF->linkedFonts.isEmpty()) {
+                ss << pad << "Linked fonts: " << info.fontaTFF->linkedFonts.toList().join(' ');
             }
         } else {
             qWarning() << family << qPrintable("doesn't have TTF");

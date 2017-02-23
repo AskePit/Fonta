@@ -5,8 +5,21 @@
 #include <QString>
 #include <QMultiHash>
 #include <QSet>
-#include <QHash>
+//#include <QHash>
+#include <unordered_map>
 #include "panose.h"
+
+namespace std
+{
+    template <>
+    struct hash<QString>
+    {
+        size_t operator()(const QString& s) const
+        {
+            return qHash(s);
+        }
+    };
+}
 
 namespace fonta {
 
@@ -53,6 +66,7 @@ struct TTF {
     bool latin;
     bool cyrillic;
     Panose panose;
+    bool valid;
 
     // these fields are needed for resolving and control font dependencies while removing font from PC
     // when we delete file we should remove all related files
@@ -66,7 +80,18 @@ struct TTF {
         , latin(false)
         , cyrillic(false)
         , panose(0)
+        , valid(false)
     {}
+
+    TTF(const TTF &other) = delete;
+    TTF &operator= (const TTF &) = delete;
+
+    TTF(TTF &&other) = default;
+    TTF &operator= (TTF &&) = default;
+
+    bool isValid() const { return valid; }
+    bool isNull() const { return !valid; }
+    static const TTF null;
 };
 
 struct QtFontInfo {
@@ -76,12 +101,20 @@ struct QtFontInfo {
 };
 
 struct FullFontInfo {
-    TTF fontaTFF;
+    const TTF *fontaTFF;
     QtFontInfo qtInfo;
     bool TTFExists;
 };
 
-using TTFMap = QHash<QString, TTF>;
+class TTFMap : public std::unordered_map<QString, TTF>
+{
+public:
+    bool contains(CStringRef key) const {
+        auto res = find(key);
+        return res != end();
+    }
+};
+
 using File2FontsMap = QHash<QString, QSet<QString>>;
 
 class DB : public QObject
@@ -148,7 +181,7 @@ public:
     bool isCyrillic(CStringRef family) const;
     //bool isNotLatinOrCyrillic(CStringRef family) const;
 
-    bool getTTF(CStringRef family, TTF& ttf) const;
+    const TTF &getTTF(CStringRef family) const;
     FullFontInfo getFullFontInfo(CStringRef family) const;
 
     QFontDatabase& getQtDB() { return *QtDB; }
@@ -162,11 +195,10 @@ private:
     int filesCount = 0;
     int progress = 0;
 
-
-
     void updateUninstalledFonts();
 };
 
+#ifndef FONTA_DETAILED_DEBUG
 class LoadThread : public QObject
 {
     Q_OBJECT
@@ -193,6 +225,7 @@ private:
     TTFMap &TTFs;
     File2FontsMap &File2Fonts;
 };
+#endif
 
 inline DB& fontaDB() { return *DB::instance(); }
 inline QFontDatabase& qtDB() { return fontaDB().getQtDB(); }
