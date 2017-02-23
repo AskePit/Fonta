@@ -12,10 +12,48 @@ class WorkArea;
 
 typedef void (*SampleLoader)(WorkArea&);
 
+enum_class (Family) {
+    Start,
+    Arial = Start,
+    ArialBlack,
+    ArialNarrow,
+    BaskervilleOldFace,
+    Bodoni,
+    Calibri,
+    Caslon,
+    CenturyGothic,
+    CenturySchoolbook,
+    Chaparral,
+    Clarendon,
+    CooperBlack,
+    FranklinGothicBook,
+    FranklinGothicDemi,
+    FranklinGothicDemiCond,
+    Futura,
+    Garamond,
+    Georgia,
+    GillSans,
+    GillSansCondenced,
+    Helvetica,
+    Impact,
+    Tahoma,
+    TimesNewRoman,
+    Trebuchet,
+    SegoeUI,
+    Verdana,
+    End
+
+    enum_interface
+
+    static const QMap<type, QStringList> familyMap;
+    static bool exists(type t);
+    static QString name(type t);
+};
+
 struct Sample {
-    QString family1;
+    Family::type family1;
     int size1;
-    QString family2;
+    Family::type family2;
     int size2;
 };
 

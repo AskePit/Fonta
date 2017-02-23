@@ -34,11 +34,8 @@ Sampler::Sampler()
     fetchNews(textsEng, "http://feeds.bbci.co.uk/news/world/rss.xml", "description");
     fetchNews(textsRus, "http://tass.ru/rss/v2.xml", "title");
 
-    // filter font pair depending on users installed fonts
-    const QStringList& families = fontaDB().families();
-
     for(const Sample& p : preSamples) {
-        if(families.contains(p.family1) && families.contains(p.family2)) {
+        if(Family::exists(p.family1) && Family::exists(p.family2)) {
             samples << p;
         }
     }
@@ -79,33 +76,88 @@ QStringList Sampler::textsRus = {
     "Подъём с затонувшего эсминца легкобьющейся древнегреческой амфоры сопряжён с техническими трудностями",
 };
 
+const QMap<Family::type, QStringList> Family::familyMap = {
+    { Arial, {"Arial"} },
+    { ArialBlack, {"Arial Black"} },
+    { ArialNarrow, {"Arial Narrow"} },
+    { BaskervilleOldFace, {"Baskerville Old Face"} },
+    { Bodoni, {"Bodoni MT", "Bodoni"} },
+    { Calibri, {"Calibri"} },
+    { Caslon, {"Caslon", "Centaur"} },
+    { CenturyGothic, {"Century Gothic"} },
+    { CenturySchoolbook, {"Century Schoolbook"} },
+    { Chaparral, {"Chaparral Pro"} },
+    { Clarendon, {"Clarendon"} },
+    { CooperBlack, {"Cooper Black"} },
+    { FranklinGothicBook, {"Franklin Gothic Book"} },
+    { FranklinGothicDemi, {"Franklin Gothic Demi"} },
+    { FranklinGothicDemiCond, {"Franklin Gothic Demi Cond"} },
+    { Futura, {"Futura", "Futura PT", "FuturaLight", "Futura Bk BT"} },
+    { Garamond, {"Garamond"} },
+    { Georgia, {"Georgia"} },
+    { GillSans, {"Gill Sans MT"} },
+    { GillSansCondenced, {"Gill Sans MT Condensed"} },
+    { Helvetica, {"Helvetica"} },
+    { Impact, {"Impact"} },
+    { Tahoma, {"Tahoma"} },
+    { TimesNewRoman, {"Times New Roman"} },
+    { Trebuchet, {"Trebuchet MS", "Trebuchet"} },
+    { SegoeUI, {"Segoe UI"} },
+    { Verdana, {"Verdana"} },
+};
+
+bool Family::exists(type t)
+{
+    const QStringList &fontNames = familyMap[t];
+    const QStringList &families = fontaDB().families();
+
+    for(CStringRef name : fontNames) {
+        if(families.contains(name)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+QString Family::name(type t)
+{
+    const QStringList &fontNames = familyMap[t];
+    const QStringList &families = fontaDB().families();
+
+    for(CStringRef name : fontNames) {
+        if(families.contains(name)) {
+            return name;
+        }
+    }
+
+    return QString::null;
+}
+
 const QVector<Sample> Sampler::preSamples = {
-    { "Georgia", 22, "Verdana", 11 },
-    { "Helvetica", 26, "Garamond", 12 },
-    { "Bodoni MT", 24, "FuturaLight", 16 },
-    { "Bodoni MT", 24, "Futura Bk BT", 16 },
-    { "Bodoni MT", 24, "Futura PT", 16 },
-    { "Bodoni MT", 24, "Futura", 16 },
-    { "Trebuchet MS", 18, "Verdana", 9 },
-    { "Century Schoolbook", 21, "Century Gothic", 12 },
-    { "Franklin Gothic Demi Cond", 24, "Century Gothic", 12 },
-    { "Tahoma", 18, "Segoe UI", 11 },
-    { "Franklin Gothic Demi", 20, "Trebuchet MS", 12 },
-    { "Arial Black", 17, "Arial", 11 },
-    { "Impact", 21, "Arial Narrow", 12 },
-    { "Georgia", 18, "Calibri", 12 },
-    { "Segoe UI", 20, "Arial", 11 },
-    { "Clarendon", 17, "Times New Roman", 12 },
-    { "Clarendon", 20, "Chaparral Pro", 14 },
-    { "Cooper Black", 22, "Centaur", 17 },
-    { "Helvetica", 21, "Garamond", 15 },
-    { "Bodoni MT", 24, "Gill Sans MT", 16 },
-    { "Bodoni MT", 20, "Gill Sans MT", 14 },
-    { "Gill Sans MT", 20, "Centaur", 16 },
-    { "Centaur", 20, "Franklin Gothic Book", 12 },
-    { "Caslon", 20, "Franklin Gothic Book", 12 },
-    { "Baskerville Old Face", 19, "Franklin Gothic Book", 11 },
-    { "Gill Sans MT Condensed", 20, "Arial", 10 },
+    { Family::Georgia, 22, Family::Verdana, 11 },
+    { Family::Helvetica, 26, Family::Garamond, 12 },
+    { Family::Bodoni, 24, Family::Futura, 16 },
+    { Family::Trebuchet, 18, Family::Verdana, 9 },
+    { Family::CenturySchoolbook, 21, Family::CenturyGothic, 12 },
+    { Family::FranklinGothicDemiCond, 24, Family::CenturyGothic, 12 },
+    { Family::Tahoma, 18, Family::SegoeUI, 11 },
+    { Family::FranklinGothicDemi, 20, Family::Trebuchet, 12 },
+    { Family::ArialBlack, 17, Family::Arial, 11 },
+    { Family::Impact, 21, Family::ArialNarrow, 12 },
+    { Family::Georgia, 18, Family::Calibri, 12 },
+    { Family::SegoeUI, 20, Family::Arial, 11 },
+    { Family::Clarendon, 17, Family::TimesNewRoman, 12 },
+    { Family::Clarendon, 20, Family::Chaparral, 14 },
+    { Family::CooperBlack, 22, Family::Caslon, 17 },
+    { Family::Helvetica, 21, Family::Garamond, 15 },
+    { Family::Bodoni, 24, Family::GillSans, 16 },
+    { Family::Bodoni, 20, Family::GillSans, 14 },
+    { Family::GillSans, 20, Family::Caslon, 16 },
+    { Family::Caslon, 20, Family::FranklinGothicBook, 12 },
+    { Family::Caslon, 20, Family::FranklinGothicBook, 12 },
+    { Family::BaskervilleOldFace, 19, Family::FranklinGothicBook, 11 },
+    { Family::GillSansCondenced, 20, Family::Arial, 10 },
 };
 
 struct NewsData {
@@ -328,11 +380,11 @@ void Sampler::loadSample(WorkArea& area)
 
     field1.setFontSize(sample.size1);
     field1.fetchSamples();
-    field1.setFontFamily(sample.family1);
+    field1.setFontFamily(Family::name(sample.family1));
 
     field2.setFontSize(sample.size2);
     field2.fetchSamples();
-    field2.setFontFamily(sample.family2);
+    field2.setFontFamily(Family::name(sample.family2));
 }
 
 } // namespace fonta
