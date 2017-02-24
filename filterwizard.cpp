@@ -27,15 +27,6 @@ FilterWizard::FilterWizard(QWidget *parent)
     setWizardStyle(ModernStyle);
 
     setWindowTitle(tr("Filter Wizard"));
-
-    QRect parentG = dynamic_cast<MainWindow*>(parent)->geometry();
-    int wid = 423;
-    int hei = 400;//364;
-    QRect g(parentG.x() + (parentG.width()-wid)/2, parentG.y() + 50, wid, hei);
-    setMinimumSize(wid, hei);
-    setMaximumSize(wid, hei);
-
-    setGeometry(g);
 }
 
 void FilterWizard::accept()
@@ -132,66 +123,38 @@ void FilterWizard::accept()
     QDialog::accept();
 }
 
-void GeneralPage::addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName)
-{
-    *button = new QPushButton();
-    (*button)->setCheckable(true);
-    (*button)->setStyleSheet(
-        "QPushButton{"
-          "background-image: url(:/pic/filter/filter_buttons/categories/" + blockName + "_inactive.png);"
-          "width: " + QString::number(width) + ";"
-          "height: " + QString::number(height) + ";"
-          "max-width: " + QString::number(width) + ";"
-          "max-height: " + QString::number(height) + ";"
-          "border: none;"
-        "}"
-        "QPushButton::hover  {background-image: url(:/pic/filter/filter_buttons/categories/" + blockName + "_hover.png);}"
-        "QPushButton::checked{background-image: url(:/pic/filter/filter_buttons/categories/" + blockName + "_active.png);}"
-    );
-
-    registerField(blockName, *button);
-}
-
 GeneralPage::GeneralPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    addGeneralBloc(&serifButton, 210, 144, "serif");
-    addGeneralBloc(&sansButton, 209, 144, "sans");
-    addGeneralBloc(&scriptButton, 170, 171, "script");
-    addGeneralBloc(&displayButton, 166, 171, "display");
-    addGeneralBloc(&symbolicButton, 83, 171, "symbolic");
+    setTitle(tr("Choose font categories"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
 
-    QHBoxLayout* hor1Layout = new QHBoxLayout;
-    hor1Layout->setSpacing(0);
-    hor1Layout->setContentsMargins(0, 0, 0, 0);
-    QHBoxLayout* hor2Layout = new QHBoxLayout;
-    hor2Layout->setSpacing(0);
-    hor2Layout->setContentsMargins(0, 0, 0, 0);
+    serifButton = new QCheckBox(tr("Serif"));
+    sansButton = new QCheckBox(tr("Sans"));
+    scriptButton = new QCheckBox(tr("Script"));
+    displayButton = new QCheckBox(tr("Display"));
+    symbolicButton = new QCheckBox(tr("Symbolic"));
 
-    hor1Layout->addWidget(serifButton);
-    hor1Layout->addWidget(sansButton);
-    hor2Layout->addWidget(scriptButton);
-    hor2Layout->addWidget(displayButton);
-    hor2Layout->addWidget(symbolicButton);
+    registerField("serif", serifButton);
+    registerField("sans", sansButton);
+    registerField("script", scriptButton);
+    registerField("display", displayButton);
+    registerField("symbolic", symbolicButton);
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addLayout(hor1Layout);
-    layout->addLayout(hor2Layout);
-
-    QLabel* descr = new QLabel(tr("\nChoose font categories. For advanced filtering toogle the checkbox."));
-    descr->setStyleSheet("qproperty-alignment: AlignCenter;");
-    layout->addWidget(descr);
-
-    layout->setSizeConstraint(QLayout::SetFixedSize);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addStretch(1);
+    layout->addWidget(serifButton);
+    layout->addWidget(sansButton);
+    layout->addWidget(scriptButton);
+    layout->addWidget(displayButton);
+    layout->addWidget(symbolicButton);
+    layout->addStretch(3);
     setLayout(layout);
 }
 
 int GeneralPage::nextId() const
 {
     bool serif = field("serif").toBool();
-
     bool sans = field("sans").toBool();
 
     if(serif) {
@@ -203,57 +166,29 @@ int GeneralPage::nextId() const
     return FilterWizard::Page_Finish;
 }
 
-void SerifFamilyPage::addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName)
-{
-    *button = new QPushButton();
-    (*button)->setCheckable(true);
-    (*button)->setStyleSheet(
-        "QPushButton{"
-          "background-image: url(:/pic/filter/filter_buttons/serif_families/" + blockName + "_inactive.png);"
-          "width: " + QString::number(width) + ";"
-          "height: " + QString::number(height) + ";"
-          "max-width: " + QString::number(width) + ";"
-          "max-height: " + QString::number(height) + ";"
-          "border: none;"
-        "}"
-        "QPushButton::hover  {background-image: url(:/pic/filter/filter_buttons/serif_families/" + blockName + "_hover.png);}"
-        "QPushButton::checked{background-image: url(:/pic/filter/filter_buttons/serif_families/" + blockName + "_active.png);}"
-    );
-
-    registerField(blockName, *button);
-}
-
 SerifFamilyPage::SerifFamilyPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    addGeneralBloc(&oldstyle, 210, 156, "oldstyle");
-    addGeneralBloc(&transitional, 209, 156, "transitional");
-    addGeneralBloc(&modern, 210, 159, "modern");
-    addGeneralBloc(&slab, 209, 159, "slab");
+    setTitle(tr("Choose serif families"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
 
-    QHBoxLayout* hor1Layout = new QHBoxLayout;
-    hor1Layout->setSpacing(0);
-    hor1Layout->setContentsMargins(0, 0, 0, 0);
-    QHBoxLayout* hor2Layout = new QHBoxLayout;
-    hor2Layout->setSpacing(0);
-    hor2Layout->setContentsMargins(0, 0, 0, 0);
+    oldstyle = new QCheckBox(tr("Oldstyle Serif"));
+    transitional = new QCheckBox(tr("Transitional Serif"));
+    modern = new QCheckBox(tr("Modern Serif"));
+    slab = new QCheckBox(tr("Slab Serif"));
 
-    hor1Layout->addWidget(oldstyle);
-    hor1Layout->addWidget(transitional);
-    hor2Layout->addWidget(modern);
-    hor2Layout->addWidget(slab);
+    registerField("oldstyle", oldstyle);
+    registerField("transitional", transitional);
+    registerField("modern", modern);
+    registerField("slab", slab);
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addLayout(hor1Layout);
-    layout->addLayout(hor2Layout);
-
-    QLabel* descr = new QLabel(tr("\nChoose serif family."));
-    descr->setStyleSheet("qproperty-alignment: AlignCenter;");
-    layout->addWidget(descr);
-
-    layout->setSizeConstraint(QLayout::SetFixedSize);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addStretch(1);
+    layout->addWidget(oldstyle);
+    layout->addWidget(transitional);
+    layout->addWidget(modern);
+    layout->addWidget(slab);
+    layout->addStretch(3);
     setLayout(layout);
 }
 
@@ -262,55 +197,26 @@ int SerifFamilyPage::nextId() const
     return FilterWizard::Page_Finish;
 }
 
-void SansFamilyPage::addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName)
-{
-    *button = new QPushButton();
-    (*button)->setCheckable(true);
-    (*button)->setStyleSheet(
-        "QPushButton{"
-          "background-image: url(:/pic/filter/filter_buttons/sans_families/" + blockName + "_inactive.png);"
-          "width: " + QString::number(width) + ";"
-          "height: " + QString::number(height) + ";"
-          "max-width: " + QString::number(width) + ";"
-          "max-height: " + QString::number(height) + ";"
-          "border: none;"
-        "}"
-        "QPushButton::hover  {background-image: url(:/pic/filter/filter_buttons/sans_families/" + blockName + "_hover.png);}"
-        "QPushButton::checked{background-image: url(:/pic/filter/filter_buttons/sans_families/" + blockName + "_active.png);}"
-    );
-
-    registerField(blockName, *button);
-}
-
 SansFamilyPage::SansFamilyPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    addGeneralBloc(&grotesque, 419, 150, "grotesque");
-    addGeneralBloc(&geometric, 210, 165, "geometric");
-    addGeneralBloc(&humanist, 209, 165, "humanist");
+    setTitle(tr("Choose sans families"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
 
-    QHBoxLayout* hor1Layout = new QHBoxLayout;
-    hor1Layout->setSpacing(0);
-    hor1Layout->setContentsMargins(0, 0, 0, 0);
-    QHBoxLayout* hor2Layout = new QHBoxLayout;
-    hor2Layout->setSpacing(0);
-    hor2Layout->setContentsMargins(0, 0, 0, 0);
+    grotesque = new QCheckBox(tr("Grotesque Sans"));
+    geometric = new QCheckBox(tr("Geometric Sans"));
+    humanist = new QCheckBox(tr("Humanist Sans"));
 
-    hor1Layout->addWidget(grotesque);
-    hor2Layout->addWidget(geometric);
-    hor2Layout->addWidget(humanist);
+    registerField("grotesque", grotesque);
+    registerField("geometric", geometric);
+    registerField("humanist", humanist);
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addLayout(hor1Layout);
-    layout->addLayout(hor2Layout);
-
-    QLabel* descr = new QLabel(tr("\nChoose sans family."));
-    descr->setStyleSheet("qproperty-alignment: AlignCenter;");
-    layout->addWidget(descr);
-
-    layout->setSizeConstraint(QLayout::SetFixedSize);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addStretch(1);
+    layout->addWidget(grotesque);
+    layout->addWidget(geometric);
+    layout->addWidget(humanist);
+    layout->addStretch(3);
     setLayout(layout);
 }
 

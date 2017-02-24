@@ -19,7 +19,7 @@ public:
     enum { Page_General, Page_SerifFamily, Page_SansFamily, Page_Finish };
 
     FilterWizard(QWidget *parent = 0);
-    void accept() Q_DECL_OVERRIDE;
+    void accept() override;
 };
 
 class GeneralPage : public QWizardPage
@@ -28,16 +28,14 @@ class GeneralPage : public QWizardPage
 
 public:
     GeneralPage(QWidget *parent = 0);
-    int nextId() const Q_DECL_OVERRIDE;
+    int nextId() const override;
 
 private:
-    QPushButton* serifButton;
-    QPushButton* sansButton;
-    QPushButton* scriptButton;
-    QPushButton* displayButton;
-    QPushButton* symbolicButton;
-
-    void addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName);
+    QCheckBox* serifButton;
+    QCheckBox* sansButton;
+    QCheckBox* scriptButton;
+    QCheckBox* displayButton;
+    QCheckBox* symbolicButton;
 };
 
 
@@ -47,15 +45,13 @@ class SerifFamilyPage : public QWizardPage
 
 public:
     SerifFamilyPage(QWidget *parent = 0);
-    int nextId() const Q_DECL_OVERRIDE;
+    int nextId() const override;
 
 private:
-    QPushButton* oldstyle;
-    QPushButton* transitional;
-    QPushButton* modern;
-    QPushButton* slab;
-
-    void addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName);
+    QCheckBox* oldstyle;
+    QCheckBox* transitional;
+    QCheckBox* modern;
+    QCheckBox* slab;
 };
 
 class SansFamilyPage : public QWizardPage
@@ -64,14 +60,12 @@ class SansFamilyPage : public QWizardPage
 
 public:
     SansFamilyPage(QWidget *parent = 0);
-    int nextId() const Q_DECL_OVERRIDE;
+    int nextId() const override;
 
 private:
-    QPushButton* grotesque;
-    QPushButton* geometric;
-    QPushButton* humanist;
-
-    void addGeneralBloc(QPushButton** button, int width, int height, CStringRef blockName);
+    QCheckBox* grotesque;
+    QCheckBox* geometric;
+    QCheckBox* humanist;
 };
 
 class FinishPage : public QWizardPage
@@ -80,7 +74,7 @@ class FinishPage : public QWizardPage
 
 public:
     FinishPage(QWidget *parent = 0);
-    int nextId() const Q_DECL_OVERRIDE;
+    int nextId() const override;
 
 private:
     QCheckBox* cyrillicBox;
