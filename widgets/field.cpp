@@ -307,8 +307,10 @@ void Field::timerEvent(QTimerEvent* e)
         updateLoremText();
     }
 
-    killTimer(e->timerId());
-    m_timerId = 0;
+    if (m_timerId) {
+        killTimer(e->timerId());
+        m_timerId = 0;
+    }
 }
 
 void Field::setFontFamily(CStringRef family)
