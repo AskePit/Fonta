@@ -187,7 +187,7 @@ public:
     QFontDatabase& getQtDB() { return *QtDB; }
 
 private:
-    QFontDatabase *QtDB;
+    QFontDatabase *QtDB = nullptr;
     TTFMap TTFs;
     File2FontsMap File2Fonts;
 
