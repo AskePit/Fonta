@@ -1,0 +1,97 @@
+body {
+    margin: 0;
+}
+
+.section {
+    position: relative;
+    display: block;
+    width: calc(100%-50px);
+    height: 400px;
+    padding: 3px 30px;
+    font-family: Gill Sans MT, Helvetica, Tahoma;
+}
+
+h1 {
+    font-family: Helvetica;
+    font-size: 24pt;
+}
+
+li {
+    font-size: 14pt;
+    margin-left: 90px;
+}
+
+old-sample {
+    font-family: Adobe Jenson;
+    font-size: 100pt;
+    margin-left: 100px;
+}
+
+tr-sample {
+    font-family: Times;
+    font-size: 96pt;
+    margin-left: 100px;
+}
+
+modern-sample {
+    font-family: Old Standard TT;
+    font-size: 90pt;
+    margin-left: 100px;
+}
+
+slab-sample {
+    font-family: Arvo;
+    font-size: 86pt;
+    margin-left: 100px;
+}
+
+gr-sample {
+    font-family: Dotum;
+    font-size: 90pt;
+    margin-left: 100px;
+}
+
+geom-sample {
+    font-family: FuturaBookC;
+    font-size: 104pt;
+    margin-left: 100px;
+}
+
+hum-sample {
+    font-family: Circe;
+    font-size: 96pt;
+    margin-left: 100px;
+}
+
+script-sample {
+    font-family: Ariston;
+    font-weight: bold;
+    font-size: 100pt;
+    margin-left: 100px;
+}
+
+display-sample {
+    font-family: Rosewood Std Regular;
+    font-size: 100pt;
+    margin-left: 100px;
+}
+
+symbol-sample {
+    font-family: Webdings;
+    font-size: 112pt;
+    margin-left: 100px;
+}
+
+#light {
+    background-color: rgb(255, 248, 193);
+    color: #454545;
+}
+
+#dark {
+    background-color: rgb(81, 38, 55);
+    color: #fff;
+}
+
+/*#blue { background-color: rgb(188, 210, 208); }
+#brown { background-color: rgb(240, 90, 40); }
+#red { background-color: rgb(255, 96, 92); }*/
