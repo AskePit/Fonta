@@ -52,7 +52,7 @@ void Launcher::start()
     QObject::connect(&fontaDB(), &DB::emitProgress, d.bar, &QProgressBar::setValue);
     QObject::connect(&fontaDB(), &DB::loadFinished, &d, &QDialog::accept, Qt::QueuedConnection);
 
-    QTimer::singleShot(50, &fontaDB(), &DB::load);
+    QTimer::singleShot(1000, &fontaDB(), &DB::load);
 
     d.exec();
 
