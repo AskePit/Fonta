@@ -16,11 +16,16 @@ h1 {
     font-size: 24pt;
 }
 
+img {
+	margin-left: 90px;
+}
+
 li {
     font-size: 14pt;
     margin-left: 90px;
 }
 
+/*
 old-sample {
     font-family: Adobe Jenson;
     font-size: 100pt;
@@ -81,6 +86,7 @@ symbol-sample {
     font-size: 112pt;
     margin-left: 100px;
 }
+*/
 
 #light {
     background-color: rgb(255, 248, 193);
