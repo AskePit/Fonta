@@ -15,7 +15,6 @@ class LoadDialog : public QDialog
 {
 public:
     LoadDialog();
-    QProgressBar *bar;
 };
 
 LoadDialog::LoadDialog()
@@ -24,17 +23,17 @@ LoadDialog::LoadDialog()
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
 
-    //QLabel *lbl = new QLabel(tr("Fonts load:"));
+    QLabel *lbl = new QLabel(tr("Loading..."));
 
-    bar = new QProgressBar;
-    bar->setMinimumHeight(50);
-    bar->setMinimumWidth(100);
-    bar->setWindowFlags(Qt::Widget);
-    bar->setRange(0, 100);
-    bar->setValue(0);
+    lbl->setMinimumHeight(60);
+    lbl->setMinimumWidth(120);
+    lbl->setWindowFlags(Qt::Widget);
+    lbl->setAlignment(Qt::AlignCenter);
 
-    //mainLayout->addWidget(lbl);
-    mainLayout->addWidget(bar);
+    lbl->setStyleSheet("QLabel { background-color: rgb(250, 250, 250); }");
+
+    mainLayout->addWidget(lbl);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
 
     setLayout(mainLayout);
 }
@@ -48,11 +47,8 @@ void Launcher::start()
 {
     // At first call dialog with fonts load progress bar
     LoadDialog d;
-
-    QObject::connect(&fontaDB(), &DB::emitProgress, d.bar, &QProgressBar::setValue);
     QObject::connect(&fontaDB(), &DB::loadFinished, &d, &QDialog::accept, Qt::QueuedConnection);
-
-    QTimer::singleShot(1000, &fontaDB(), &DB::load);
+    QTimer::singleShot(100, &fontaDB(), &DB::load);
 
     d.exec();
 
