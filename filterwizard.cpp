@@ -3,6 +3,7 @@
 #include "fontadb.h"
 #include "mainwindow.h"
 
+#include <QApplication>
 #include <QCheckBox>
 #include <QPushButton>
 #include <QRadioButton>
@@ -12,6 +13,8 @@
 #include <QGridLayout>
 #include <QVariant>
 #include <QRect>
+#include <QUrl>
+#include <QDesktopServices>
 
 namespace fonta {
 
@@ -123,6 +126,21 @@ void FilterWizard::accept()
     QDialog::accept();
 }
 
+static QLabel *makeLink(CStringRef htmlPath)
+{
+    QLabel *link = new QLabel(QString("%1 <a href=\"%2\">%3</a>.").arg(
+        QApplication::translate("fonta::FilterWizard", "For detailed information"),
+        htmlPath,
+        QApplication::translate("fonta::FilterWizard", "click here")
+    ));
+
+    QObject::connect(link, &QLabel::linkActivated, [](CStringRef link){
+        QDesktopServices::openUrl(QUrl::fromLocalFile(link));
+    });
+
+    return link;
+}
+
 GeneralPage::GeneralPage(QWidget *parent)
     : QWizardPage(parent)
 {
@@ -134,6 +152,7 @@ GeneralPage::GeneralPage(QWidget *parent)
     scriptButton = new QCheckBox(tr("Script"));
     displayButton = new QCheckBox(tr("Display"));
     symbolicButton = new QCheckBox(tr("Symbolic"));
+    QLabel *detailsLink = makeLink("./html/fonts_guide/classes.html");
 
     registerField("serif", serifButton);
     registerField("sans", sansButton);
@@ -149,6 +168,7 @@ GeneralPage::GeneralPage(QWidget *parent)
     layout->addWidget(displayButton);
     layout->addWidget(symbolicButton);
     layout->addStretch(3);
+    layout->addWidget(detailsLink);
     setLayout(layout);
 }
 
@@ -176,6 +196,7 @@ SerifFamilyPage::SerifFamilyPage(QWidget *parent)
     transitional = new QCheckBox(tr("Transitional Serif"));
     modern = new QCheckBox(tr("Modern Serif"));
     slab = new QCheckBox(tr("Slab Serif"));
+    QLabel *detailsLink = makeLink("./html/fonts_guide/serif.html");
 
     registerField("oldstyle", oldstyle);
     registerField("transitional", transitional);
@@ -189,12 +210,14 @@ SerifFamilyPage::SerifFamilyPage(QWidget *parent)
     layout->addWidget(modern);
     layout->addWidget(slab);
     layout->addStretch(3);
+    layout->addWidget(detailsLink);
     setLayout(layout);
 }
 
 int SerifFamilyPage::nextId() const
 {
-    return FilterWizard::Page_Finish;
+    bool sans = field("sans").toBool();
+    return sans ? FilterWizard::Page_SansFamily : FilterWizard::Page_Finish;
 }
 
 SansFamilyPage::SansFamilyPage(QWidget *parent)
@@ -206,6 +229,7 @@ SansFamilyPage::SansFamilyPage(QWidget *parent)
     grotesque = new QCheckBox(tr("Grotesque Sans"));
     geometric = new QCheckBox(tr("Geometric Sans"));
     humanist = new QCheckBox(tr("Humanist Sans"));
+    QLabel *detailsLink = makeLink("./html/fonts_guide/sans.html");
 
     registerField("grotesque", grotesque);
     registerField("geometric", geometric);
@@ -217,6 +241,7 @@ SansFamilyPage::SansFamilyPage(QWidget *parent)
     layout->addWidget(geometric);
     layout->addWidget(humanist);
     layout->addStretch(3);
+    layout->addWidget(detailsLink);
     setLayout(layout);
 }
 
