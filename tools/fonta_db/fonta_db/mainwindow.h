@@ -6,6 +6,7 @@
 #include <QSpinBox>
 #include <QSet>
 #include <QMap>
+#include <QSettings>
 
 namespace Ui {
 class MainWindow;
@@ -71,11 +72,12 @@ private:
 
     QMap<FontType::type, QSet<QString>> m_db;
     QString m_dbPath;
+    QSettings m_reg;
 
-    void loadDB();
+    bool loadDB();
     void storeDB();
 
-    void loadFontType(FontType::type t);
+    bool loadFontType(FontType::type t);
 };
 
 #endif // MAINWINDOW_H

@@ -2,26 +2,26 @@
 #include "ui_mainwindow.h"
 
 #include <QFileDialog>
-#include <QSettings>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    m_reg("PitM", "Fonta DB Manager")
 {
     ui->setupUi(this);
 
     setFocus();
 
-    QSettings s("PitM", "Fonta DB Manager");
-    m_dbPath = s.value("db_path", "").toString();
+    m_dbPath = m_reg.value("db_path", "").toString();
+    qDebug() << m_dbPath;
 
     if(m_dbPath.isEmpty()) {
         return;
     }
 
     QFileInfo info(m_dbPath);
-    if(info.exists() && info.isFile()) {
+    if(info.exists() && info.isDir()) {
         loadDB();
     }
 }
@@ -44,18 +44,22 @@ void MainWindow::on_actionOpen_triggered()
     }
 
     QFileInfo info(m_dbPath);
-    if(info.exists() && info.isDir()) {
-        loadDB();
+    if(!info.exists() || !info.isDir()) {
+        return;
+    }
+
+    bool ok = loadDB();
+    if(ok) {
+        m_reg.setValue("db_path", m_dbPath);
     }
 }
 
-void MainWindow::loadFontType(FontType::type t)
+bool MainWindow::loadFontType(FontType::type t)
 {
     QFile file(m_dbPath + "/" + FontType::fileName(t));
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        m_db.clear();
-        return;
+        return false;
     }
 
     QTextStream textStream(&file);
@@ -68,15 +72,20 @@ void MainWindow::loadFontType(FontType::type t)
     file.close();
 
     m_db[t] = strings.toSet();
+    return true;
 }
 
-void MainWindow::loadDB()
+bool MainWindow::loadDB()
 {
     m_db.clear();
 
     for(int t = FontType::Start; t<FontType::End; ++t) {
         FontType::type type = static_cast<FontType::type>(t);
-        loadFontType(type);
+        bool ok = loadFontType(type);
+        if(!ok) {
+            m_db.clear();
+            return false;
+        }
     }
 
     /*for(int t = FontType::Start; t<FontType::End; ++t) {
@@ -84,6 +93,8 @@ void MainWindow::loadDB()
         qDebug() << type;
         qDebug() << m_db[type];
     }*/
+
+    return true;
 }
 
 void MainWindow::storeDB()
