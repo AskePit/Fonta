@@ -1,5 +1,6 @@
 #include "field.h"
 
+#include "utils.h"
 #include "togglepanel.h"
 #include "sampler.h"
 #include "fontadb.h"

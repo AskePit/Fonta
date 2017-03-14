@@ -1,7 +1,7 @@
 #ifndef SAMPLER_H
 #define SAMPLER_H
 
-#include "types.h"
+#include "types_fonta.h"
 #include <QObject>
 #include <QSet>
 #include <QStringList>

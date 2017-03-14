@@ -11,10 +11,15 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = fonta_db
 TEMPLATE = app
 
+INCLUDEPATH += "../../.."
+
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    searchengine.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    searchengine.h \
+    ../../../types.h
 
 FORMS    += mainwindow.ui

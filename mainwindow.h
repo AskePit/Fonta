@@ -4,7 +4,7 @@
 #include "fontadb.h"
 #include <QMainWindow>
 #include <QVector>
-#include "types.h"
+#include "types_fonta.h"
 
 namespace Ui {
 class MainWindow;

@@ -9,7 +9,6 @@ TEMPLATE = app
 SOURCES += \
     main.cpp\
     fontadb.cpp \
-    types.cpp \
     sampler.cpp \
     filterwizard.cpp \
     stylesheet.cpp \
@@ -22,7 +21,8 @@ SOURCES += \
     widgets/filteredit.cpp \
     widgets/combobox.cpp \
     loremgenerator.cpp \
-    launcher.cpp
+    launcher.cpp \
+    utils.cpp
 
 HEADERS += \
     fontadb.h \
@@ -40,7 +40,9 @@ HEADERS += \
     widgets/filteredit.h \
     widgets/combobox.h \
     loremgenerator.h \
-    launcher.h
+    launcher.h \
+    types_fonta.h \
+    utils.h
 
 FORMS += \
     mainwindow.ui

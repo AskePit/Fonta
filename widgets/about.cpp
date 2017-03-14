@@ -1,5 +1,5 @@
 #include "about.h"
-#include "types.h"
+#include "types_fonta.h"
 
 #include <QHBoxLayout>
 #include <QLabel>

@@ -6,6 +6,7 @@
 #include "widgets/workarea.h"
 #include "widgets/renametabedit.h"
 
+#include "utils.h"
 #include "sampler.h"
 #include "filterwizard.h"
 

@@ -2,6 +2,7 @@
 #define LOREMGENERATOR_H
 
 #include "types.h"
+#include <QStringList>
 
 namespace fonta {
 
