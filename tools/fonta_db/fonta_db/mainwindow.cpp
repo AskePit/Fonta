@@ -4,6 +4,16 @@
 #include <QFileDialog>
 #include <QDebug>
 
+static void setCheckboxEnabled(QCheckBox *box, bool b)
+{
+    box->setEnabled(b);
+}
+
+static void setCheckboxChecked(QCheckBox *box, bool b)
+{
+    box->setChecked(b);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -12,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     setFocus();
+    connectBoxes();
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &MainWindow::search);
 
     m_dbPath = m_reg.value("db_path", "").toString();
     qDebug() << m_dbPath;
@@ -20,10 +32,42 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
+    ui->statusBar->showMessage("No DB");
+
     QFileInfo info(m_dbPath);
     if(info.exists() && info.isDir()) {
         loadDB();
     }
+}
+
+void MainWindow::connectBoxes()
+{
+    auto makeConnect = [&](QCheckBox *subj, QCheckBox *affected) {
+        connect(subj, &QCheckBox::toggled, [=](bool toggled) {
+            if(!toggled) { return; }
+            if(affected->isChecked()) {
+                affected->setChecked(false);
+            }
+        });
+    };
+
+    makeConnect(ui->serifBox, ui->oldStyleBox);
+    makeConnect(ui->serifBox, ui->transitionalBox);
+    makeConnect(ui->serifBox, ui->modernBox);
+    makeConnect(ui->serifBox, ui->slabBox);
+
+    makeConnect(ui->sansBox, ui->grotesqueBox);
+    makeConnect(ui->sansBox, ui->geometricBox);
+    makeConnect(ui->sansBox, ui->humanistBox);
+
+    makeConnect(ui->oldStyleBox, ui->serifBox);
+    makeConnect(ui->transitionalBox, ui->serifBox);
+    makeConnect(ui->modernBox, ui->serifBox);
+    makeConnect(ui->slabBox, ui->serifBox);
+
+    makeConnect(ui->grotesqueBox, ui->sansBox);
+    makeConnect(ui->geometricBox, ui->sansBox);
+    makeConnect(ui->humanistBox, ui->sansBox);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -78,12 +122,14 @@ bool MainWindow::loadFontType(FontType::type t)
 bool MainWindow::loadDB()
 {
     m_db.clear();
+    clearUi();
 
     for(int t = FontType::Start; t<FontType::End; ++t) {
         FontType::type type = static_cast<FontType::type>(t);
         bool ok = loadFontType(type);
         if(!ok) {
             m_db.clear();
+            onLoadFailure();
             return false;
         }
     }
@@ -94,7 +140,179 @@ bool MainWindow::loadDB()
         qDebug() << m_db[type];
     }*/
 
+    onLoadSuccess();
     return true;
+}
+
+void MainWindow::doCheckboxes(std::function<void(QCheckBox *, bool)> func, bool b)
+{
+    static QList<QCheckBox *> boxes = {
+        ui->oldStyleBox,
+        ui->transitionalBox,
+        ui->modernBox,
+        ui->slabBox,
+        ui->grotesqueBox,
+        ui->geometricBox,
+        ui->humanistBox,
+        ui->serifBox,
+        ui->sansBox,
+        ui->scriptBox,
+        ui->decorativeBox,
+        ui->symbolBox,
+        ui->monospacedBox,
+    };
+
+    for(QCheckBox *box : boxes) {
+        func(box, b);
+    }
+}
+
+void MainWindow::clearUi()
+{
+    ui->infoLabel->setText("");
+
+    doCheckboxes(setCheckboxChecked, false);
+    ui->statusBar->showMessage("");
+}
+
+void MainWindow::onLoadSuccess()
+{
+    doCheckboxes(setCheckboxEnabled, true);
+    ui->statusBar->showMessage("DB loaded");
+}
+
+void MainWindow::onLoadFailure()
+{
+    doCheckboxes(setCheckboxEnabled, false);
+    ui->statusBar->showMessage("No DB");
+}
+
+static QString easy_trim(CStringRef name)
+{
+    QString res(name);
+    res.remove(' ');
+    res.remove('_');
+    res.remove('-');
+
+    return res;
+}
+
+static QString trim(CStringRef name)
+{
+    QString res = name.simplified();
+    res.remove(' ');
+    res.remove('_');
+    res.remove('-');
+
+    static QString prefixes[] = {
+        "Adobe",
+        "AR",
+        "AG",
+        "ATC",
+        "Microsoft",
+        "PF",
+        "TT",
+    };
+
+    static QString postfixes[] = {
+        "Pro",
+        "Std",
+        "Bold",
+        "Thin",
+        "XThin",
+        "Regular",
+        "Light",
+        "Lite",
+        "Black",
+        "Italic",
+        "Italics",
+        "Poster",
+        "Compressed",
+        "Standard",
+        "Narrow",
+        "Medium",
+        "Demo",
+        "Heavy",
+        "Extended",
+        "Semibold",
+        "Semilight",
+        "Demi",
+        "Semi",
+        "Demibold",
+        "Condensed",
+        "Rounded",
+        "Oblique",
+        "Hair",
+        "Cond",
+        "Extra",
+        "Normal",
+        "Ultra",
+        "PersonalUse",
+        "PersonalUseOnly",
+        "PERSONALUSE",
+        "PERSONALUSEONLY",
+        "B",
+        "R",
+        "L",
+        "LT",
+        "Lt",
+        "Rg",
+        "Reg",
+        "Cyr",
+        "CYR",
+        "Lt",
+        "Bk",
+        "Blk",
+        "BT",
+        "MT",
+        "ITC",
+        "Dsp",
+        "Cn",
+        "Bd",
+        "SeBd",
+        "DmBd",
+        "Hv",
+        "Md",
+        "Med",
+        "Tit",
+        "Txt",
+        "Ext",
+        "Text",
+        "Smbd",
+        "Caption",
+        "Display",
+        "Subhead",
+        "SmText",
+        "100",
+        "300",
+        "500",
+        "700",
+        "900",
+        "1000",
+        "Armenian",
+        "Devanagari",
+        "Ethiopic",
+        "Georgian",
+        "Hebrew",
+        "Khmer",
+        "Lao",
+        "Tamil",
+        "Thai",
+        "Khmer",
+    };
+
+    res.remove(' ');
+    res.remove('_');
+}
+
+
+void MainWindow::search()
+{
+    clearUi();
+
+
+
+    ui->statusBar->showMessage("No such font in DB");
 }
 
 void MainWindow::storeDB()

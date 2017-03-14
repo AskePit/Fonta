@@ -7,11 +7,14 @@
 #include <QSet>
 #include <QMap>
 #include <QSettings>
+#include <functional>
 
 namespace Ui {
 class MainWindow;
 }
 
+// some types definitions
+using CStringRef = const QString&;
 #define enum_class(x) class x { public: enum type
 #define enum_interface };
 #define enum_end ;}
@@ -22,6 +25,7 @@ enum_class (FontType) {
     Sans,
     Script,
     Display,
+    Symbolic,
     Oldstyle,
     Transitional,
     Modern,
@@ -39,6 +43,7 @@ enum_interface
             case FontType::Sans: return "sans.dat";
             case FontType::Script: return "script.dat";
             case FontType::Display: return "decorative.dat";
+            case FontType::Symbolic: return "symbolic.dat";
             case FontType::Oldstyle: return "old_style.dat";
             case FontType::Transitional: return "transitional.dat";
             case FontType::Modern: return "modern.dat";
@@ -74,10 +79,20 @@ private:
     QString m_dbPath;
     QSettings m_reg;
 
+    void connectBoxes();
+
     bool loadDB();
     void storeDB();
 
+    void doCheckboxes(std::function<void(QCheckBox *, bool)> func, bool b);
+
+    void clearUi();
+    void onLoadSuccess();
+    void onLoadFailure();
+
     bool loadFontType(FontType::type t);
+
+    void search();
 };
 
 #endif // MAINWINDOW_H
