@@ -2,26 +2,18 @@
 
 #include <QStringList>
 #include <QVector>
-
-/**
- * Font trim:
- *
- * trim, simplify, remove spaces and _
- * remove prefixes
- * split on words
- * IF several words
- *     look for first postfix, delete it and all to the right
- */
+#include <QDebug>
 
 static QStringList prefixes = {
     "Adobe",
     "AR",
     "AG",
+    "AG_",
     "ATC",
     "Microsoft",
     "PF",
     "TT",
-    "v",
+    "v_",
 };
 
 static QStringList postfixes = {
@@ -140,7 +132,7 @@ static QStringList monospacedHints = {
 static QVector<QStringRef> split(CStringRef str) {
     QStringRef s(&str);
 
-    QList<int> indexes {0};
+    QVector<int> indexes{0};
     int last = s.length()-1;
     for(int i = 1; i<s.length(); ++i) {
         const QChar curr = s.at(i);
@@ -156,7 +148,17 @@ static QVector<QStringRef> split(CStringRef str) {
         }
     }
 
+    qDebug() << indexes;
 
+    QVector<QStringRef> res;
+    last = indexes.length()-1;
+    for(int i = 0; i<indexes.length(); ++i) {
+        int pos = indexes[i];
+        int l = (i != last) ? indexes[i+1] - pos : -1;
+        res.push_back(s.mid(pos, l));
+    }
+
+    return res;
 }
 
 QString easy_trim(CStringRef name)
@@ -169,12 +171,74 @@ QString easy_trim(CStringRef name)
     return res;
 }
 
+/**
+ * Font trim:
+ *
+ * trim, simplify, remove spaces and _
+ * remove prefixes
+ * split on words
+ * IF several words
+ *     look for first postfix, delete it and all to the right
+ */
+
 QString trim(CStringRef name)
 {
-    QString res = name.simplified();
-    res.remove(' ');
-    res.remove('_');
-    res.remove('-');
+    QString str = name.simplified();
+    str.remove(' ');
+    str.remove('-');
 
-    return res;
+    for(CStringRef prefix : prefixes) {
+        if(str.startsWith(prefix, Qt::CaseInsensitive)) {
+            str = str.mid(prefix.length());
+        }
+    }
+
+    str.remove('_');
+
+    auto v = split(str);
+
+    for(int i = 1; i<v.length(); ++i) {
+        //@todo: make shared string instead of .toString()
+        if(postfixes.contains(v[i].toString(), Qt::CaseInsensitive)) {
+            v.remove(i, v.length()-i);
+        }
+    }
+
+    QString res;
+    for(cauto ref : v) {
+        res += ref.toString();
+    }
+
+    return str;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
