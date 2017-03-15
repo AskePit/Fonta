@@ -41,7 +41,6 @@ enum_interface
     }
 };
 
-QString easy_trim(CStringRef name);
 QString trim(CStringRef name);
 
 #endif // SEARCHENGINE_H

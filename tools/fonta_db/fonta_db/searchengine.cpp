@@ -8,12 +8,11 @@ static QStringList prefixes = {
     "Adobe",
     "AR",
     "AG",
-    "AG_",
     "ATC",
     "Microsoft",
     "PF",
     "TT",
-    "v_",
+    "v",
 };
 
 static QStringList postfixes = {
@@ -59,6 +58,7 @@ static QStringList postfixes = {
     "Oblique",
     "Rounded",
     "Hair",
+    "Sketch",
 
     "Poster",
     "Compressed",
@@ -77,6 +77,7 @@ static QStringList postfixes = {
     "Display",
     "Subhead",
     "SmText",
+    "FF",
 
     "Demi",
     "Semi",
@@ -84,12 +85,12 @@ static QStringList postfixes = {
     "Ultra",
 
     "Personal",
-    "Use",
-    "Only",
 
     "Cyr",
     "Cyrl",
     "CYR",
+
+    "SC",
 
     "BT",
     "MT",
@@ -125,6 +126,14 @@ static QStringList scriptHints = {
     "Marker",
 };
 
+static QStringList modernHints = {
+    "Didone",
+};
+
+static QStringList slabHints = {
+    "Slab",
+};
+
 static QStringList monospacedHints = {
     "Mono",
 };
@@ -148,8 +157,6 @@ static QVector<QStringRef> split(CStringRef str) {
         }
     }
 
-    qDebug() << indexes;
-
     QVector<QStringRef> res;
     last = indexes.length()-1;
     for(int i = 0; i<indexes.length(); ++i) {
@@ -161,84 +168,38 @@ static QVector<QStringRef> split(CStringRef str) {
     return res;
 }
 
-QString easy_trim(CStringRef name)
-{
-    QString res(name);
-    res.remove(' ');
-    res.remove('_');
-    res.remove('-');
 
-    return res;
-}
+//! Constructs QString from QStringRef without deep copy.
+//! Be sure that owner of data is valid during all the retuned QString lifetime!!
+#define getSharedQString(ref) QString::fromRawData(ref.unicode(), ref.count())
 
-/**
- * Font trim:
- *
- * trim, simplify, remove spaces and _
- * remove prefixes
- * split on words
- * IF several words
- *     look for first postfix, delete it and all to the right
- */
+//! Force a deep copy of string. Usually used for QStrings created by getSharedQString function
+#define getCopiedQString(str) QString::fromUtf16(str.utf16())
 
 QString trim(CStringRef name)
 {
     QString str = name.simplified();
-    str.remove(' ');
     str.remove('-');
-
-    for(CStringRef prefix : prefixes) {
-        if(str.startsWith(prefix, Qt::CaseInsensitive)) {
-            str = str.mid(prefix.length());
-        }
-    }
-
     str.remove('_');
 
-    auto v = split(str);
+    QVector<QStringRef> v = str.contains(' ') ? QStringRef(&str).split(' ', QString::SkipEmptyParts) : split(str);
+
+    while(v.length() > 1 && prefixes.contains(getSharedQString(v[0]))) {
+        v.pop_front();
+    }
 
     for(int i = 1; i<v.length(); ++i) {
-        //@todo: make shared string instead of .toString()
-        if(postfixes.contains(v[i].toString(), Qt::CaseInsensitive)) {
+        QString fromRef(getSharedQString(v[i]));
+        if(postfixes.contains(fromRef, Qt::CaseInsensitive)) {
             v.remove(i, v.length()-i);
         }
     }
 
     QString res;
     for(cauto ref : v) {
-        res += ref.toString();
+        res += getSharedQString(ref) + ' ';
     }
+    res.truncate(res.length()-1);
 
-    return str;
+    return res;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
