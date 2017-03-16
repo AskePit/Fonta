@@ -17,7 +17,6 @@
 #include <QStandardPaths>
 #include <QSettings>
 #include <QProcess>
-#include <QApplication>
 #include <mutex>
 
 namespace fonta {
@@ -584,7 +583,6 @@ void LoadThread::load()
         FontReader reader(TTFs, File2Fonts);
         reader.readFile(out[i]);
         emit fileLoaded();
-        qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 100);
     }
 }
 

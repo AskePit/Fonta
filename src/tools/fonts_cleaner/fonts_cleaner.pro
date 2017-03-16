@@ -10,6 +10,8 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
+include( $${_PRO_FILE_PWD_}/common.pri )
+
 SOURCES += main.cpp
 
 RESOURCES_DIR = resources

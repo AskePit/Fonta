@@ -1,12 +1,7 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2017-02-21T15:42:04
-#
-#-------------------------------------------------
-
 QT       += core gui
-
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+include( $${_PRO_FILE_PWD_}/common.pri )
 
 TARGET = cogwheel_gen
 TEMPLATE = app
