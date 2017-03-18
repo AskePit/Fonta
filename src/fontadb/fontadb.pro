@@ -1,4 +1,4 @@
-include( $${_PRO_FILE_PWD_}/common.pri )
+include( ../../common.pri )
 
 DESTDIR = $${LIBS_PATH}/
 
@@ -11,10 +11,10 @@ CONFIG += staticlib
 SOURCES += fontadb.cpp \
     classifier.cpp
 
-HEADERS += fontadb.h \
-    panose.h \
-    types.h \
-    classifier.h
+HEADERS += $${INCLUDE_PATH}/fontadb.h \
+    $${INCLUDE_PATH}/panose.h \
+    $${INCLUDE_PATH}/types.h \
+    $${INCLUDE_PATH}/classifier.h
 
 VERSION = 0.0.1
 QMAKE_TARGET_COPYRIGHT = (c) PitM

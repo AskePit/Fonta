@@ -1,11 +1,10 @@
 QT += core gui widgets network xml
 
-CONFIG += c++11
+include( ../../common.pri )
 
-TARGET = Fonta
+TARGET = fonta
+DESTDIR = $${BIN_PATH}/
 TEMPLATE = app
-
-include( $${_PRO_FILE_PWD_}/common.pri )
 
 SOURCES += \
     main.cpp\

@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include "types.h"
-#include "searchengine.h"
+#include "classifier.h"
 
 #include <QMainWindow>
 #include <QCheckBox>

@@ -1,20 +1,23 @@
 CONFIG(debug, debug|release) {
     BUILD_FLAG = debug
-	LIB_SUFFIX = d
+    LIB_SUFFIX = d
 } else {
     BUILD_FLAG = release
 }
 
-LIBS_PATH = $${_PRO_FILE_PWD_}/libs/
-BIN_PATH = $${_PRO_FILE_PWD_}/bin/$${BUILD_FLAG}/
-BUILD_PATH = $${_PRO_FILE_PWD_}/build/$${BUILD_FLAG}/$${TARGET}/
+CONFIG += c++11
+
+LIBS_PATH = $$PWD/libs/
+BIN_PATH = $$PWD/bin/$${BUILD_FLAG}/
+BUILD_PATH = $$PWD/build/$${BUILD_FLAG}/$${TARGET}/
+INCLUDE_PATH += $$PWD/src/include/
 
 RCC_DIR = $${BUILD_PATH}/rcc/
 UI_DIR = $${BUILD_PATH}/ui/
 MOC_DIR = $${BUILD_PATH}/moc/
 OBJECTS_DIR = $${BUILD_PATH}/obj/
 
-INCLUDEPATH += $${_PRO_FILE_PWD_}/src/include/
+INCLUDEPATH += $${INCLUDE_PATH}/
 LIBS += -L$${LIBS_PATH}/
 
 QMAKE_CXXFLAGS += -O2

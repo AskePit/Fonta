@@ -1,18 +1,17 @@
 QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-include( $${_PRO_FILE_PWD_}/common.pri )
+include( ../../../common.pri )
 
-TARGET = fonta_db
+TARGET = fonta_classifier
+DESTDIR = $${BIN_PATH}/
 TEMPLATE = app
-
-include( $${_PRO_FILE_PWD_}/common.pri )
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    searchengine.cpp
 
 HEADERS  += mainwindow.h \
-    searchengine.h \
 
 FORMS    += mainwindow.ui
+
+LIBS += -lfontadb$${LIB_SUFFIX}

@@ -1,8 +1,17 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    src/fonta \
-    src/fontadb \
-    src/tools/fonts_cleaner \
-    src/tools/fonta_classifier \
-    src/tools/cogwheel_gen \
+    fonta \
+    fontadb \
+    fonts_cleaner \
+    fonta_classifier \
+    cogwheel_gen \
+
+fonta.subdir = src/fonta
+fontadb.subdir = src/fontadb
+fonts_cleaner.subdir = src/tools/fonts_cleaner
+fonta_classifier.subdir = src/tools/fonta_classifier
+cogwheel_gen.subdir = src/tools/cogwheel_gen
+
+fonta.depends = fontadb
+fonta_classifier.depends = fontadb

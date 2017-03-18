@@ -1,16 +1,16 @@
 QT += core
 QT -= gui
 
-CONFIG += c++11
 CONFIG -= embed_manifest_exe
 
+include( ../../../common.pri )
+
 TARGET = fonts_cleaner
+DESTDIR = $${BIN_PATH}/
 CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
-
-include( $${_PRO_FILE_PWD_}/common.pri )
 
 SOURCES += main.cpp
 
@@ -23,7 +23,5 @@ build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
 }
-
-QMAKE_CXXFLAGS += -O2
 
 LIBS += -lgdi32 -luser32
