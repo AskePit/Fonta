@@ -54,3 +54,5 @@ build_all:!build_pass {
 }
 
 LIBS += -lfontadb$${LIB_SUFFIX}
+
+#QMAKE_POST_LINK = windeployqt.exe $${BIN_PATH}/$${TARGET}.exe

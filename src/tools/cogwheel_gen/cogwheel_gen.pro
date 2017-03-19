@@ -8,11 +8,14 @@ DESTDIR = $${BIN_PATH}/
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
+SOURCES += \
+    main.cpp\
+    mainwindow.cpp \
     canvas.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS += \
+    mainwindow.h \
     canvas.h
 
-FORMS    += mainwindow.ui
+FORMS   += \
+    mainwindow.ui

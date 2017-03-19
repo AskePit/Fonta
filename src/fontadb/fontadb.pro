@@ -2,16 +2,18 @@ include( ../../common.pri )
 
 DESTDIR = $${LIBS_PATH}/
 
-QT       += gui
+QT += gui
 
 TARGET = fontadb$${LIB_SUFFIX}
 TEMPLATE = lib
 CONFIG += staticlib
 
-SOURCES += fontadb.cpp \
+SOURCES += \
+    fontadb.cpp \
     classifier.cpp
 
-HEADERS += $${INCLUDE_PATH}/fontadb.h \
+HEADERS += \
+    $${INCLUDE_PATH}/fontadb.h \
     $${INCLUDE_PATH}/panose.h \
     $${INCLUDE_PATH}/types.h \
     $${INCLUDE_PATH}/classifier.h
