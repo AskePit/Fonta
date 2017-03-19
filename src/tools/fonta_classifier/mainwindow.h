@@ -34,7 +34,6 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    QMap<FontType::type, QSet<QString>> m_db;
     QString m_dbPath;
     QSettings m_reg;
 
@@ -49,7 +48,7 @@ private:
     void onLoadSuccess();
     void onLoadFailure();
 
-    bool loadFontType(FontType::type t);
+    //bool loadFontType(FontType::type t);
 
     void search();
 };

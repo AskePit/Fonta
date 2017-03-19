@@ -4,6 +4,8 @@
 #include <QVector>
 #include <QDebug>
 
+namespace fonta {
+
 static QStringList prefixes = {
     "Adobe",
     "AR",
@@ -203,3 +205,5 @@ QString trim(CStringRef name)
 
     return res;
 }
+
+} // namespace fonta

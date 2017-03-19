@@ -97,7 +97,7 @@ void MainWindow::on_actionOpen_triggered()
         m_reg.setValue("db_path", m_dbPath);
     }
 }
-
+/*
 bool MainWindow::loadFontType(FontType::type t)
 {
     QFile file(m_dbPath + "/" + FontType::fileName(t));
@@ -118,10 +118,10 @@ bool MainWindow::loadFontType(FontType::type t)
     m_db[t] = strings.toSet();
     return true;
 }
-
+*/
 bool MainWindow::loadDB()
 {
-    m_db.clear();
+    /*m_db.clear();
     clearUi();
 
     for(int t = FontType::Start; t<FontType::End; ++t) {
@@ -132,7 +132,7 @@ bool MainWindow::loadDB()
             onLoadFailure();
             return false;
         }
-    }
+    }*/
 
     /*for(int t = FontType::Start; t<FontType::End; ++t) {
         FontType::type type = static_cast<FontType::type>(t);
