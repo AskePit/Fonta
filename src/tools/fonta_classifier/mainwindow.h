@@ -35,6 +35,9 @@ private:
     Ui::MainWindow *ui;
 
     QString m_dbPath;
+    bool m_loaded {false};
+    fonta::Classifier m_classifier;
+
     QSettings m_reg;
 
     void connectBoxes();
@@ -47,8 +50,6 @@ private:
     void clearUi();
     void onLoadSuccess();
     void onLoadFailure();
-
-    //bool loadFontType(FontType::type t);
 
     void search();
 };

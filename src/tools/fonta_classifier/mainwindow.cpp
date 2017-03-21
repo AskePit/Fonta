@@ -4,16 +4,6 @@
 #include <QFileDialog>
 #include <QDebug>
 
-static void setCheckboxEnabled(QCheckBox *box, bool b)
-{
-    box->setEnabled(b);
-}
-
-static void setCheckboxChecked(QCheckBox *box, bool b)
-{
-    box->setChecked(b);
-}
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -21,9 +11,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setFocus();
+    ui->lineEdit->setFocus();
     connectBoxes();
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &MainWindow::search);
+    connect(ui->lineEdit, &QLineEdit::textEdited, this, &MainWindow::clearUi);
+    connect(qApp, &QApplication::aboutToQuit, [&](){
+        m_classifier.store();
+    });
 
     m_dbPath = m_reg.value("db_path", "").toString();
     qDebug() << m_dbPath;
@@ -97,56 +91,26 @@ void MainWindow::on_actionOpen_triggered()
         m_reg.setValue("db_path", m_dbPath);
     }
 }
-/*
-bool MainWindow::loadFontType(FontType::type t)
-{
-    QFile file(m_dbPath + "/" + FontType::fileName(t));
 
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
-    }
-
-    QTextStream textStream(&file);
-
-    QStringList strings;
-    while (!textStream.atEnd()) {
-        strings << textStream.readLine();
-    }
-
-    file.close();
-
-    m_db[t] = strings.toSet();
-    return true;
-}
-*/
 bool MainWindow::loadDB()
 {
-    /*m_db.clear();
     clearUi();
 
-    for(int t = FontType::Start; t<FontType::End; ++t) {
-        FontType::type type = static_cast<FontType::type>(t);
-        bool ok = loadFontType(type);
-        if(!ok) {
-            m_db.clear();
-            onLoadFailure();
-            return false;
-        }
-    }*/
+    //qDebug() << "gonna load";
+    bool ok = m_classifier.load(m_dbPath);
 
-    /*for(int t = FontType::Start; t<FontType::End; ++t) {
-        FontType::type type = static_cast<FontType::type>(t);
-        qDebug() << type;
-        qDebug() << m_db[type];
-    }*/
+    if(ok) {
+        onLoadSuccess();
+    } else {
+        onLoadFailure();
+    }
 
-    onLoadSuccess();
-    return true;
+    return ok;
 }
 
 void MainWindow::doCheckboxes(std::function<void(QCheckBox *, bool)> func, bool b)
 {
-    static QList<QCheckBox *> boxes = {
+    static const QList<QCheckBox *> boxes = {
         ui->oldStyleBox,
         ui->transitionalBox,
         ui->modernBox,
@@ -167,36 +131,80 @@ void MainWindow::doCheckboxes(std::function<void(QCheckBox *, bool)> func, bool 
     }
 }
 
+static void setCheckboxEnabled(QCheckBox *box, bool b)
+{
+    box->setEnabled(b);
+}
+
+static void setCheckboxChecked(QCheckBox *box, bool b)
+{
+    box->setChecked(b);
+}
+
 void MainWindow::clearUi()
 {
-    ui->infoLabel->setText("");
-
     doCheckboxes(setCheckboxChecked, false);
-    ui->statusBar->showMessage("");
+    ui->statusBar->clearMessage();
 }
 
 void MainWindow::onLoadSuccess()
 {
+    m_loaded = true;
     doCheckboxes(setCheckboxEnabled, true);
+    ui->lineEdit->setEnabled(true);
     ui->statusBar->showMessage("DB loaded");
 }
 
 void MainWindow::onLoadFailure()
 {
+    m_loaded = true;
     doCheckboxes(setCheckboxEnabled, false);
+    ui->lineEdit->setEnabled(false);
     ui->statusBar->showMessage("No DB");
 }
 
-
-
-
 void MainWindow::search()
 {
+    if(!m_loaded) {
+        return;
+    }
+
     clearUi();
+    using namespace fonta;
 
+    int info = m_classifier.fontInfo(ui->lineEdit->text());
+    if(!FontType::exists(info)) {
+        ui->statusBar->showMessage("No Font");
+        return;
+    }
 
+    static const QMap<FontType::type, QCheckBox *> boxesMap = {
+        { FontType::Serif, ui->serifBox },
+        { FontType::Sans, ui->sansBox },
+        { FontType::Script, ui->scriptBox },
+        { FontType::Display, ui->decorativeBox },
+        { FontType::Symbolic, ui->symbolBox },
+        { FontType::Oldstyle, ui->oldStyleBox },
+        { FontType::Transitional, ui->transitionalBox },
+        { FontType::Modern, ui->modernBox },
+        { FontType::Slab, ui->slabBox },
+        { FontType::Grotesque, ui->grotesqueBox },
+        { FontType::Geometric, ui->geometricBox },
+        { FontType::Humanist, ui->humanistBox },
+        { FontType::Monospaced, ui->monospacedBox },
+    };
 
-    ui->statusBar->showMessage("No such font in DB");
+    bool found = false;
+    for(cauto type : FontType::enumerate()) {
+        if(info & type) {
+            found = true;
+            boxesMap[type]->setChecked(true);
+        }
+    }
+
+    if(found) {
+        ui->statusBar->showMessage("Found");
+    }
 }
 
 void MainWindow::storeDB()

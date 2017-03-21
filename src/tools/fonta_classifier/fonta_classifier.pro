@@ -17,4 +17,7 @@ HEADERS += \
 FORMS   += \
     mainwindow.ui
 
+RESOURCES += \
+    pics.qrc
+
 LIBS += -lfontadb$${LIB_SUFFIX}

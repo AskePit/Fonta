@@ -627,7 +627,7 @@ void DB::load()
     std::vector<QThread *> threads;
 
     int from = 0;
-    int to = std::min(chunkN, out.size()-1);
+    int to = min(chunkN, out.size()-1);
     for(int i = 0; i<cores; ++i) {
         QThread *thread = new QThread(this);
         LoadThread *worker = new LoadThread(out, from, to, TTFs, File2Fonts);

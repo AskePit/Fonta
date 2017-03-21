@@ -40,12 +40,16 @@ enum_interface
         }
     }
 
-    static QVector<FontType::type> &enumerate() {
-        static QVector<FontType::type> vec = {
+    static const QVector<FontType::type> &enumerate() {
+        static const QVector<FontType::type> vec = {
             Serif, Sans, Script, Display, Symbolic, Oldstyle, Transitional,
             Modern, Slab, Grotesque, Geometric, Humanist, Monospaced,
         };
         return vec;
+    }
+
+    static bool exists(int val) {
+        return val != 0;
     }
 
     static bool isSerif(int val) {
@@ -62,13 +66,20 @@ QString trim(CStringRef name);
 class Classifier
 {
 public:
-    Classifier();
 
     bool load(CStringRef dbPath);
     void store();
 
+    int fontInfo(CStringRef family) const;
+    void addFontInfo(CStringRef family, int info);
+
 private:
+    QString m_dbPath;
     QMap<FontType::type, QSet<QString>> m_db;
+    bool m_changed {false};
+
+    bool loadFontType(FontType::type tupe);
+    bool storeFontType(FontType::type type);
 };
 
 

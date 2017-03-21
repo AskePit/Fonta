@@ -2,6 +2,7 @@
 
 #include <QStringList>
 #include <QVector>
+#include <QFile>
 #include <QDebug>
 
 namespace fonta {
@@ -203,7 +204,106 @@ QString trim(CStringRef name)
     }
     res.truncate(res.length()-1);
 
-    return res;
+    return res.toLower();
 }
+
+bool Classifier::load(CStringRef dbPath)
+{
+    m_db.clear();
+    m_dbPath = dbPath;
+
+    for(cauto type : FontType::enumerate()) {
+        bool ok = loadFontType(type);
+        if(!ok) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Classifier::loadFontType(FontType::type type)
+{
+    QFile file(m_dbPath + "/" + FontType::fileName(type));
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    QTextStream textStream(&file);
+    QStringList strings;
+    while (!textStream.atEnd()) {
+        strings << textStream.readLine();
+    }
+
+    file.close();
+
+    m_db[type] = strings.toSet();
+    m_db[type].remove("");
+    return true;
+}
+
+void Classifier::store()
+{
+    if(!m_changed) {
+        qDebug() << "Did not changed. Do nothing";
+        return;
+    }
+
+    qDebug() << "Changed. Store";
+
+    for(cauto type : FontType::enumerate()) {
+        storeFontType(type);
+    }
+}
+
+bool Classifier::storeFontType(FontType::type type)
+{
+    QFile file(m_dbPath + "/" + FontType::fileName(type));
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        return false;
+    }
+
+    QTextStream textStream(&file);
+    for(CStringRef str : m_db[type]) {
+        textStream << str << "\n";
+    }
+
+    file.close();
+    return true;
+}
+
+int Classifier::fontInfo(CStringRef family) const
+{
+    int info = 0;
+
+    QString trimmed = trim(family);
+
+    for(cauto type : FontType::enumerate()) {
+        if(m_db[type].contains(trimmed)) {
+            info |= type;
+        }
+
+    }
+    return info;
+}
+
+
+void Classifier::addFontInfo(CStringRef family, int info)
+{
+    if(!FontType::exists(info)) {
+        return;
+    }
+
+    for(cauto type : FontType::enumerate()) {
+        if(info & type) {
+            m_db[type].insert( trim(family) );
+        }
+    }
+
+    m_changed = true;
+}
+
 
 } // namespace fonta
