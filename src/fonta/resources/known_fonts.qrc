@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>known_fonts/decorative.dat</file>
+        <file>known_fonts/geometric.dat</file>
+        <file>known_fonts/grotesque.dat</file>
+        <file>known_fonts/humanist.dat</file>
+        <file>known_fonts/modern.dat</file>
+        <file>known_fonts/monospaced.dat</file>
+        <file>known_fonts/old_style.dat</file>
+        <file>known_fonts/sans.dat</file>
+        <file>known_fonts/script.dat</file>
+        <file>known_fonts/serif.dat</file>
+        <file>known_fonts/slab.dat</file>
+        <file>known_fonts/symbolic.dat</file>
+        <file>known_fonts/transitional.dat</file>
+    </qresource>
+</RCC>

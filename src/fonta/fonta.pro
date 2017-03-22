@@ -46,7 +46,8 @@ FORMS += \
 RESOURCES_DIR = resources
 
 RESOURCES += \
-    $${RESOURCES_DIR}/pics.qrc
+    $${RESOURCES_DIR}/pics.qrc \
+    $${RESOURCES_DIR}/known_fonts.qrc
 
 build_all:!build_pass {
     CONFIG -= build_all
