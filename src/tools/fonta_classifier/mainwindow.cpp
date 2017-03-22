@@ -145,6 +145,7 @@ void MainWindow::clearUi()
 {
     doCheckboxes(setCheckboxChecked, false);
     ui->statusBar->clearMessage();
+    m_found = false;
 }
 
 void MainWindow::onLoadSuccess()
@@ -163,6 +164,22 @@ void MainWindow::onLoadFailure()
     ui->statusBar->showMessage("No DB");
 }
 
+const QMap<fonta::FontType::type, QCheckBox *> MainWindow::m_boxesMap = {
+    { fonta::FontType::Serif, ui->serifBox },
+    { fonta::FontType::Sans, ui->sansBox },
+    { fonta::FontType::Script, ui->scriptBox },
+    { fonta::FontType::Display, ui->decorativeBox },
+    { fonta::FontType::Symbolic, ui->symbolBox },
+    { fonta::FontType::Oldstyle, ui->oldStyleBox },
+    { fonta::FontType::Transitional, ui->transitionalBox },
+    { fonta::FontType::Modern, ui->modernBox },
+    { fonta::FontType::Slab, ui->slabBox },
+    { fonta::FontType::Grotesque, ui->grotesqueBox },
+    { fonta::FontType::Geometric, ui->geometricBox },
+    { fonta::FontType::Humanist, ui->humanistBox },
+    { fonta::FontType::Monospaced, ui->monospacedBox },
+};
+
 void MainWindow::search()
 {
     if(!m_loaded) {
@@ -178,40 +195,25 @@ void MainWindow::search()
         return;
     }
 
-    static const QMap<FontType::type, QCheckBox *> boxesMap = {
-        { FontType::Serif, ui->serifBox },
-        { FontType::Sans, ui->sansBox },
-        { FontType::Script, ui->scriptBox },
-        { FontType::Display, ui->decorativeBox },
-        { FontType::Symbolic, ui->symbolBox },
-        { FontType::Oldstyle, ui->oldStyleBox },
-        { FontType::Transitional, ui->transitionalBox },
-        { FontType::Modern, ui->modernBox },
-        { FontType::Slab, ui->slabBox },
-        { FontType::Grotesque, ui->grotesqueBox },
-        { FontType::Geometric, ui->geometricBox },
-        { FontType::Humanist, ui->humanistBox },
-        { FontType::Monospaced, ui->monospacedBox },
-    };
-
-    bool found = false;
+    m_found = false;
     for(cauto type : FontType::enumerate()) {
         if(info & type) {
-            found = true;
-            boxesMap[type]->setChecked(true);
+            m_found = true;
+            m_boxesMap[type]->setChecked(true);
         }
     }
 
-    if(found) {
+    if(m_found) {
         ui->statusBar->showMessage("Found");
     }
 }
 
-void MainWindow::storeDB()
-{
-}
-
 void MainWindow::on_saveButton_clicked()
 {
+    if(found) {
+
+    }
+
+
 
 }

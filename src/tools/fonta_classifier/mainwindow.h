@@ -33,17 +33,18 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    static const QMap<fonta::FontType::type, QCheckBox *> m_boxesMap;
 
     QString m_dbPath;
     bool m_loaded {false};
     fonta::Classifier m_classifier;
+    bool m_found {false};
 
     QSettings m_reg;
 
     void connectBoxes();
 
     bool loadDB();
-    void storeDB();
 
     void doCheckboxes(std::function<void(QCheckBox *, bool)> func, bool b);
 
