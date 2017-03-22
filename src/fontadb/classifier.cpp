@@ -12,6 +12,7 @@ static QStringList prefixes = {
     "AR",
     "AG",
     "ATC",
+    "ITC",
     "Microsoft",
     "PF",
     "TT",
@@ -231,15 +232,16 @@ bool Classifier::loadFontType(FontType::type type)
     }
 
     QTextStream textStream(&file);
-    QStringList strings;
+    QStringList &list = m_db[type];
     while (!textStream.atEnd()) {
-        strings << textStream.readLine();
+        list << textStream.readLine();
     }
 
     file.close();
 
-    m_db[type] = strings.toSet();
-    m_db[type].remove("");
+    list.removeDuplicates();
+    list.removeOne("");
+
     return true;
 }
 
@@ -265,6 +267,9 @@ bool Classifier::storeFontType(FontType::type type)
         return false;
     }
 
+    m_db[type].sort(Qt::CaseInsensitive);
+    m_db[type].removeDuplicates();
+
     QTextStream textStream(&file);
     for(CStringRef str : m_db[type]) {
         textStream << str << "\n";
@@ -289,6 +294,19 @@ int Classifier::fontInfo(CStringRef family) const
     return info;
 }
 
+void Classifier::_addFontInfo(CStringRef family, int info)
+{
+    for(cauto type : FontType::enumerate()) {
+        if(info & type) {
+            if(!m_db[type].contains(family)) {
+                qDebug() << family << "added";
+                m_db[type] << family;
+            }
+        }
+    }
+
+    m_changed = true;
+}
 
 void Classifier::addFontInfo(CStringRef family, int info)
 {
@@ -296,13 +314,24 @@ void Classifier::addFontInfo(CStringRef family, int info)
         return;
     }
 
-    for(cauto type : FontType::enumerate()) {
-        if(info & type) {
-            m_db[type].insert( trim(family) );
-        }
+    QString trimmed = trim(family);
+
+    _addFontInfo(trimmed, info);
+}
+
+void Classifier::rewriteFontInfo(CStringRef family, int info)
+{
+    if(!FontType::exists(info)) {
+        return;
     }
 
-    m_changed = true;
+    QString trimmed = trim(family);
+
+    for(cauto type : FontType::enumerate()) {
+        m_db[type].removeOne(trimmed);
+    }
+
+    _addFontInfo(trimmed, info);
 }
 
 

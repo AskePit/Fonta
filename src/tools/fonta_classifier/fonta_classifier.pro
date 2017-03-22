@@ -10,12 +10,15 @@ TEMPLATE = app
 SOURCES += \
     main.cpp\
     mainwindow.cpp \
+    importdialog.cpp
 
 HEADERS += \
     mainwindow.h \
+    importdialog.h
 
 FORMS   += \
-    mainwindow.ui
+    mainwindow.ui \
+    importdialog.ui
 
 RESOURCES += \
     pics.qrc

@@ -8,6 +8,9 @@ b52
 chapeau
 consolas
 courier
+courier (apc)
+courier monotonic greek
+courier polytonic greek
 dejavu sans mono
 droid sans mono
 everson mono
@@ -21,6 +24,7 @@ gungsuhche
 hack
 hyperfont
 inconsolata
+jatran
 letter gothic
 lettera
 liberation mono
@@ -35,20 +39,25 @@ mecane
 menlo
 miriam fixed
 monaco
+mono
 monospace
 new alphabet
 nimbus mono
 nitti
 ocr-a
 ocr-b
+optimus
 pragmatapro
 prestige elite
+priamoj
 profont
 pt mono
 replica mono
 rod
+secretary
 simplified arabic fixed
 source code
+telegraph
 terminal
 themixmono
 thesansmono

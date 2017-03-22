@@ -1,7 +1,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "importdialog.h"
+
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -11,11 +14,27 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    m_boxesMap = {
+        { fonta::FontType::Serif, ui->serifBox },
+        { fonta::FontType::Sans, ui->sansBox },
+        { fonta::FontType::Script, ui->scriptBox },
+        { fonta::FontType::Display, ui->decorativeBox },
+        { fonta::FontType::Symbolic, ui->symbolBox },
+        { fonta::FontType::Oldstyle, ui->oldStyleBox },
+        { fonta::FontType::Transitional, ui->transitionalBox },
+        { fonta::FontType::Modern, ui->modernBox },
+        { fonta::FontType::Slab, ui->slabBox },
+        { fonta::FontType::Grotesque, ui->grotesqueBox },
+        { fonta::FontType::Geometric, ui->geometricBox },
+        { fonta::FontType::Humanist, ui->humanistBox },
+        { fonta::FontType::Monospaced, ui->monospacedBox },
+    };
+
     ui->lineEdit->setFocus();
     connectBoxes();
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &MainWindow::search);
+    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &MainWindow::search);
     connect(ui->lineEdit, &QLineEdit::textEdited, this, &MainWindow::clearUi);
-    connect(qApp, &QApplication::aboutToQuit, [&](){
+    connect(qApp, &QApplication::aboutToQuit, [&]() {
         m_classifier.store();
     });
 
@@ -96,7 +115,6 @@ bool MainWindow::loadDB()
 {
     clearUi();
 
-    //qDebug() << "gonna load";
     bool ok = m_classifier.load(m_dbPath);
 
     if(ok) {
@@ -164,22 +182,6 @@ void MainWindow::onLoadFailure()
     ui->statusBar->showMessage("No DB");
 }
 
-const QMap<fonta::FontType::type, QCheckBox *> MainWindow::m_boxesMap = {
-    { fonta::FontType::Serif, ui->serifBox },
-    { fonta::FontType::Sans, ui->sansBox },
-    { fonta::FontType::Script, ui->scriptBox },
-    { fonta::FontType::Display, ui->decorativeBox },
-    { fonta::FontType::Symbolic, ui->symbolBox },
-    { fonta::FontType::Oldstyle, ui->oldStyleBox },
-    { fonta::FontType::Transitional, ui->transitionalBox },
-    { fonta::FontType::Modern, ui->modernBox },
-    { fonta::FontType::Slab, ui->slabBox },
-    { fonta::FontType::Grotesque, ui->grotesqueBox },
-    { fonta::FontType::Geometric, ui->geometricBox },
-    { fonta::FontType::Humanist, ui->humanistBox },
-    { fonta::FontType::Monospaced, ui->monospacedBox },
-};
-
 void MainWindow::search()
 {
     if(!m_loaded) {
@@ -208,12 +210,71 @@ void MainWindow::search()
     }
 }
 
+static int callQuestionDialog(CStringRef message)
+{
+    QMessageBox msgBox;
+    msgBox.setText(message);
+
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    return msgBox.exec();
+}
+
 void MainWindow::on_saveButton_clicked()
 {
-    if(found) {
-
+    if(m_found) {
+        int ret = callQuestionDialog("Rewrite existed font info?");
+        if (ret != QMessageBox::Ok) {
+            return;
+        }
     }
 
+    int info = 0;
+    for(cauto type : fonta::FontType::enumerate()) {
+        if(m_boxesMap[type]->isChecked()) {
+            info |= type;
+        }
+    }
 
+    if(m_found) {
+        m_classifier.rewriteFontInfo(ui->lineEdit->text(), info);
+    } else {
+        m_classifier.addFontInfo(ui->lineEdit->text(), info);
+    }
+    ui->statusBar->showMessage("Saved");
+}
 
+void MainWindow::on_actionImport_triggered()
+{
+    ImportDialog d;
+    int response = d.exec();
+
+    if (response == QDialog::Rejected) {
+        return;
+    }
+
+    QFile file(d.fileName());
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ui->statusBar->showMessage("Error: could not open import file");
+        return;
+    }
+
+    QTextStream textStream(&file);
+    QStringList list;
+    while (!textStream.atEnd()) {
+        list << textStream.readLine();
+    }
+
+    file.close();
+
+    list.removeDuplicates();
+    list.removeOne("");
+
+    int info = d.info();
+    for(CStringRef family : list) {
+        m_classifier.addFontInfo(family, info);
+    }
+
+    ui->statusBar->showMessage("File Imported");
 }

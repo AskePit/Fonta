@@ -31,9 +31,11 @@ private slots:
     void on_actionOpen_triggered();
     void on_saveButton_clicked();
 
+    void on_actionImport_triggered();
+
 private:
     Ui::MainWindow *ui;
-    static const QMap<fonta::FontType::type, QCheckBox *> m_boxesMap;
+    QMap<fonta::FontType::type, QCheckBox *> m_boxesMap;
 
     QString m_dbPath;
     bool m_loaded {false};

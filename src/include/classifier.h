@@ -40,6 +40,25 @@ enum_interface
         }
     }
 
+    static QString name(FontType::type t) {
+        switch(t) {
+            case Serif: return "Serif";
+            case Sans: return "Sans";
+            case Script: return "Script";
+            case Display: return "Decorative";
+            case Symbolic: return "Symbolic";
+            case Oldstyle: return "Old Style";
+            case Transitional: return "Transitional";
+            case Modern: return "Modern";
+            case Slab: return "Slab";
+            case Grotesque: return "Grotesque";
+            case Geometric: return "Geometric";
+            case Humanist: return "Humanist";
+            case Monospaced: return "Monospaced";
+            default: return "";
+        }
+    }
+
     static const QVector<FontType::type> &enumerate() {
         static const QVector<FontType::type> vec = {
             Serif, Sans, Script, Display, Symbolic, Oldstyle, Transitional,
@@ -72,14 +91,16 @@ public:
 
     int fontInfo(CStringRef family) const;
     void addFontInfo(CStringRef family, int info);
+    void rewriteFontInfo(CStringRef family, int info);
 
 private:
     QString m_dbPath;
-    QMap<FontType::type, QSet<QString>> m_db;
+    QMap<FontType::type, QStringList> m_db;
     bool m_changed {false};
 
     bool loadFontType(FontType::type tupe);
     bool storeFontType(FontType::type type);
+    void _addFontInfo(CStringRef family, int info);
 };
 
 
