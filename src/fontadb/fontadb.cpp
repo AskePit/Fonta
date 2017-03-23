@@ -826,8 +826,6 @@ static bool _isSerif(const TTF& ttf)
 
     // 2
     return ttf.panose.isSerif();
-
-    // 3 TODO: font name
 }
 
 bool DB::isSerif(CStringRef family) const
@@ -859,8 +857,6 @@ static bool _isSansSerif(const TTF& ttf)
 
     // 2
     return ttf.panose.isSans();
-
-    // 3 TODO: font name
 }
 
 bool DB::isSansSerif(CStringRef family) const

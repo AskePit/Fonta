@@ -29,9 +29,6 @@ const Version MainWindow::versionNumber = Version(0, 6, 0);
 MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_aboutDialog(NULL)
-    , m_currFile("")
-    , m_swapRequester(nullptr)
 {
     ui->setupUi(this);
 
@@ -605,8 +602,9 @@ void MainWindow::currentFilterBoxIndexChanged(int index)
 #endif
 
         ui->fontsList->addItem(item);
-        ui->statusBar->showMessage(QString("%1 fonts").arg(ui->fontsList->count()));
     }
+
+    ui->statusBar->showMessage(QString("%1 fonts").arg(ui->fontsList->count()));
 
     if(m_currField) {
         m_currField->setFontFamily(currFamily);
@@ -832,15 +830,27 @@ void MainWindow::on_filterWizardButton_clicked()
     w->exec();
 }
 
-void MainWindow::filterFontList(const QStringList& l)
+void MainWindow::filterFontList(const QStringList& l, FilterMode::type mode)
 {
+    if(mode != FilterMode::CUSTOM) {
+        ui->filterBox->setCurrentText(FilterMode::toString(mode));
+        return;
+    }
+
     // preserve family
     QString currFamily = m_currField->fontFamily();
 
     ui->fontsList->clear();
     ui->fontsList->addItems(l);
-    ui->filterBox->addItem("Custom");
-    ui->filterBox->setCurrentText("Custom");
+
+    const QString customString = "Custom";
+
+    if(ui->filterBox->itemText(ui->filterBox->count()-1) != customString) {
+        ui->filterBox->addItem(customString);
+    }
+
+    ui->filterBox->setCurrentText(customString);
+    ui->statusBar->showMessage(QString("%1 fonts").arg(l.count()));
 
     m_currField->setFontFamily(currFamily);
 }

@@ -56,21 +56,65 @@ void FilterWizard::accept()
 
 #undef declBool
 
-    if(!serif && !sans && !script && !display && !symbolic) {
-        serif = sans = script = display = symbolic = true;
+    MainWindow *window = dynamic_cast<MainWindow*>(parent());
+    QStringList l;
+
+    bool no_specific_serif = (!oldstyle && !transitional && !modern && !slab)
+                          || ( oldstyle &&  transitional &&  modern &&  slab);
+
+    bool no_specific_sans = (!grotesque && !geometric && !humanist)
+                         || ( grotesque &&  geometric &&  humanist);
+
+    bool no_extra_specific = !cyrillic && !monospaced;
+
+    bool all_types = (!serif && !sans && !script && !display && !symbolic)
+                  || ( serif &&  sans &&  script &&  display &&  symbolic);
+
+    bool only_serif      =  serif && !sans && !script && !display && !symbolic;
+    bool only_sans       = !serif &&  sans && !script && !display && !symbolic;
+    bool only_script     = !serif && !sans &&  script && !display && !symbolic;
+    bool only_display    = !serif && !sans && !script &&  display && !symbolic;
+    bool only_symbolic   = !serif && !sans && !script && !display &&  symbolic;
+    bool only_cyrillic   =  cyrillic && !monospaced && all_types && no_specific_serif && no_specific_sans;
+    bool only_monospaced = !cyrillic &&  monospaced && all_types && no_specific_serif && no_specific_sans;
+
+    bool not_custom = (no_specific_serif && no_specific_sans && no_extra_specific
+                       && (all_types || only_serif || only_sans || only_script || only_display || only_symbolic)
+                      )
+                    || only_cyrillic
+                    || only_monospaced;
+
+    if(not_custom) {
+        FilterMode::type mode = FilterMode::ALL;
+        if(only_serif) {
+            mode = FilterMode::SERIF;
+        } else if(only_sans) {
+            mode = FilterMode::SANS_SERIF;
+        } else if(only_script) {
+            mode = FilterMode::SCRIPT;
+        } else if(only_display) {
+            mode = FilterMode::DECORATIVE;
+        } else if(only_symbolic) {
+            mode = FilterMode::SYMBOLIC;
+        } else if(only_cyrillic) {
+            mode = FilterMode::CYRILLIC;
+        } else if(only_monospaced) {
+            mode = FilterMode::MONOSPACE;
+        } else if(all_types) {
+            mode = FilterMode::ALL;
+        }
+
+        window->filterFontList(l, mode);
+        QDialog::accept();
+        return;
     }
 
-    if(!oldstyle && !transitional && !modern && !slab) {
-        oldstyle = transitional = modern = slab = true;
-    }
-
-    if(!grotesque && !geometric && !humanist) {
-        grotesque = geometric = humanist = true;
-    }
+    if(all_types)         { serif = sans = script = display = symbolic = true; }
+    if(no_specific_serif) { oldstyle = transitional = modern = slab = true; }
+    if(no_specific_sans)  { grotesque = geometric = humanist = true; }
 
     DB& db = fontaDB();
 
-    QStringList l;
     for (CStringRef f : db.families()) {
         if(monospaced && !db.isMonospaced(f)) { continue; }
         if(cyrillic && !db.isCyrillic(f)) { continue; }
@@ -122,7 +166,7 @@ void FilterWizard::accept()
         }
     }
 
-    dynamic_cast<MainWindow*>(parent())->filterFontList(l);
+    window->filterFontList(l);
     QDialog::accept();
 }
 

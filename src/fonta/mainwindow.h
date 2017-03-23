@@ -21,34 +21,6 @@ class Field;
 class FilterEdit;
 class About;
 
-enum_class (FilterMode) {
-    Start,
-    ALL = Start,
-    CYRILLIC,
-    SERIF,
-    SANS_SERIF,
-    MONOSPACE,
-    SCRIPT,
-    DECORATIVE,
-    SYMBOLIC,
-    End
-
-    enum_interface
-    static QString toString(type t) {
-        switch(t) {
-        default:
-        case ALL:           return "[All]";         break;
-        case CYRILLIC:      return "Cyrillic";      break;
-        case SERIF:         return "Serif";         break;
-        case SANS_SERIF:    return "Sans Serif";    break;
-        case MONOSPACE:     return "Monospace";     break;
-        case SCRIPT:        return "Script";        break;
-        case DECORATIVE:    return "Decorative";    break;
-        case SYMBOLIC:      return "Symbolic";      break;
-        }
-    }
-};
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -59,7 +31,7 @@ public:
 
     static const Version versionNumber;
 
-    void filterFontList(const QStringList& l);
+    void filterFontList(const QStringList& l, FilterMode::type mode = FilterMode::CUSTOM);
 
 private slots:
     void on_fontsList_currentTextChanged(const QString &currentText);
@@ -128,20 +100,20 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    About* m_aboutDialog;
+    About* m_aboutDialog {nullptr};
 
     QVector<WorkArea*> m_workAreas;
-    WorkArea* m_currWorkArea;
-    Field* m_currField;
+    WorkArea* m_currWorkArea {nullptr};
+    Field* m_currField {nullptr};
 
-    QPushButton *m_addTabButton;
+    QPushButton *m_addTabButton {nullptr};
 
-    QActionGroup *fillGroup;
+    QActionGroup *fillGroup {nullptr};
 
-    QButtonGroup *contextGroup;
-    QPushButton *autoButton;
-    QPushButton *engButton;
-    QPushButton *rusButton;
+    QButtonGroup *contextGroup {nullptr};
+    QPushButton *autoButton {nullptr};
+    QPushButton *engButton {nullptr};
+    QPushButton *rusButton {nullptr};
 
     void saveGeometry();
     void loadGeometry();
@@ -165,7 +137,7 @@ private:
 
     void extendToolBar();
 
-    Field *m_swapRequester;
+    Field *m_swapRequester {nullptr};
     void swapBlockState(bool enable);
 };
 
