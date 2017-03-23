@@ -4,6 +4,7 @@
 #include "fontadb.h"
 #include <QMainWindow>
 #include <QVector>
+#include <QVersionNumber>
 #include "types_fonta.h"
 
 namespace Ui {
@@ -29,7 +30,7 @@ public:
     explicit MainWindow(CStringRef fileToOpen = QString(), QWidget *parent = 0);
     ~MainWindow();
 
-    static const Version versionNumber;
+    static const QVersionNumber versionNumber;
 
     void filterFontList(const QStringList& l, FilterMode::type mode = FilterMode::CUSTOM);
 

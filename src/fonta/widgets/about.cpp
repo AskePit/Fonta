@@ -4,10 +4,11 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QVersionNumber>
 
 namespace fonta {
 
-About::About(const Version& version, QWidget *parent) :
+About::About(const QVersionNumber& version, QWidget *parent) :
     QDialog(parent)
 {
     resize(175, 85);
@@ -39,7 +40,7 @@ About::About(const Version& version, QWidget *parent) :
     vLayout->addItem(verticalSpacer);
 
     setWindowTitle(tr("About"));
-    label->setText(tr("Fonta v. %1").arg(version.str));
+    label->setText(tr("Fonta v. %1").arg(version.toString()));
     pushButton->setText(tr("OK"));
 
     QMetaObject::connectSlotsByName(this);

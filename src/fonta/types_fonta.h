@@ -4,28 +4,6 @@
 #include "types.h"
 #include <QString>
 
-struct Version {
-    int major;
-    int minor;
-    int build;
-    QString str;
-
-    Version(int major, int minor, int build)
-        : major(major)
-        , minor(minor)
-        , build(build)
-    {
-        const QChar dot = '.';
-        str = QString::number(major);
-        str += dot;
-        str += QString::number(minor);
-        str += dot;
-        str += QString::number(build);
-    }
-
-    ~Version() {}
-};
-
 enum_class (FilterMode) {
     Start,
     ALL = Start,

@@ -24,7 +24,7 @@
 
 namespace fonta {
 
-const Version MainWindow::versionNumber = Version(0, 6, 0);
+const QVersionNumber MainWindow::versionNumber = QVersionNumber(0, 7, 0);
 
 MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
@@ -647,9 +647,9 @@ void MainWindow::save(CStringRef fileName) const
     QJsonObject json;
 
     QJsonObject version;
-    version["major"] = versionNumber.major;
-    version["minor"] = versionNumber.minor;
-    version["build"] = versionNumber.build;
+    version["major"] = versionNumber.majorVersion();
+    version["minor"] = versionNumber.minorVersion();
+    version["build"] = versionNumber.microVersion();
     json["version"] = version;
 
     QJsonArray workAreasArr;
