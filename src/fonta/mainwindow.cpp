@@ -543,6 +543,12 @@ void MainWindow::currentFilterBoxIndexChanged(int index)
         }
     }
 
+    // preserve family
+    QString currFamily;
+    if(m_currField) {
+         currFamily = m_currField->fontFamily();
+    }
+
     ui->fontsList->clear();
 
     bool (DB::*goodFont)(CStringRef) const;
@@ -600,6 +606,10 @@ void MainWindow::currentFilterBoxIndexChanged(int index)
 
         ui->fontsList->addItem(item);
         ui->statusBar->showMessage(QString("%1 fonts").arg(ui->fontsList->count()));
+    }
+
+    if(m_currField) {
+        m_currField->setFontFamily(currFamily);
     }
 }
 
@@ -824,10 +834,15 @@ void MainWindow::on_filterWizardButton_clicked()
 
 void MainWindow::filterFontList(const QStringList& l)
 {
+    // preserve family
+    QString currFamily = m_currField->fontFamily();
+
     ui->fontsList->clear();
     ui->fontsList->addItems(l);
     ui->filterBox->addItem("Custom");
     ui->filterBox->setCurrentText("Custom");
+
+    m_currField->setFontFamily(currFamily);
 }
 
 void MainWindow::on_backColorButton_clicked()
