@@ -5,9 +5,9 @@
 #include <QString>
 #include <QMultiHash>
 #include <QSet>
-//#include <QHash>
 #include <unordered_map>
 #include "panose.h"
+#include "classifier.h"
 
 namespace std
 {
@@ -188,6 +188,7 @@ public:
 
 private:
     QFontDatabase *QtDB = nullptr;
+    Classifier classifier;
     TTFMap TTFs;
     File2FontsMap File2Fonts;
 

@@ -7,7 +7,7 @@
 
 namespace fonta {
 
-static QStringList prefixes = {
+static const QStringList prefixes = {
     "Adobe",
     "AR",
     "AG",
@@ -19,7 +19,7 @@ static QStringList prefixes = {
     "v",
 };
 
-static QStringList postfixes = {
+static const QStringList postfixes = {
     "Pro",
     "Std",
     "Standard",
@@ -114,32 +114,32 @@ static QStringList postfixes = {
     "Khmer",
 };
 
-static QStringList sansHints = {
-    "SansSerif",
-    "Sans",
+static const QStringList sansHints = {
+    " sans serif",
+    " sans",
 };
 
-static QStringList serifHints = {
-    "Serif",
+static const QStringList serifHints = {
+    " serif",
 };
 
-static QStringList scriptHints = {
-    "Script",
-    "Brush",
-    "Pen",
-    "Marker",
+static const QStringList scriptHints = {
+    " script",
+    " brush",
+    " pen",
+    " marker",
 };
 
-static QStringList modernHints = {
-    "Didone",
+static const QStringList modernHints = {
+    " didone",
 };
 
-static QStringList slabHints = {
-    "Slab",
+static const QStringList slabHints = {
+    " slab",
 };
 
-static QStringList monospacedHints = {
-    "Mono",
+static const QStringList monospacedHints = {
+    " mono",
 };
 
 static QVector<QStringRef> split(CStringRef str) {
@@ -279,7 +279,7 @@ bool Classifier::storeFontType(FontType::type type)
     return true;
 }
 
-int Classifier::fontInfo(CStringRef family) const
+int Classifier::fontInfo(CStringRef family, SearchType searchType) const
 {
     int info = 0;
 
@@ -291,11 +291,34 @@ int Classifier::fontInfo(CStringRef family) const
         }
 
     }
-    return info;
+
+    if(!FontType::exists(info) && searchType == AdvancedSearch) {
+        static const QVector<QPair<FontType::type, const QStringList &>> hintsMap = {
+            { FontType::Sans, sansHints },
+            { FontType::Serif, serifHints },
+            { FontType::Script, scriptHints },
+            { FontType::Modern, modernHints },
+            { FontType::Slab, slabHints },
+            { FontType::Monospaced, monospacedHints },
+        };
+
+        for(cauto pair : hintsMap) {
+            for(CStringRef hint : pair.second) {
+                if(trimmed.contains(hint)) {
+                    info |= pair.first;
+                    break;
+                }
+            }
+        }
+    }
+
+    return normalizeInfo(info);
 }
 
 void Classifier::_addFontInfo(CStringRef family, int info)
 {
+    info = internalNormalizeInfo(info);
+
     for(cauto type : FontType::enumerate()) {
         if(info & type) {
             if(!m_db[type].contains(family)) {
@@ -332,6 +355,50 @@ void Classifier::rewriteFontInfo(CStringRef family, int info)
     }
 
     _addFontInfo(trimmed, info);
+}
+
+int Classifier::normalizeInfo(int info)
+{
+    if((info & FontType::Sans) && (info & FontType::Serif)) {
+        info &= ~FontType::Serif;
+    }
+
+    if((info & FontType::Oldstyle)
+    || (info & FontType::Transitional)
+    || (info & FontType::Modern)
+    || (info & FontType::Slab)) {
+        info |= FontType::Serif;
+    }
+
+    if((info & FontType::Grotesque)
+    || (info & FontType::Geometric)
+    || (info & FontType::Humanist)) {
+        info |= FontType::Sans;
+    }
+
+    return info;
+}
+
+int Classifier::internalNormalizeInfo(int info)
+{
+    if((info & FontType::Sans) && (info & FontType::Serif)) {
+        info &= ~FontType::Serif;
+    }
+
+    if((info & FontType::Oldstyle)
+    || (info & FontType::Transitional)
+    || (info & FontType::Modern)
+    || (info & FontType::Slab)) {
+        info &= ~FontType::Serif;
+    }
+
+    if((info & FontType::Grotesque)
+    || (info & FontType::Geometric)
+    || (info & FontType::Humanist)) {
+        info &= ~FontType::Sans;
+    }
+
+    return info;
 }
 
 

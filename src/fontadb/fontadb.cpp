@@ -606,6 +606,7 @@ DB::DB()
 void DB::load()
 {
     QtDB = new QFontDatabase;
+    classifier.load(":/known_fonts");
 
     updateUninstalledFonts();
 
@@ -832,6 +833,12 @@ static bool _isSerif(const TTF& ttf)
 bool DB::isSerif(CStringRef family) const
 {
     // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return FontType::isSerif(info);
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -859,6 +866,12 @@ static bool _isSansSerif(const TTF& ttf)
 bool DB::isSansSerif(CStringRef family) const
 {
     // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return FontType::isSans(info);
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -869,6 +882,13 @@ bool DB::isSansSerif(CStringRef family) const
 
 bool DB::isMonospaced(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Monospaced;
+    }
+
+    // 2
     bool qt = false;
     bool panose = false;
 
@@ -885,6 +905,12 @@ bool DB::isMonospaced(CStringRef family) const
 bool DB::isScript(CStringRef family) const
 {
     // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Script;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -898,13 +924,19 @@ bool DB::isScript(CStringRef family) const
         return false;
     }
 
-    // 2
+    // 3
     return ttf.panose.Family == Panose::FamilyType::SCRIPT;
 }
 
 bool DB::isDecorative(CStringRef family) const
 {
     // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Display;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -918,17 +950,23 @@ bool DB::isDecorative(CStringRef family) const
         return false;
     }
 
-    // 2
+    // 3
     return ttf.panose.Family == Panose::FamilyType::DECORATIVE;
 }
 
 bool DB::isSymbolic(CStringRef family) const
 {
     // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Symbolic;
+    }
+
+    // 2
     /*if(QtDB.writingSystems(family).contains(QFontDatabase::Symbol))
         return true;*/
 
-    // 2
+    // 3
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -942,7 +980,7 @@ bool DB::isSymbolic(CStringRef family) const
         return false;
     }
 
-    // 3
+    // 4
     return ttf.panose.Family == Panose::FamilyType::SYMBOL;
 }
 
@@ -950,6 +988,13 @@ bool DB::isSymbolic(CStringRef family) const
 
 bool DB::isOldStyle(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Oldstyle;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -963,6 +1008,13 @@ bool DB::isOldStyle(CStringRef family) const
 
 bool DB::isTransitional(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Transitional;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -976,6 +1028,13 @@ bool DB::isTransitional(CStringRef family) const
 
 bool DB::isModern(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Modern;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -986,6 +1045,13 @@ bool DB::isModern(CStringRef family) const
 
 bool DB::isSlab(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Slab;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -1080,6 +1146,13 @@ bool DB::isTriangleSerif(CStringRef family) const
 
 bool DB::isGrotesque(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Grotesque;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -1095,6 +1168,13 @@ bool DB::isGrotesque(CStringRef family) const
 
 bool DB::isGeometric(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Geometric;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;
@@ -1107,6 +1187,13 @@ bool DB::isGeometric(CStringRef family) const
 
 bool DB::isHumanist(CStringRef family) const
 {
+    // 1
+    int info = classifier.fontInfo(family);
+    if(FontType::exists(info)) {
+        return info & FontType::Humanist;
+    }
+
+    // 2
     const TTF &ttf = getTTF(family);
     if(ttf.isNull()) {
         return false;

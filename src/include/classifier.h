@@ -89,9 +89,16 @@ public:
     bool load(CStringRef dbPath);
     void store();
 
-    int fontInfo(CStringRef family) const;
+    enum SearchType {
+        BasicSearch,
+        AdvancedSearch
+    };
+
+    int fontInfo(CStringRef family, SearchType searchType = AdvancedSearch) const;
     void addFontInfo(CStringRef family, int info);
     void rewriteFontInfo(CStringRef family, int info);
+
+    static int normalizeInfo(int info);
 
 private:
     QString m_dbPath;
@@ -101,6 +108,8 @@ private:
     bool loadFontType(FontType::type tupe);
     bool storeFontType(FontType::type type);
     void _addFontInfo(CStringRef family, int info);
+
+    static int internalNormalizeInfo(int info);
 };
 
 

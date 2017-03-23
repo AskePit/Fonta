@@ -57,3 +57,4 @@ build_all:!build_pass {
 LIBS += -lfontadb$${LIB_SUFFIX}
 
 #QMAKE_POST_LINK = windeployqt.exe $${BIN_PATH}/$${TARGET}.exe
+QMAKE_POST_LINK = xcopy $${RESOURCES_DIR}/html $${BIN_PATH} /E
