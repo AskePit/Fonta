@@ -16,16 +16,19 @@
 #include <QStandardPaths>
 #include <QSettings>
 #include <QProcess>
+#include <QCryptographicHash>
 #include <mutex>
 
 namespace fonta {
 
 const TTF TTF::null = TTF();
 
+static u64 dirSize(CStringRef dirName);
+
 static void getFontFiles(QStringList &out)
 {
     cauto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
-    for(cauto dir : fontsDirs) {
+    for(CStringRef dir : fontsDirs) {
         QDirIterator it(dir, {"*.ttf", "*.otf", "*.ttc", "*.otc", "*.fon"} , QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             it.next();
@@ -38,6 +41,8 @@ static void getFontFiles(QStringList &out)
                 out << it.filePath();
             }
         }
+
+        qDebug() << dirSize(dir);
     }
 }
 
@@ -603,6 +608,32 @@ DB::DB()
 
 }
 
+static u64 dirSize(CStringRef dirName)
+{
+    QFileInfo info(dirName);
+
+    QDir dir(info.absoluteFilePath());
+    dir.setFilter(QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files);
+    QFileInfoList list = dir.entryInfoList();
+
+    u64 size = 0;
+
+    for(QFileInfo &info : list) {
+        if(info.isDir()) {
+            size += dirSize(info.absoluteFilePath());
+            continue;
+        }
+
+        if(info.isFile()) {
+            size += info.size();
+        }
+    }
+
+    return size;
+}
+
+
+
 void DB::load()
 {
     QtDB = new QFontDatabase;
@@ -674,6 +705,12 @@ void DB::load()
     qDebug() << timer.elapsed() << "milliseconds to load fonts";
     qDebug() << TTFs.size() << "fonts loaded";
 #endif
+
+    QFile file("cash.dat");
+    file.open(QIODevice::WriteOnly);
+    QDataStream cashStream(&file);   // we will serialize the data into the file
+    cashStream << *this;
+    file.close();
 
     emit loadFinished();
 }

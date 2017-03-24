@@ -10,13 +10,15 @@ CONFIG += staticlib
 
 SOURCES += \
     fontadb.cpp \
-    classifier.cpp
+    classifier.cpp \
+    serialization.cpp
 
 HEADERS += \
     $${INCLUDE_PATH}/fontadb.h \
     $${INCLUDE_PATH}/panose.h \
     $${INCLUDE_PATH}/types.h \
-    $${INCLUDE_PATH}/classifier.h
+    $${INCLUDE_PATH}/classifier.h \
+    serialization.h
 
 VERSION = 0.0.1
 QMAKE_TARGET_COPYRIGHT = (c) PitM

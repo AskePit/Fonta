@@ -192,6 +192,9 @@ private:
     TTFMap TTFs;
     File2FontsMap File2Fonts;
 
+    friend QDataStream &operator<<(QDataStream &out, const DB &db);
+    friend QDataStream &operator>>(QDataStream &in,        DB &db);
+
     int loadedFiles = 0;
     int filesCount = 0;
     int progress = 0;
