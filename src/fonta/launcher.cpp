@@ -48,7 +48,7 @@ void Launcher::start()
     // At first call dialog with fonts load progress bar
     LoadDialog d;
     QObject::connect(&fontaDB(), &DB::loadFinished, &d, &QDialog::accept, Qt::QueuedConnection);
-    QTimer::singleShot(250, &fontaDB(), &DB::load);
+    QTimer::singleShot(200, &fontaDB(), &DB::load);
 
     d.exec();
 

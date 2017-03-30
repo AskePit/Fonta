@@ -17,13 +17,14 @@
 #include <QSettings>
 #include <QProcess>
 #include <QCryptographicHash>
+#include <QDataStream>
 #include <mutex>
 
 namespace fonta {
 
-const TTF TTF::null = TTF();
+#define CACHE_FILE "C:\\ProgramData\\PitM\\Fonta\\cache.dat"
 
-static u64 dirSize(CStringRef dirName);
+const TTF TTF::null = TTF();
 
 static void getFontFiles(QStringList &out)
 {
@@ -41,8 +42,6 @@ static void getFontFiles(QStringList &out)
                 out << it.filePath();
             }
         }
-
-        qDebug() << dirSize(dir);
     }
 }
 
@@ -632,7 +631,16 @@ static u64 dirSize(CStringRef dirName)
     return size;
 }
 
+static u64 fontsDirsSize()
+{
+    u64 size = 0;
+    cauto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
+    for(CStringRef dir : fontsDirs) {
+        size += dirSize(dir);
+    }
 
+    return size;
+}
 
 void DB::load()
 {
@@ -641,76 +649,111 @@ void DB::load()
 
     updateUninstalledFonts();
 
-    QStringList out;
-    getFontFiles(out);
-
-    filesCount = out.length();
+    QSettings fontaReg("PitM", "Fonta");
+    u64 hash = fontsDirsSize();
+    bool hash_exists = fontaReg.contains("FontsDirHash");
+    bool cache_exists = QFileInfo(CACHE_FILE).exists();
+    if(cache_exists) {
+        QFile file(CACHE_FILE);
+        file.open(QIODevice::ReadOnly);
+        QDataStream cacheStream(&file);
+        cache_exists = cacheStream.version() == QDataStream::Qt_DefaultCompiledVersion;
+    }
 
 #ifdef FONTA_MEASURES
-    QElapsedTimer timer;
-    timer.start();
+        QElapsedTimer timer;
+        timer.start();
 #endif
+
+    if(cache_exists &&
+       hash_exists  &&
+       fontaReg.value("FontsDirHash", static_cast<u64>(-1)) == hash) {
+
+#ifdef FONTA_MEASURES
+        qDebug() << "cache load";
+#endif
+
+        QFile file(CACHE_FILE);
+        file.open(QIODevice::ReadOnly);
+        QDataStream cacheStream(&file);
+        cacheStream >> *this;
+        file.close();
+
+    } else {
+
+#ifdef FONTA_MEASURES
+        qDebug() << "no cache";
+#endif
+
+        QStringList out;
+        getFontFiles(out);
+
+        filesCount = out.length();
 
 #ifndef FONTA_DETAILED_DEBUG
-    int cores = std::thread::hardware_concurrency();
-    if(!cores) cores = 4;
-    const int chunkN = out.size() / cores;
+        int cores = std::thread::hardware_concurrency();
+        if(!cores) cores = 4;
+        const int chunkN = out.size() / cores;
 
-    std::vector<QThread *> threads;
+        std::vector<QThread *> threads;
 
-    int from = 0;
-    int to = qMin(chunkN, out.size()-1);
-    for(int i = 0; i<cores; ++i) {
-        QThread *thread = new QThread(this);
-        LoadThread *worker = new LoadThread(out, from, to, TTFs, File2Fonts);
-        worker->moveToThread(thread);
+        int from = 0;
+        int to = qMin(chunkN, out.size()-1);
+        for(int i = 0; i<cores; ++i) {
+            QThread *thread = new QThread(this);
+            LoadThread *worker = new LoadThread(out, from, to, TTFs, File2Fonts);
+            worker->moveToThread(thread);
 
-        connect(thread, &QThread::started, worker, &LoadThread::load);
-        connect(worker, &LoadThread::fileLoaded, this, &DB::updateProgress, Qt::DirectConnection);
+            connect(thread, &QThread::started, worker, &LoadThread::load);
+            connect(worker, &LoadThread::fileLoaded, this, &DB::updateProgress, Qt::DirectConnection);
 
-        thread->start();
+            thread->start();
 
-        threads.push_back(thread);
-        from = to+1;
+            threads.push_back(thread);
+            from = to+1;
 
-        if(i+1 >= (cores-1)) {
-            to = out.size()-1;
-        } else {
-            to += chunkN;
+            if(i+1 >= (cores-1)) {
+                to = out.size()-1;
+            } else {
+                to += chunkN;
+            }
         }
-    }
 
-    for(auto *t : threads) {
-        t->quit();
-        t->wait();
-        t->deleteLater();
-    }
+        for(auto *t : threads) {
+            t->quit();
+            t->wait();
+            t->deleteLater();
+        }
 #else
-    for(int i = 0; i<out.size(); ++i) {
-        FontReader reader(TTFs, File2Fonts);
-        reader.readFile(out[i]);
-    }
+        for(int i = 0; i<out.size(); ++i) {
+            FontReader reader(TTFs, File2Fonts);
+            reader.readFile(out[i]);
+        }
 #endif
 
-    // analyse fonts on common files
-    for(cauto fontName : TTFs) {
-        auto &TTF = TTFs[fontName.first];
-        for(cauto f : TTF.files) {
-            TTF.linkedFonts.unite(File2Fonts[f]);
+        // analyse fonts on common files
+        for(cauto fontName : TTFs) {
+            auto &TTF = TTFs[fontName.first];
+            for(cauto f : TTF.files) {
+                TTF.linkedFonts.unite(File2Fonts[f]);
+            }
+            TTF.linkedFonts.remove(fontName.first); // remove itself
         }
-        TTF.linkedFonts.remove(fontName.first); // remove itself
+
+        fontaReg.setValue("FontsDirHash", hash);
+
+        QFile file(CACHE_FILE);
+        file.open(QIODevice::WriteOnly);
+        QDataStream cacheStream(&file);   // we will serialize the data into the file
+        cacheStream.setVersion(QDataStream::Qt_DefaultCompiledVersion);
+        cacheStream << *this;
+        file.close();
     }
 
 #ifdef FONTA_MEASURES
-    qDebug() << timer.elapsed() << "milliseconds to load fonts";
-    qDebug() << TTFs.size() << "fonts loaded";
+        qDebug() << timer.elapsed() << "milliseconds to load fonts";
+        qDebug() << TTFs.size() << "fonts loaded";
 #endif
-
-    QFile file("cash.dat");
-    file.open(QIODevice::WriteOnly);
-    QDataStream cashStream(&file);   // we will serialize the data into the file
-    cashStream << *this;
-    file.close();
 
     emit loadFinished();
 }
