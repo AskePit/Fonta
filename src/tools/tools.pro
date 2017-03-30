@@ -3,4 +3,5 @@ TEMPLATE = subdirs
 SUBDIRS += \
     fonts_cleaner \
     fonta_classifier \
-    cogwheel_gen
+    cogwheel_gen \
+    installer
