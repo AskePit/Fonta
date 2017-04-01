@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include <QString>
+#include <QApplication>
 
 enum_class (FilterMode) {
     Start,
@@ -21,14 +22,14 @@ enum_class (FilterMode) {
     static QString toString(type t) {
         switch(t) {
         default:
-        case ALL:           return tr("[All]");         break;
-        case CYRILLIC:      return tr("Cyrillic");      break;
-        case SERIF:         return tr("Serif");         break;
-        case SANS_SERIF:    return tr("Sans Serif");    break;
-        case MONOSPACE:     return tr("Monospace");     break;
-        case SCRIPT:        return tr("Script");        break;
-        case DECORATIVE:    return tr("Decorative");    break;
-        case SYMBOLIC:      return tr("Symbolic");      break;
+        case ALL:           return QApplication::translate("FilterMode", "[All]");         break;
+        case CYRILLIC:      return QApplication::translate("FilterMode", "Cyrillic");      break;
+        case SERIF:         return QApplication::translate("FilterMode", "Serif");         break;
+        case SANS_SERIF:    return QApplication::translate("FilterMode", "Sans Serif");    break;
+        case MONOSPACE:     return QApplication::translate("FilterMode", "Monospace");     break;
+        case SCRIPT:        return QApplication::translate("FilterMode", "Script");        break;
+        case DECORATIVE:    return QApplication::translate("FilterMode", "Decorative");    break;
+        case SYMBOLIC:      return QApplication::translate("FilterMode", "Symbolic");      break;
         }
     }
 };

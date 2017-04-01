@@ -2,6 +2,7 @@
 #define SEARCHENGINE_H
 
 #include "types.h"
+#include <QtWidgets/QApplication>
 
 namespace fonta {
 
@@ -42,19 +43,19 @@ enum_interface
 
     static QString name(FontType::type t) {
         switch(t) {
-            case Serif: return tr("Serif");
-            case Sans: return tr("Sans");
-            case Script: return tr("Script");
-            case Display: return tr("Decorative");
-            case Symbolic: return tr("Symbolic");
-            case Oldstyle: return tr("Old Style");
-            case Transitional: return tr("Transitional");
-            case Modern: return tr("Modern");
-            case Slab: return tr("Slab");
-            case Grotesque: return tr("Grotesque");
-            case Geometric: return tr("Geometric");
-            case Humanist: return tr("Humanist");
-            case Monospaced: return tr("Monospaced");
+            case Serif: return QApplication::translate("FontType", "Serif");
+            case Sans: return QApplication::translate("FontType", "Sans");
+            case Script: return QApplication::translate("FontType", "Script");
+            case Display: return QApplication::translate("FontType", "Decorative");
+            case Symbolic: return QApplication::translate("FontType", "Symbolic");
+            case Oldstyle: return QApplication::translate("FontType", "Old Style");
+            case Transitional: return QApplication::translate("FontType", "Transitional");
+            case Modern: return QApplication::translate("FontType", "Modern");
+            case Slab: return QApplication::translate("FontType", "Slab");
+            case Grotesque: return QApplication::translate("FontType", "Grotesque");
+            case Geometric: return QApplication::translate("FontType", "Geometric");
+            case Humanist: return QApplication::translate("FontType", "Humanist");
+            case Monospaced: return QApplication::translate("FontType", "Monospaced");
             default: return "";
         }
     }
