@@ -1,13 +1,15 @@
 #include <QSettings>
 #include <QDir>
+#include <QFile>
 #include <QDebug>
+#include <QStandardPaths>
 #include <windows.h>
-
 
 #define BIN "bin/"
 #define FONTA "PitM\\Fonta\\"
 #define PROGRAMS "C:\\Program Files (x86)\\" FONTA
 #define DATA "C:\\ProgramData\\" FONTA
+#define STARTUP "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\" FONTA
 
 #define PATH_REG "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"
 #define FONTA_EXT_REG "HKEY_CLASSES_ROOT\\.fonta"
@@ -109,6 +111,21 @@ int main()
     SET_DEFAULT_REG(DESC_REG, "Fonta File");
     SET_DEFAULT_REG(ICON_REG, ICON_VAL);
     SET_DEFAULT_REG(OPEN_REG, OPEN_VAL);
+
+
+    ///////////////////////
+    /// links
+    ///////////////////////
+
+    QDir().mkpath(STARTUP);
+
+    QFile fonta_bin(PROGRAMS "fonta.exe");
+    fonta_bin.link(STARTUP "Fonta.lnk");
+
+    auto desktops = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation);
+    if(desktops.count()) {
+        fonta_bin.link(desktops[0] + "\\Fonta.lnk");
+    }
 
     qDebug() << "Finished";
 
