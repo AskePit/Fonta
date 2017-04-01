@@ -1,1 +1,0 @@
-xcopy /s /y build-fonts_cleaner-Desktop_Qt_5_7_0_MinGW_32bit-Release\release\fonts_cleaner.exe ..\..\..\build-Fonta-Desktop_Qt_5_7_0_MinGW_32bit-Release

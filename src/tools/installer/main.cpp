@@ -1,11 +1,8 @@
 #include <QSettings>
-#include <QFile>
 #include <QDir>
 #include <QDebug>
 #include <windows.h>
 
-using CStringRef = const QString&;
-#define cauto const auto&
 
 #define BIN "bin/"
 #define FONTA "PitM\\Fonta\\"
@@ -19,7 +16,7 @@ using CStringRef = const QString&;
 #define ICON_REG "HKEY_CLASSES_ROOT\\" EXT_HANDLER "\\DefaultIcon"
 #define OPEN_REG "HKEY_CLASSES_ROOT\\" EXT_HANDLER "\\shell\\open\\command"
 #define OPEN_VAL PROGRAMS "fonta.exe %1"
-#define ICON_VAL PROGRAMS "icon.png"
+#define ICON_VAL PROGRAMS "file_icon.ico"
 
 #define SET_DEFAULT_REG(p, v) QSettings((p), QSettings::NativeFormat).setValue(".", QString(v))
 
@@ -30,7 +27,10 @@ static bool copyFileForced(const QString &from, const QString &to)
     }
 
     if (QFile::exists(to)) {
-        QFile::remove(to);
+        if(!QFile::remove(to)) {
+            qWarning() << QString("Could not rewrite %1 file. Either file is used or you have no enough rights").arg(to);
+            return false;
+        }
     }
     return QFile::copy(from, to);
 }
@@ -42,6 +42,7 @@ static bool copyRecursively(const QString &srcDir, const QString &dstDir)
 
         QDir targetDir;
         if (!targetDir.mkpath(dstDir)) {
+            qWarning() << QString("Could not create %1 path. Maybe you have no enough rights").arg(dstDir);
             return false;
         }
         QDir sourceDir(srcDir);
@@ -51,6 +52,7 @@ static bool copyRecursively(const QString &srcDir, const QString &dstDir)
             const QString newSrc = srcDir + postfix;
             const QString newDst = dstDir + postfix;
             if (!copyRecursively(newSrc, newDst)) {
+                qWarning() << QString("Copy from %1 to %2 has failed!").arg(newSrc, newDst);
                 return false;
             }
         }
@@ -70,8 +72,15 @@ int main()
     /// Copy stuff
     ///////////////////////
 
-    copyRecursively(BIN, PROGRAMS);
-    QDir().mkpath(DATA);
+    if(!copyRecursively(BIN, PROGRAMS)) {
+        qWarning() << QString("Copy from %1 to %2 has failed!").arg(BIN, PROGRAMS);
+        return 0;
+    }
+
+    if(!QDir().mkpath(DATA)) {
+        qWarning() << QString("Could not create %1 path. Maybe you have no enough rights").arg(DATA);
+        return 0;
+    }
 
 
     ///////////////////////
