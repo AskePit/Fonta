@@ -49,6 +49,9 @@ RESOURCES += \
     $${RESOURCES_DIR}/pics.qrc \
     $${RESOURCES_DIR}/known_fonts.qrc
 
+RC_FILE += \
+    $${RESOURCES_DIR}/app_icon.rc
+
 build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
