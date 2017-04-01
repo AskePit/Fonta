@@ -531,11 +531,11 @@ void MainWindow::on_sizeBox_activated(const QString &arg1)
 
 void MainWindow::currentFilterBoxIndexChanged(int index)
 {
-    if(ui->filterBox->currentText() == "Custom") {
+    if(ui->filterBox->currentText() == tr("Custom")) {
         return;
     } else {
         int lastIndex = ui->filterBox->count()-1;
-        if(ui->filterBox->itemText(lastIndex) == "Custom") {
+        if(ui->filterBox->itemText(lastIndex) == tr("Custom")) {
             ui->filterBox->removeItem(lastIndex);
         }
     }
@@ -604,7 +604,7 @@ void MainWindow::currentFilterBoxIndexChanged(int index)
         ui->fontsList->addItem(item);
     }
 
-    ui->statusBar->showMessage(QString("%1 fonts").arg(ui->fontsList->count()));
+    ui->statusBar->showMessage(QString(tr("%1 fonts")).arg(ui->fontsList->count()));
 
     if(m_currField) {
         m_currField->setFontFamily(currFamily);
@@ -843,14 +843,14 @@ void MainWindow::filterFontList(const QStringList& l, FilterMode::type mode)
     ui->fontsList->clear();
     ui->fontsList->addItems(l);
 
-    const QString customString = "Custom";
+    const QString customString = tr("Custom");
 
     if(ui->filterBox->itemText(ui->filterBox->count()-1) != customString) {
         ui->filterBox->addItem(customString);
     }
 
     ui->filterBox->setCurrentText(customString);
-    ui->statusBar->showMessage(QString("%1 fonts").arg(l.count()));
+    ui->statusBar->showMessage(QString(tr("%1 fonts")).arg(l.count()));
 
     m_currField->setFontFamily(currFamily);
 }

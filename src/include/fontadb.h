@@ -45,9 +45,9 @@ enum_interface
             case OLDSTYLE_SERIF:     return "Oldstyle Serif";     break;
             case TRANSITIONAL_SERIF: return "Transitional Serif"; break;
             case MODERN_SERIF:       return "Modern Serif";       break;
-            case CLARENDON_SERIF:    return "Clarendon Serif";     break;
+            case CLARENDON_SERIF:    return "Clarendon Serif";    break;
             case SLAB_SERIF:         return "Slab Serif";         break;
-            case FREEFORM_SERIF:     return "Freeform Serif";      break;
+            case FREEFORM_SERIF:     return "Freeform Serif";     break;
             case SANS_SERIF:         return "Sans Serif";         break;
             case ORNAMENTAL:         return "Decorative";         break;
             case SCRIPT:             return "Script";             break;

@@ -42,19 +42,19 @@ enum_interface
 
     static QString name(FontType::type t) {
         switch(t) {
-            case Serif: return "Serif";
-            case Sans: return "Sans";
-            case Script: return "Script";
-            case Display: return "Decorative";
-            case Symbolic: return "Symbolic";
-            case Oldstyle: return "Old Style";
-            case Transitional: return "Transitional";
-            case Modern: return "Modern";
-            case Slab: return "Slab";
-            case Grotesque: return "Grotesque";
-            case Geometric: return "Geometric";
-            case Humanist: return "Humanist";
-            case Monospaced: return "Monospaced";
+            case Serif: return tr("Serif");
+            case Sans: return tr("Sans");
+            case Script: return tr("Script");
+            case Display: return tr("Decorative");
+            case Symbolic: return tr("Symbolic");
+            case Oldstyle: return tr("Old Style");
+            case Transitional: return tr("Transitional");
+            case Modern: return tr("Modern");
+            case Slab: return tr("Slab");
+            case Grotesque: return tr("Grotesque");
+            case Geometric: return tr("Geometric");
+            case Humanist: return tr("Humanist");
+            case Monospaced: return tr("Monospaced");
             default: return "";
         }
     }

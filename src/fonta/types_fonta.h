@@ -21,14 +21,14 @@ enum_class (FilterMode) {
     static QString toString(type t) {
         switch(t) {
         default:
-        case ALL:           return "[All]";         break;
-        case CYRILLIC:      return "Cyrillic";      break;
-        case SERIF:         return "Serif";         break;
-        case SANS_SERIF:    return "Sans Serif";    break;
-        case MONOSPACE:     return "Monospace";     break;
-        case SCRIPT:        return "Script";        break;
-        case DECORATIVE:    return "Decorative";    break;
-        case SYMBOLIC:      return "Symbolic";      break;
+        case ALL:           return tr("[All]");         break;
+        case CYRILLIC:      return tr("Cyrillic");      break;
+        case SERIF:         return tr("Serif");         break;
+        case SANS_SERIF:    return tr("Sans Serif");    break;
+        case MONOSPACE:     return tr("Monospace");     break;
+        case SCRIPT:        return tr("Script");        break;
+        case DECORATIVE:    return tr("Decorative");    break;
+        case SYMBOLIC:      return tr("Symbolic");      break;
         }
     }
 };
