@@ -13,6 +13,8 @@ static const QStringList prefixes = {
     "AG",
     "ATC",
     "ITC",
+    "Libra",
+    "Libre",
     "Microsoft",
     "PF",
     "TT",
