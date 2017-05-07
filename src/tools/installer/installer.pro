@@ -5,7 +5,7 @@ CONFIG -= embed_manifest_exe
 
 include( ../../../common.pri )
 
-TARGET = installer
+TARGET = INSTALL
 DESTDIR = $${BIN_PATH}/
 CONFIG += console
 CONFIG -= app_bundle

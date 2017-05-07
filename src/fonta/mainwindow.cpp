@@ -24,7 +24,7 @@
 
 namespace fonta {
 
-const QVersionNumber MainWindow::versionNumber = QVersionNumber(0, 7, 0);
+const QVersionNumber MainWindow::versionNumber = QVersionNumber(1, 0, 0);
 
 MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)

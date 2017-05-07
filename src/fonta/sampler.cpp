@@ -205,7 +205,6 @@ struct NewsData {
 
     NewsData()
         : list(nullptr)
-        , timer(nullptr)
     {}
     NewsData(QStringList *list, const QString &tag)
         : list(list)
@@ -216,7 +215,7 @@ struct NewsData {
     {}
 
 #ifdef FONTA_MEASURES
-    QElapsedTimer *timer;
+    QElapsedTimer *timer {nullptr};
 #endif
 };
 
@@ -244,7 +243,9 @@ void Sampler::fetchNews(QStringList &list, CStringRef url, CStringRef tag)
 void cleanupNetwork(QNetworkReply *reply)
 {
     reply->deleteLater();
+#ifdef FONTA_MEASURES
     delete newsMap[reply].timer;
+#endif
     newsMap.remove(reply);
     if(newsMap.isEmpty()) {
         delete network;

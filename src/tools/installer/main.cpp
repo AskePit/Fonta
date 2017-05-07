@@ -5,7 +5,7 @@
 #include <QStandardPaths>
 #include <windows.h>
 
-#define BIN "bin/"
+#define BIN ".\\"
 #define FONTA "PitM\\Fonta\\"
 #define PROGRAMS "C:\\Program Files (x86)\\" FONTA
 #define DATA "C:\\ProgramData\\" FONTA
@@ -83,6 +83,8 @@ int main()
         qWarning() << QString("Could not create %1 path. Maybe you have no enough rights").arg(DATA);
         return 0;
     }
+
+    QFile::remove(PROGRAMS "INSTALL.exe");
 
 
     ///////////////////////
