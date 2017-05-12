@@ -229,7 +229,7 @@
         <number>1000</number>
        </property>
        <property name="value">
-        <number>250</number>
+        <number>208</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="wBox">
@@ -245,7 +245,7 @@
         <number>1000</number>
        </property>
        <property name="value">
-        <number>100</number>
+        <number>81</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="hBox">
@@ -261,7 +261,7 @@
         <number>1000</number>
        </property>
        <property name="value">
-        <number>44</number>
+        <number>23</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_2">

@@ -37,8 +37,10 @@ void Canvas::paintEvent(QPaintEvent *e)
 
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    p.setBrush(QColor(70, 70, 70));
-    p.setPen(Qt::NoPen);
+    /*p.setBrush(QColor(70, 70, 70));
+    p.setPen(Qt::NoPen);*/
+    p.setBrush(Qt::white);
+    p.setPen(QPen(QBrush(Qt::black), 10));
 
 
     qreal wdth = width();
@@ -47,8 +49,6 @@ void Canvas::paintEvent(QPaintEvent *e)
     qreal ch = hght/2.;
 
     qreal r = d/2.;
-
-    p.drawEllipse(cw-r, ch-r, d, d);
 
     qreal diff = 360/(double)n;
     qreal ang = 0;
@@ -69,4 +69,7 @@ void Canvas::paintEvent(QPaintEvent *e)
         p.drawPolygon(points, 4);
 
     }
+
+    p.drawEllipse(cw-r, ch-r, d, d);
 }
+

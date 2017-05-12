@@ -9,6 +9,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setContentsMargins(0,0,0,0);
     ui->horizontalLayout->setContentsMargins(0,0,0,0);
+
+    ui->aBox->setValue(ui->canvas->a);
+    ui->dBox->setValue(ui->canvas->d);
+    ui->hBox->setValue(ui->canvas->h);
+    ui->wBox->setValue(ui->canvas->w);
+    ui->nBox->setValue(ui->canvas->n);
 }
 
 MainWindow::~MainWindow()
