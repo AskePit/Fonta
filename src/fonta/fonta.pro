@@ -45,9 +45,14 @@ FORMS += \
 
 RESOURCES_DIR = resources
 
+TRANSLATIONS += \
+    $${RESOURCES_DIR}/i18n/en.ts \
+    $${RESOURCES_DIR}/i18n/ru.ts
+
 RESOURCES += \
     $${RESOURCES_DIR}/pics.qrc \
-    $${RESOURCES_DIR}/known_fonts.qrc
+    $${RESOURCES_DIR}/known_fonts.qrc \
+    $${RESOURCES_DIR}/i18n/lang.qrc
 
 RC_FILE += \
     $${RESOURCES_DIR}/app_icon.rc
