@@ -116,6 +116,8 @@ private:
     QPushButton *engButton {nullptr};
     QPushButton *rusButton {nullptr};
 
+    void setToolTips();
+
     void saveGeometry();
     void loadGeometry();
 

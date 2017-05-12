@@ -69,6 +69,7 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     // extend toolbar with language context buttons
     // (they are buttons because of their more appropriate look)
     extendToolBar();
+    setToolTips();
 
     QStringList filterItems;
     for(int i = FilterMode::Start; i<FilterMode::End; ++i) {
@@ -96,6 +97,44 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 {
     QMainWindow::resizeEvent(event);
     changeAddTabButtonGeometry();
+}
+
+template <class T>
+static void setToolTip(T *w, const QString &brief, const QString &details)
+{
+    w->setToolTip(QString("<b>") + brief + "</b><p>" + details + "</p>");
+}
+
+void MainWindow::setToolTips()
+{
+    qApp->setStyleSheet("QToolTip {padding: 6px; background-color: #FFFFFF}");
+
+    fonta::setToolTip(ui->alignLeftButton, tr("Align left"), tr("Aligns text to the left side of textbox."));
+    fonta::setToolTip(ui->alignRightButton, tr("Align right"), tr("Aligns text to the right side of textbox."));
+    fonta::setToolTip(ui->alignCenterButton, tr("Center"), tr("Aligns text horizontally to the center of textbox."));
+    fonta::setToolTip(ui->alignJustifyButton, tr("Justify"), tr("Justifies all your text like in newspapers."));
+
+    fonta::setToolTip(ui->textColorButton, tr("Text color"), tr("Allows you to set custom text color."));
+    fonta::setToolTip(ui->backColorButton, tr("Background color"), tr("Allows you to set custom background color of textbox."));
+
+    fonta::setToolTip(ui->addFieldButton, tr("Add textbox"), tr("Adds new textbox to the bottom of the working tab."));
+    fonta::setToolTip(ui->removeFieldButton, tr("Remove textbox"), tr("Removes last textbox from working tab."));
+
+    fonta::setToolTip(ui->filterWizardButton, tr("Advanced fonts filtering"), tr("Shows filtering wizard that helps you to flexibly customize the list of fonts."));
+    fonta::setToolTip(ui->filterBox, tr("Fonts filter"), tr("Quick fonts filters."));
+
+    fonta::setToolTip(ui->actionFillNews, tr("Fill with news"), tr("Fill textbox with random RSS news."));
+    fonta::setToolTip(ui->actionFillPangram, tr("Fill with pangram"), tr("Fill textbox with <i>Quick brown fox</i> pangram."));
+    fonta::setToolTip(ui->actionFillLoremIpsum, tr("Fill with Lorem Ipsum"), tr("Fill textbox with special dummy text."));
+
+    fonta::setToolTip(autoButton, tr("Auto language"), tr("Select language to fill a textbox depending on fonts language support. If it supports cyrillic then it is preffered."));
+    fonta::setToolTip(engButton, tr("Force Eng language"), tr("Always fill textbox with latin text."));
+    fonta::setToolTip(rusButton, tr("Force Rus language"), tr("Always fill textbox with cyrillic text."));
+
+    fonta::setToolTip(ui->sizeLabel, tr("Font size"), tr("Set font size in pts."));
+    fonta::setToolTip(ui->styleLabel, tr("Font style"), tr("Select font style. Ex.: <i>Regular, Italic, Bold, Bold Italic</i>."));
+    fonta::setToolTip(ui->leadingLabel, tr("Textbox leading"), tr("Set textbox line spacing in pts. <i>Auto</i> means 120% from font size."));
+    fonta::setToolTip(ui->trackingLabel, tr("Textbox tracking"), tr("Set letter spacing in 1/1000 ems."));
 }
 
 void MainWindow::saveGeometry()
