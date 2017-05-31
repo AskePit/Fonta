@@ -304,6 +304,33 @@
     </message>
 </context>
 <context>
+    <name>fonta</name>
+    <message>
+        <source>Custom</source>
+        <translation type="vanished">Пользовательский</translation>
+    </message>
+    <message>
+        <source>%1 fonts</source>
+        <translation type="vanished">%1 шрифтов</translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="vanished">Авто</translation>
+    </message>
+    <message>
+        <source>Save Fonta</source>
+        <translation type="vanished">Сохранить Fonta</translation>
+    </message>
+    <message>
+        <source>Fonta files (*.fonta)</source>
+        <translation type="vanished">Fonta файлы (*.fonta)</translation>
+    </message>
+    <message>
+        <source>Open Fonta</source>
+        <translation type="vanished">Открыть Fonta</translation>
+    </message>
+</context>
+<context>
     <name>fonta::About</name>
     <message>
         <source>About</source>
@@ -616,6 +643,22 @@ Sure?</source>
     <message>
         <source>Open Fonta</source>
         <translation>Открыть Fonta</translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation>Авто</translation>
+    </message>
+    <message>
+        <source>En</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Ru</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 pt</source>
+        <translation>%1 пт</translation>
     </message>
     <message>
         <source>Fonta - %1</source>

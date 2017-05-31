@@ -4,6 +4,7 @@
 #include "fontadb.h"
 #include <QMainWindow>
 #include <QVector>
+#include <QSettings>
 #include <QVersionNumber>
 #include "types_fonta.h"
 
@@ -32,7 +33,7 @@ public:
 
     static const QVersionNumber versionNumber;
 
-    void filterFontList(const QStringList& l, FilterMode::type mode = FilterMode::CUSTOM);
+    void filterFontList(const QStringList& l, FilterMode::type mode = FilterMode::Custom);
 
 private slots:
     void on_fontsList_currentTextChanged(const QString &currentText);
@@ -96,6 +97,10 @@ private slots:
 
     void swapFonts();
 
+    void on_actionEnglish_triggered();
+
+    void on_actionRussian_triggered();
+
 protected:
     void resizeEvent(QResizeEvent* event);
 
@@ -118,6 +123,7 @@ private:
 
     void setToolTips();
 
+    QSettings m_settings;
     void saveGeometry();
     void loadGeometry();
 
@@ -142,6 +148,11 @@ private:
 
     Field *m_swapRequester {nullptr};
     void swapBlockState(bool enable);
+
+    QString m_currLanguage {"en"};
+    QTranslator *m_translator {nullptr};
+    QTranslator *m_qtTranslator {nullptr};
+    void setLanguage(const QString &lang);
 };
 
 } // namespace fonta

@@ -53,6 +53,7 @@ void Launcher::start()
     d.exec();
 
     MainWindow *w = new MainWindow(m_fileToOpen);
+    connect(qApp, &QApplication::aboutToQuit, [=](){ w->deleteLater(); });
     w->show();
 }
 

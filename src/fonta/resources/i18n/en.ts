@@ -591,6 +591,22 @@ Sure?</source>
         <translation></translation>
     </message>
     <message>
+        <source>Auto</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>En</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Ru</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 pt</source>
+        <translation></translation>
+    </message>
+    <message>
         <source>Custom</source>
         <translation></translation>
     </message>

@@ -7,29 +7,29 @@
 
 enum_class (FilterMode) {
     Start,
-    ALL = Start,
-    CYRILLIC,
-    SERIF,
-    SANS_SERIF,
-    MONOSPACE,
-    SCRIPT,
-    DECORATIVE,
-    SYMBOLIC,
+    All = Start,
+    Cyrillic,
+    Serif,
+    SansSerif,
+    Monospace,
+    Script,
+    Decorative,
+    Symbolic,
     End,
-    CUSTOM = End
+    Custom = End
 
     enum_interface
     static QString toString(type t) {
         switch(t) {
         default:
-        case ALL:           return QApplication::translate("FilterMode", "[All]");         break;
-        case CYRILLIC:      return QApplication::translate("FilterMode", "Cyrillic");      break;
-        case SERIF:         return QApplication::translate("FilterMode", "Serif");         break;
-        case SANS_SERIF:    return QApplication::translate("FilterMode", "Sans Serif");    break;
-        case MONOSPACE:     return QApplication::translate("FilterMode", "Monospace");     break;
-        case SCRIPT:        return QApplication::translate("FilterMode", "Script");        break;
-        case DECORATIVE:    return QApplication::translate("FilterMode", "Decorative");    break;
-        case SYMBOLIC:      return QApplication::translate("FilterMode", "Symbolic");      break;
+        case All:           return QApplication::translate("FilterMode", "[All]");         break;
+        case Cyrillic:      return QApplication::translate("FilterMode", "Cyrillic");      break;
+        case Serif:         return QApplication::translate("FilterMode", "Serif");         break;
+        case SansSerif:     return QApplication::translate("FilterMode", "Sans Serif");    break;
+        case Monospace:     return QApplication::translate("FilterMode", "Monospace");     break;
+        case Script:        return QApplication::translate("FilterMode", "Script");        break;
+        case Decorative:    return QApplication::translate("FilterMode", "Decorative");    break;
+        case Symbolic:      return QApplication::translate("FilterMode", "Symbolic");      break;
         }
     }
 };

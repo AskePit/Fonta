@@ -17,8 +17,9 @@
 #include <QFileDialog>
 #include <QDesktopWidget>
 #include <QColorDialog>
-#include <QSettings>
 #include <QMessageBox>
+#include <QTranslator>
+#include <QLibraryInfo>
 
 #include <QDebug>
 
@@ -26,9 +27,20 @@ namespace fonta {
 
 const QVersionNumber MainWindow::versionNumber = QVersionNumber(1, 0, 0);
 
+static void updateFilterBox(QComboBox *filterBox)
+{
+    filterBox->clear();
+    QStringList filterItems;
+    for(int i = FilterMode::Start; i<FilterMode::End; ++i) {
+        filterItems << FilterMode::toString(static_cast<FilterMode::type>(i));
+    }
+    filterBox->addItems(filterItems);
+}
+
 MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_settings("PitM", "Fonta")
 {
     ui->setupUi(this);
 
@@ -64,27 +76,26 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     fillGroup->addAction(ui->actionFillPangram);
     fillGroup->addAction(ui->actionFillLoremIpsum);
 
-    loadGeometry();
-
     // extend toolbar with language context buttons
     // (they are buttons because of their more appropriate look)
     extendToolBar();
     setToolTips();
 
-    QStringList filterItems;
-    for(int i = FilterMode::Start; i<FilterMode::End; ++i) {
-        filterItems << FilterMode::toString(static_cast<FilterMode::type>(i));
-    }
-    ui->filterBox->addItems(filterItems);
-
-    connect(ui->filterBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::currentFilterBoxIndexChanged);
-    currentFilterBoxIndexChanged(0);
+    loadGeometry();
 
     if(fileToOpen.isEmpty()) {
         addTab();
     } else {
         openFile(fileToOpen);
     }
+
+    QVariant langVariant = m_settings.value("language");
+    QString lang = langVariant.isNull() ? QLocale::system().name().left(2) : langVariant.toString();
+    setLanguage(lang);
+
+    updateFilterBox(ui->filterBox);
+    connect(ui->filterBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::currentFilterBoxIndexChanged);
+    currentFilterBoxIndexChanged(0);
 }
 
 MainWindow::~MainWindow()
@@ -139,43 +150,39 @@ void MainWindow::setToolTips()
 
 void MainWindow::saveGeometry()
 {
-    QSettings settings("PitM", "Fonta");
-
-    settings.beginGroup("FontaWindow");
-    settings.setValue("geometry", QMainWindow::saveGeometry());
-    settings.setValue("windowState", saveState());
+    m_settings.beginGroup("FontaWindow");
+    m_settings.setValue("geometry", QMainWindow::saveGeometry());
+    m_settings.setValue("windowState", saveState());
 
     cauto sizes = ui->fontsListSplitter->sizes();
-    settings.setValue("fontsSplitterSizes0", sizes[0]);
-    settings.setValue("fontsSplitterSizes1", sizes[1]);
-    settings.endGroup();
+    m_settings.setValue("fontsSplitterSizes0", sizes[0]);
+    m_settings.setValue("fontsSplitterSizes1", sizes[1]);
+    m_settings.endGroup();
 }
 
 void MainWindow::loadGeometry()
 {
-    QSettings settings("PitM", "Fonta");
+    m_settings.beginGroup("FontaWindow");
+    restoreGeometry(m_settings.value("geometry").toByteArray());
+    restoreState(m_settings.value("windowState").toByteArray());
 
-    settings.beginGroup("FontaWindow");
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("windowState").toByteArray());
-
-    int size0 = settings.value("fontsSplitterSizes0", 100).toInt();
-    int size1 = settings.value("fontsSplitterSizes1", 200).toInt();
+    int size0 = m_settings.value("fontsSplitterSizes0", 100).toInt();
+    int size1 = m_settings.value("fontsSplitterSizes1", 200).toInt();
 
     if(size0 != -1 && size1 != -1) {
         ui->fontsListSplitter->setSizes({size0, size1});
     }
 
-    settings.endGroup();
+    m_settings.endGroup();
 }
 
 void MainWindow::extendToolBar()
 {
     int btnSize = 30;
     contextGroup = new QButtonGroup(this);
-    autoButton = new QPushButton("Auto", this);
-    engButton = new QPushButton("En", this);
-    rusButton = new QPushButton("Ru", this);
+    autoButton = new QPushButton(tr("Auto"), this);
+    engButton = new QPushButton(tr("En"), this);
+    rusButton = new QPushButton(tr("Ru"), this);
 
     auto addButton = [&](QPushButton *button, LanguageContext context){
         button->setCheckable(true);
@@ -452,7 +459,7 @@ void MainWindow::on_currentFieldChanged()
     updateFontFamily();
 
     // show size
-    ui->sizeBox->lineEdit()->setText(QString::number(m_currField->fontSize()) + " pt");
+    ui->sizeBox->lineEdit()->setText(tr("%1 pt").arg(QString::number(m_currField->fontSize())));
 
     // show style
     ui->styleBox->setCurrentIndex(ui->styleBox->findText(m_currField->fontStyle()));
@@ -460,9 +467,9 @@ void MainWindow::on_currentFieldChanged()
     // show leading
     float lead = m_currField->leading();
     if(lead == inf()) {
-        ui->leadingBox->lineEdit()->setText("Auto");
+        ui->leadingBox->lineEdit()->setText(tr("Auto"));
     } else {
-        ui->leadingBox->lineEdit()->setText(QString::number(lead) + " pt");
+        ui->leadingBox->lineEdit()->setText(tr("%1 pt").arg(QString::number(lead)));
     }
 
 
@@ -590,14 +597,14 @@ void MainWindow::currentFilterBoxIndexChanged(int index)
     bool (DB::*goodFont)(CStringRef) const;
     switch(index) {
         default:
-        case FilterMode::ALL:        goodFont = &DB::isAnyFont; break;
-        case FilterMode::CYRILLIC:   goodFont = &DB::isCyrillic; break;
-        case FilterMode::SERIF:      goodFont = &DB::isSerif; break;
-        case FilterMode::SANS_SERIF: goodFont = &DB::isSansSerif; break;
-        case FilterMode::MONOSPACE:  goodFont = &DB::isMonospaced; break;
-        case FilterMode::SCRIPT:     goodFont = &DB::isScript; break;
-        case FilterMode::DECORATIVE: goodFont = &DB::isDecorative; break;
-        case FilterMode::SYMBOLIC:   goodFont = &DB::isSymbolic; break;
+        case FilterMode::All:        goodFont = &DB::isAnyFont; break;
+        case FilterMode::Cyrillic:   goodFont = &DB::isCyrillic; break;
+        case FilterMode::Serif:      goodFont = &DB::isSerif; break;
+        case FilterMode::SansSerif:  goodFont = &DB::isSansSerif; break;
+        case FilterMode::Monospace:  goodFont = &DB::isMonospaced; break;
+        case FilterMode::Script:     goodFont = &DB::isScript; break;
+        case FilterMode::Decorative: goodFont = &DB::isDecorative; break;
+        case FilterMode::Symbolic:   goodFont = &DB::isSymbolic; break;
     }
 
     for (CStringRef family : fontaDB().families()) {
@@ -643,7 +650,7 @@ void MainWindow::currentFilterBoxIndexChanged(int index)
         ui->fontsList->addItem(item);
     }
 
-    ui->statusBar->showMessage(QString(tr("%1 fonts")).arg(ui->fontsList->count()));
+    ui->statusBar->showMessage(tr("%1 fonts").arg(ui->fontsList->count()));
 
     if(m_currField) {
         m_currField->setFontFamily(currFamily);
@@ -663,7 +670,7 @@ void MainWindow::onLeadingBoxEdited()
 void MainWindow::on_leadingBox_activated(CStringRef arg1)
 {
     float val = inf();
-    if(arg1 != "Auto") {
+    if(arg1 != tr("Auto")) {
         val = strtof(arg1.toStdString().c_str(), nullptr);
     }
 
@@ -714,8 +721,7 @@ void MainWindow::save(CStringRef fileName) const
 
 void MainWindow::on_actionSave_as_triggered()
 {
-    QSettings fontaReg("PitM", "Fonta");
-    QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
+    QString saveFilePath = m_settings.value("OpenSaveFilePath", QDir::homePath()).toString();
 
     QString filename =
             QFileDialog::getSaveFileName(this, tr("Save Fonta"), saveFilePath, tr("Fonta files (*.fonta)"));
@@ -725,7 +731,7 @@ void MainWindow::on_actionSave_as_triggered()
         setCurrFile(filename);
 
         QFileInfo info(filename);
-        fontaReg.setValue("OpenSaveFilePath", info.path());
+        m_settings.setValue("OpenSaveFilePath", info.path());
     }
 }
 
@@ -768,14 +774,12 @@ void MainWindow::openFile(CStringRef filename)
     changeAddTabButtonGeometry();
 
     QFileInfo info(filename);
-    QSettings fontaReg("PitM", "Fonta");
-    fontaReg.setValue("OpenSaveFilePath", info.filePath());
+    m_settings.setValue("OpenSaveFilePath", info.filePath());
 }
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QSettings fontaReg("PitM", "Fonta");
-    QString saveFilePath = fontaReg.value("OpenSaveFilePath", QDir::homePath()).toString();
+    QString saveFilePath = m_settings.value("OpenSaveFilePath", QDir::homePath()).toString();
 
     QString filename =
             QFileDialog::getOpenFileName(this, tr("Open Fonta"), saveFilePath, tr("Fonta files (*.fonta)"));
@@ -871,7 +875,7 @@ void MainWindow::on_filterWizardButton_clicked()
 
 void MainWindow::filterFontList(const QStringList& l, FilterMode::type mode)
 {
-    if(mode != FilterMode::CUSTOM) {
+    if(mode != FilterMode::Custom) {
         ui->filterBox->setCurrentText(FilterMode::toString(mode));
         return;
     }
@@ -889,7 +893,7 @@ void MainWindow::filterFontList(const QStringList& l, FilterMode::type mode)
     }
 
     ui->filterBox->setCurrentText(customString);
-    ui->statusBar->showMessage(QString(tr("%1 fonts")).arg(l.count()));
+    ui->statusBar->showMessage(tr("%1 fonts").arg(l.count()));
 
     m_currField->setFontFamily(currFamily);
 }
@@ -1015,7 +1019,7 @@ static void setDisabled(QLayout *layout, bool enabled)
 void MainWindow::swapBlockState(bool enable)
 {
     ::fonta::setDisabled(ui->fontsListLayout, enable);
-    ui->bottomWidget->setDisabled(enable);
+    ::fonta::setDisabled(ui->controlLayout, enable);
     ui->toolBar->setDisabled(enable);
     ui->menuBar->setDisabled(enable);
     ui->tabWidget->tabBar()->setDisabled(enable);
@@ -1038,6 +1042,46 @@ void MainWindow::swapFonts()
         swapBlockState(true);
         m_swapRequester = qobject_cast<Field *>(sender());
     }
+}
+
+void MainWindow::setLanguage(const QString &lang)
+{
+    if(lang == m_currLanguage) {
+        return;
+    }
+
+    if(m_translator) {
+        qApp->removeTranslator(m_translator);
+        delete m_translator;
+    }
+    m_translator = new QTranslator();
+    if (m_translator->load(lang, ":/i18n")) {
+        qApp->installTranslator(m_translator);
+    }
+
+    if(m_qtTranslator) {
+        qApp->removeTranslator(m_qtTranslator);
+        delete m_qtTranslator;
+    }
+    m_qtTranslator = new QTranslator();
+    if (m_qtTranslator->load("qtbase_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+        qApp->installTranslator(m_qtTranslator);
+    }
+
+    ui->retranslateUi(this);
+    setToolTips();
+    updateFilterBox(ui->filterBox);
+    m_currLanguage = lang;
+}
+
+void MainWindow::on_actionEnglish_triggered()
+{
+    setLanguage("en");
+}
+
+void MainWindow::on_actionRussian_triggered()
+{
+    setLanguage("ru");
 }
 
 } // namespace fonta

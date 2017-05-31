@@ -85,23 +85,23 @@ void FilterWizard::accept()
                     || only_monospaced;
 
     if(not_custom) {
-        FilterMode::type mode = FilterMode::ALL;
+        FilterMode::type mode = FilterMode::All;
         if(only_serif) {
-            mode = FilterMode::SERIF;
+            mode = FilterMode::Serif;
         } else if(only_sans) {
-            mode = FilterMode::SANS_SERIF;
+            mode = FilterMode::SansSerif;
         } else if(only_script) {
-            mode = FilterMode::SCRIPT;
+            mode = FilterMode::Script;
         } else if(only_display) {
-            mode = FilterMode::DECORATIVE;
+            mode = FilterMode::Decorative;
         } else if(only_symbolic) {
-            mode = FilterMode::SYMBOLIC;
+            mode = FilterMode::Symbolic;
         } else if(only_cyrillic) {
-            mode = FilterMode::CYRILLIC;
+            mode = FilterMode::Cyrillic;
         } else if(only_monospaced) {
-            mode = FilterMode::MONOSPACE;
+            mode = FilterMode::Monospace;
         } else if(all_types) {
-            mode = FilterMode::ALL;
+            mode = FilterMode::All;
         }
 
         window->filterFontList(l, mode);
