@@ -13,6 +13,7 @@
 #include <QDebug>
 #endif
 
+#include <QString>
 #include <QStandardPaths>
 #include <QSettings>
 #include <QProcess>

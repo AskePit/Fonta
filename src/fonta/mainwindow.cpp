@@ -83,15 +83,15 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
 
     loadGeometry();
 
+    QVariant langVariant = m_settings.value("Language");
+    QString lang = langVariant.isNull() ? QLocale::system().name().left(2) : langVariant.toString();
+    setLanguage(lang);
+
     if(fileToOpen.isEmpty()) {
         addTab();
     } else {
         openFile(fileToOpen);
     }
-
-    QVariant langVariant = m_settings.value("language");
-    QString lang = langVariant.isNull() ? QLocale::system().name().left(2) : langVariant.toString();
-    setLanguage(lang);
 
     updateFilterBox(ui->filterBox);
     connect(ui->filterBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::currentFilterBoxIndexChanged);
@@ -1068,10 +1068,12 @@ void MainWindow::setLanguage(const QString &lang)
         qApp->installTranslator(m_qtTranslator);
     }
 
+    m_currLanguage = lang;
+    m_settings.setValue("Language", lang);
+
     ui->retranslateUi(this);
     setToolTips();
     updateFilterBox(ui->filterBox);
-    m_currLanguage = lang;
 }
 
 void MainWindow::on_actionEnglish_triggered()
