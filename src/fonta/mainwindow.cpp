@@ -25,7 +25,7 @@
 
 namespace fonta {
 
-const QVersionNumber MainWindow::versionNumber = QVersionNumber(1, 0, 0);
+const QVersionNumber MainWindow::versionNumber = QVersionNumber(1, 1, 1);
 
 static void updateFilterBox(QComboBox *filterBox)
 {
