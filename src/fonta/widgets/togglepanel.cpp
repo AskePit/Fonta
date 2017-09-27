@@ -13,9 +13,9 @@ TooglePanel::TooglePanel(QWidget* parent)
 void TooglePanel::toogle(bool toogle)
 {
     if(toogle) {
-        setStyleSheet("background-color:gray;");
+        setStyleSheet(QStringLiteral("background-color:gray;"));
     } else {
-        setStyleSheet("background-color:white;");
+        setStyleSheet(QStringLiteral("background-color:white;"));
     }
 }
 

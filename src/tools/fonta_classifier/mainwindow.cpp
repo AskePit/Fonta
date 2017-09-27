@@ -10,7 +10,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    m_reg("PitM", "Fonta DB Manager")
+    m_reg(QStringLiteral("PitM"), QStringLiteral("Fonta DB Manager"))
 {
     ui->setupUi(this);
 
@@ -38,14 +38,14 @@ MainWindow::MainWindow(QWidget *parent) :
         m_classifier.store();
     });
 
-    m_dbPath = m_reg.value("db_path", "").toString();
+    m_dbPath = m_reg.value(QStringLiteral("db_path"), QStringLiteral("")).toString();
     qDebug() << m_dbPath;
 
     if(m_dbPath.isEmpty()) {
         return;
     }
 
-    ui->statusBar->showMessage("No DB");
+    ui->statusBar->showMessage(tr("No DB"));
 
     QFileInfo info(m_dbPath);
     if(info.exists() && info.isDir()) {
@@ -95,7 +95,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    m_dbPath = QFileDialog::getExistingDirectory(this, "Choose Fonta DB folder", "");
+    m_dbPath = QFileDialog::getExistingDirectory(this, tr("Choose Fonta DB folder"), QStringLiteral(""));
     if(m_dbPath.isEmpty()) {
         return;
     }
@@ -107,7 +107,7 @@ void MainWindow::on_actionOpen_triggered()
 
     bool ok = loadDB();
     if(ok) {
-        m_reg.setValue("db_path", m_dbPath);
+        m_reg.setValue(QStringLiteral("db_path"), m_dbPath);
     }
 }
 
@@ -171,7 +171,7 @@ void MainWindow::onLoadSuccess()
     m_loaded = true;
     doCheckboxes(setCheckboxEnabled, true);
     ui->lineEdit->setEnabled(true);
-    ui->statusBar->showMessage("DB loaded");
+    ui->statusBar->showMessage(tr("DB loaded"));
 }
 
 void MainWindow::onLoadFailure()
@@ -179,7 +179,7 @@ void MainWindow::onLoadFailure()
     m_loaded = true;
     doCheckboxes(setCheckboxEnabled, false);
     ui->lineEdit->setEnabled(false);
-    ui->statusBar->showMessage("No DB");
+    ui->statusBar->showMessage(tr("No DB"));
 }
 
 void MainWindow::search()
@@ -193,7 +193,7 @@ void MainWindow::search()
 
     int info = m_classifier.fontInfo(ui->lineEdit->text());
     if(!FontType::exists(info)) {
-        ui->statusBar->showMessage("No Font");
+        ui->statusBar->showMessage(tr("No Font"));
         return;
     }
 
@@ -206,7 +206,7 @@ void MainWindow::search()
     }
 
     if(m_found) {
-        ui->statusBar->showMessage("Found");
+        ui->statusBar->showMessage(tr("Found"));
     }
 }
 
@@ -223,7 +223,7 @@ static int callQuestionDialog(CStringRef message)
 void MainWindow::on_saveButton_clicked()
 {
     if(m_found) {
-        int ret = callQuestionDialog("Rewrite existed font info?");
+        int ret = callQuestionDialog(tr("Rewrite existed font info?"));
         if (ret != QMessageBox::Ok) {
             return;
         }
@@ -241,7 +241,7 @@ void MainWindow::on_saveButton_clicked()
     } else {
         m_classifier.addFontInfo(ui->lineEdit->text(), info);
     }
-    ui->statusBar->showMessage("Saved");
+    ui->statusBar->showMessage(tr("Saved"));
 }
 
 void MainWindow::on_actionImport_triggered()
@@ -256,7 +256,7 @@ void MainWindow::on_actionImport_triggered()
     QFile file(d.fileName());
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        ui->statusBar->showMessage("Error: could not open import file");
+        ui->statusBar->showMessage(tr("Error: could not open import file"));
         return;
     }
 
@@ -269,12 +269,12 @@ void MainWindow::on_actionImport_triggered()
     file.close();
 
     list.removeDuplicates();
-    list.removeOne("");
+    list.removeOne(QStringLiteral(""));
 
     int info = d.info();
     for(CStringRef family : list) {
         m_classifier.addFontInfo(family, info);
     }
 
-    ui->statusBar->showMessage("File Imported");
+    ui->statusBar->showMessage(tr("File Imported"));
 }

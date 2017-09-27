@@ -30,7 +30,7 @@ LoadDialog::LoadDialog()
     lbl->setWindowFlags(Qt::Widget);
     lbl->setAlignment(Qt::AlignCenter);
 
-    lbl->setStyleSheet("QLabel { background-color: rgb(250, 250, 250); }");
+    lbl->setStyleSheet(QStringLiteral("QLabel { background-color: rgb(250, 250, 250); }"));
 
     mainLayout->addWidget(lbl);
     mainLayout->setContentsMargins(0, 0, 0, 0);

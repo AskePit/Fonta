@@ -36,15 +36,15 @@ Field::Field(InitType initType, QWidget* parent)
     if(initType == InitType::Sampled) {
         fetchSamples();
         setFontSize(10);
-        setFontFamily("Arial");
+        setFontFamily(QStringLiteral("Arial"));
     }
 
-    m_sheet.set("padding-top", "0px");
-    m_sheet.set("padding-left", "15px");
-    m_sheet.set("padding-right", "15px");
-    m_sheet.set("padding-bottom", "0px");
-    m_sheet.set("min-height", "25px");
-    m_sheet.set("background-color", "white");
+    m_sheet.set(QStringLiteral("padding-top"), QStringLiteral("0px"));
+    m_sheet.set(QStringLiteral("padding-left"), QStringLiteral("15px"));
+    m_sheet.set(QStringLiteral("padding-right"), QStringLiteral("15px"));
+    m_sheet.set(QStringLiteral("padding-bottom"), QStringLiteral("0px"));
+    m_sheet.set(QStringLiteral("min-height"), QStringLiteral("25px"));
+    m_sheet.set(QStringLiteral("background-color"), QStringLiteral("white"));
     applySheet();
 
     m_surfaceWidget = new QWidget();
@@ -193,7 +193,7 @@ static QString truncWord(CStringRef str)
     if(pos != -1) {
         return str.left(pos);
     } else {
-        return "";
+        return QStringLiteral("");
     }
 }
 
@@ -435,22 +435,22 @@ void Field::setLanguageContext(LanguageContext context)
 void Field::save(QJsonObject &json) const
 {
     const QFont& f = font();
-    json["family"] = f.family();
-    json["style"] = fontStyle();
-    json["size"] = f.pointSizeF();
-    json["leading"] = leading();
-    json["tracking"] = tracking();
-    json["alignment"] = static_cast<int>(textAlignment());
-    json["text"] = toPlainText();
-    json["textColor"] = sheet()["color"];
-    json["backgroundColor"] = sheet()["background-color"];
+    json[QLatin1String("family")] = f.family();
+    json[QLatin1String("style")] = fontStyle();
+    json[QLatin1String("size")] = f.pointSizeF();
+    json[QLatin1String("leading")] = leading();
+    json[QLatin1String("tracking")] = tracking();
+    json[QLatin1String("alignment")] = static_cast<int>(textAlignment());
+    json[QLatin1String("text")] = toPlainText();
+    json[QLatin1String("textColor")] = sheet()[QStringLiteral("color")];
+    json[QLatin1String("backgroundColor")] = sheet()[QStringLiteral("background-color")];
 }
 
 void Field::load(const QJsonObject &json)
 {
-    QString family = json["family"].toString("Arial");
-    double size = json["size"].toDouble(12.0);
-    QString style = json["style"].toString("Normal");
+    QString family = json[QLatin1String("family")].toString(QStringLiteral("Arial"));
+    double size = json[QLatin1String("size")].toDouble(12.0);
+    QString style = json[QLatin1String("style")].toString(QStringLiteral("Normal"));
 
     setPreferableFontStyle(style);
 
@@ -458,13 +458,13 @@ void Field::load(const QJsonObject &json)
     newFont.setPointSizeF(size);                      // set double size
     setFont(newFont);
 
-    setText(json["text"].toString("The quick brown fox jumped over the lazy dog"));
-    alignText(static_cast<Qt::Alignment>(json["alignment"].toInt(1)));
-    setLeading(json["leading"].toDouble(inf()));
-    setTracking(json["tracking"].toInt(0));
+    setText(json[QLatin1String("text")].toString(QStringLiteral("The quick brown fox jumped over the lazy dog")));
+    alignText(static_cast<Qt::Alignment>(json[QLatin1String("alignment")].toInt(1)));
+    setLeading(json[QLatin1String("leading")].toDouble(inf()));
+    setTracking(json[QLatin1String("tracking")].toInt(0));
 
-    sheet().set("color", json["textColor"].toString());
-    sheet().set("background-color", json["backgroundColor"].toString());
+    sheet().set(QStringLiteral("color"), json[QLatin1String("textColor")].toString());
+    sheet().set(QStringLiteral("background-color"), json[QLatin1String("backgroundColor")].toString());
     applySheet();
 
     m_contentMode = ContentMode::UserDefined;

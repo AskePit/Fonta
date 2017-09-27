@@ -7,7 +7,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setWindowIcon(QIcon(":/logo"));
+    a.setWindowIcon(QIcon(QStringLiteral(":/logo")));
 
     MainWindow w;
     w.show();

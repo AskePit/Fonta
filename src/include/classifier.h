@@ -24,19 +24,19 @@ enum_class (FontType) {
 enum_interface
     static QString fileName(FontType::type t) {
         switch(t) {
-            case Serif: return "serif.dat";
-            case Sans: return "sans.dat";
-            case Script: return "script.dat";
-            case Display: return "decorative.dat";
-            case Symbolic: return "symbolic.dat";
-            case Oldstyle: return "old_style.dat";
-            case Transitional: return "transitional.dat";
-            case Modern: return "modern.dat";
-            case Slab: return "slab.dat";
-            case Grotesque: return "grotesque.dat";
-            case Geometric: return "geometric.dat";
-            case Humanist: return "humanist.dat";
-            case Monospaced: return "monospaced.dat";
+            case Serif: return QStringLiteral("serif.dat");
+            case Sans: return QStringLiteral("sans.dat");
+            case Script: return QStringLiteral("script.dat");
+            case Display: return QStringLiteral("decorative.dat");
+            case Symbolic: return QStringLiteral("symbolic.dat");
+            case Oldstyle: return QStringLiteral("old_style.dat");
+            case Transitional: return QStringLiteral("transitional.dat");
+            case Modern: return QStringLiteral("modern.dat");
+            case Slab: return QStringLiteral("slab.dat");
+            case Grotesque: return QStringLiteral("grotesque.dat");
+            case Geometric: return QStringLiteral("geometric.dat");
+            case Humanist: return QStringLiteral("humanist.dat");
+            case Monospaced: return QStringLiteral("monospaced.dat");
             default: return "";
         }
     }

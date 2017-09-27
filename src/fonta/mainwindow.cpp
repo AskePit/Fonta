@@ -40,7 +40,7 @@ static void updateFilterBox(QComboBox *filterBox)
 MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_settings("PitM", "Fonta")
+    , m_settings(QStringLiteral("PitM"), QStringLiteral("Fonta"))
 {
     ui->setupUi(this);
 
@@ -58,9 +58,9 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
     QTabBar *bar = tabs->tabBar();
     bar->setContextMenuPolicy(Qt::CustomContextMenu);
     tabs->setTabsClosable(false);
-    bar->setStyleSheet("QTabBar::tab { height: 27px; }"
+    bar->setStyleSheet(QStringLiteral("QTabBar::tab { height: 27px; }"
                        "QTabBar::close-button { image: url(:/pic/closeTab.png); }"
-                       "QTabBar::close-button:hover { image: url(:/pic/closeTabHover.png); }"
+                       "QTabBar::close-button:hover { image: url(:/pic/closeTabHover.png); }")
     );
     connect(tabs, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTabPrompted);
     connect(bar, &QTabBar::tabBarDoubleClicked, this, &MainWindow::renameTab);
@@ -83,7 +83,7 @@ MainWindow::MainWindow(CStringRef fileToOpen, QWidget *parent)
 
     loadGeometry();
 
-    QVariant langVariant = m_settings.value("Language");
+    QVariant langVariant = m_settings.value(QStringLiteral("Language"));
     QString lang = langVariant.isNull() ? QLocale::system().name().left(2) : langVariant.toString();
     setLanguage(lang);
 
@@ -113,12 +113,12 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 template <class T>
 static void setToolTip(T *w, const QString &brief, const QString &details)
 {
-    w->setToolTip(QString("<b>") + brief + "</b><p>" + details + "</p>");
+    w->setToolTip(QStringLiteral("<b>") + brief + QStringLiteral("</b><p>") + details + QStringLiteral("</p>"));
 }
 
 void MainWindow::setToolTips()
 {
-    qApp->setStyleSheet("QToolTip {padding: 6px; background-color: #FFFFFF}");
+    qApp->setStyleSheet(QStringLiteral("QToolTip {padding: 6px; background-color: #FFFFFF}"));
 
     fonta::setToolTip(ui->alignLeftButton, tr("Align left"), tr("Aligns text to the left side of textbox."));
     fonta::setToolTip(ui->alignRightButton, tr("Align right"), tr("Aligns text to the right side of textbox."));
@@ -150,24 +150,24 @@ void MainWindow::setToolTips()
 
 void MainWindow::saveGeometry()
 {
-    m_settings.beginGroup("FontaWindow");
-    m_settings.setValue("geometry", QMainWindow::saveGeometry());
-    m_settings.setValue("windowState", saveState());
+    m_settings.beginGroup(QStringLiteral("FontaWindow"));
+    m_settings.setValue(QStringLiteral("geometry"), QMainWindow::saveGeometry());
+    m_settings.setValue(QStringLiteral("windowState"), saveState());
 
     cauto sizes = ui->fontsListSplitter->sizes();
-    m_settings.setValue("fontsSplitterSizes0", sizes[0]);
-    m_settings.setValue("fontsSplitterSizes1", sizes[1]);
+    m_settings.setValue(QStringLiteral("fontsSplitterSizes0"), sizes[0]);
+    m_settings.setValue(QStringLiteral("fontsSplitterSizes1"), sizes[1]);
     m_settings.endGroup();
 }
 
 void MainWindow::loadGeometry()
 {
-    m_settings.beginGroup("FontaWindow");
-    restoreGeometry(m_settings.value("geometry").toByteArray());
-    restoreState(m_settings.value("windowState").toByteArray());
+    m_settings.beginGroup(QStringLiteral("FontaWindow"));
+    restoreGeometry(m_settings.value(QStringLiteral("geometry")).toByteArray());
+    restoreState(m_settings.value(QStringLiteral("windowState")).toByteArray());
 
-    int size0 = m_settings.value("fontsSplitterSizes0", 100).toInt();
-    int size1 = m_settings.value("fontsSplitterSizes1", 200).toInt();
+    int size0 = m_settings.value(QStringLiteral("fontsSplitterSizes0"), 100).toInt();
+    int size1 = m_settings.value(QStringLiteral("fontsSplitterSizes1"), 200).toInt();
 
     if(size0 != -1 && size1 != -1) {
         ui->fontsListSplitter->setSizes({size0, size1});
@@ -302,7 +302,7 @@ void MainWindow::addTab(InitType initType)
     QWidget *topMargin = new QWidget(tab);
     topMargin->setMinimumHeight(30);
     topMargin->setMaximumHeight(30);
-    topMargin->setStyleSheet("background-color:white;");
+    topMargin->setStyleSheet(QStringLiteral("background-color:white;"));
 
     horizontalLayout->addWidget(topMargin);
     horizontalLayout->addWidget(m_currWorkArea);
@@ -428,7 +428,7 @@ void MainWindow::makeFieldsConnected() {
 void MainWindow::on_addFieldButton_clicked()
 {
     Field* field = m_currWorkArea->addField();
-    field->setFontFamily("Arial");
+    field->setFontFamily(QStringLiteral("Arial"));
 
     makeFieldConnected(field);
 
@@ -693,10 +693,10 @@ void MainWindow::save(CStringRef fileName) const
     QJsonObject json;
 
     QJsonObject version;
-    version["major"] = versionNumber.majorVersion();
-    version["minor"] = versionNumber.minorVersion();
-    version["build"] = versionNumber.microVersion();
-    json["version"] = version;
+    version[QLatin1String("major")] = versionNumber.majorVersion();
+    version[QLatin1String("minor")] = versionNumber.minorVersion();
+    version[QLatin1String("build")] = versionNumber.microVersion();
+    json[QLatin1String("version")] = version;
 
     QJsonArray workAreasArr;
     for(auto workArea : m_workAreas) {
@@ -705,8 +705,8 @@ void MainWindow::save(CStringRef fileName) const
         workAreasArr.append(json);
     }
 
-    json["workAreas"] = workAreasArr;
-    json["currWorkArea"] = m_currWorkArea->id();
+    json[QLatin1String("workAreas")] = workAreasArr;
+    json[QLatin1String("currWorkArea")] = m_currWorkArea->id();
 
     QFile saveFile(fileName);
 
@@ -721,7 +721,7 @@ void MainWindow::save(CStringRef fileName) const
 
 void MainWindow::on_actionSave_as_triggered()
 {
-    QString saveFilePath = m_settings.value("OpenSaveFilePath", QDir::homePath()).toString();
+    QString saveFilePath = m_settings.value(QStringLiteral("OpenSaveFilePath"), QDir::homePath()).toString();
 
     QString filename =
             QFileDialog::getSaveFileName(this, tr("Save Fonta"), saveFilePath, tr("Fonta files (*.fonta)"));
@@ -731,7 +731,7 @@ void MainWindow::on_actionSave_as_triggered()
         setCurrFile(filename);
 
         QFileInfo info(filename);
-        m_settings.setValue("OpenSaveFilePath", info.path());
+        m_settings.setValue(QStringLiteral("OpenSaveFilePath"), info.path());
     }
 }
 
@@ -750,7 +750,7 @@ void MainWindow::load(CStringRef fileName)
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     QJsonObject json = loadDoc.object();
 
-    QJsonArray workAreas = json["workAreas"].toArray();
+    QJsonArray workAreas = json[QLatin1String("workAreas")].toArray();
     for(const QJsonValue& workArea : workAreas) {
         addTab(InitType::Empty);
         QJsonObject areaJson = workArea.toObject();
@@ -759,7 +759,7 @@ void MainWindow::load(CStringRef fileName)
         ui->tabWidget->setTabText(m_currWorkArea->id(), m_currWorkArea->name());
     }
 
-    int workAreaId = json["currWorkArea"].toInt(0);
+    int workAreaId = json[QLatin1String("currWorkArea")].toInt(0);
     ui->tabWidget->setCurrentIndex(workAreaId);
 
     m_currField = m_currWorkArea->currField();
@@ -774,12 +774,12 @@ void MainWindow::openFile(CStringRef filename)
     changeAddTabButtonGeometry();
 
     QFileInfo info(filename);
-    m_settings.setValue("OpenSaveFilePath", info.filePath());
+    m_settings.setValue(QStringLiteral("OpenSaveFilePath"), info.filePath());
 }
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString saveFilePath = m_settings.value("OpenSaveFilePath", QDir::homePath()).toString();
+    QString saveFilePath = m_settings.value(QStringLiteral("OpenSaveFilePath"), QDir::homePath()).toString();
 
     QString filename =
             QFileDialog::getOpenFileName(this, tr("Open Fonta"), saveFilePath, tr("Fonta files (*.fonta)"));
@@ -900,20 +900,20 @@ void MainWindow::filterFontList(const QStringList& l, FilterMode::type mode)
 
 void MainWindow::on_backColorButton_clicked()
 {
-    QColor c = QColorDialog::getColor(m_currField->sheet()["background-color"], this);
+    QColor c = QColorDialog::getColor(m_currField->sheet()[QStringLiteral("background-color")], this);
 
     if(c.isValid()) {
-        m_currField->sheet().set("background-color", c.red(), c.green(), c.blue());
+        m_currField->sheet().set(QStringLiteral("background-color"), c.red(), c.green(), c.blue());
         m_currField->applySheet();
     }
 }
 
 void MainWindow::on_textColorButton_clicked()
 {
-    QColor c = QColorDialog::getColor(m_currField->sheet()["color"], this);
+    QColor c = QColorDialog::getColor(m_currField->sheet()[QStringLiteral("color")], this);
 
     if(c.isValid()) {
-        m_currField->sheet().set("color", c.red(), c.green(), c.blue());
+        m_currField->sheet().set(QStringLiteral("color"), c.red(), c.green(), c.blue());
         m_currField->applySheet();
     }
 }
@@ -1055,7 +1055,7 @@ void MainWindow::setLanguage(const QString &lang)
         delete m_translator;
     }
     m_translator = new QTranslator();
-    if (m_translator->load(lang, ":/i18n")) {
+    if (m_translator->load(lang, QStringLiteral(":/i18n"))) {
         qApp->installTranslator(m_translator);
     }
 
@@ -1064,12 +1064,12 @@ void MainWindow::setLanguage(const QString &lang)
         delete m_qtTranslator;
     }
     m_qtTranslator = new QTranslator();
-    if (m_qtTranslator->load("qtbase_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+    if (m_qtTranslator->load(QStringLiteral("qtbase_") + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
         qApp->installTranslator(m_qtTranslator);
     }
 
     m_currLanguage = lang;
-    m_settings.setValue("Language", lang);
+    m_settings.setValue(QStringLiteral("Language"), lang);
 
     ui->retranslateUi(this);
     setToolTips();
@@ -1078,12 +1078,12 @@ void MainWindow::setLanguage(const QString &lang)
 
 void MainWindow::on_actionEnglish_triggered()
 {
-    setLanguage("en");
+    setLanguage(QStringLiteral("en"));
 }
 
 void MainWindow::on_actionRussian_triggered()
 {
-    setLanguage("ru");
+    setLanguage(QStringLiteral("ru"));
 }
 
 } // namespace fonta

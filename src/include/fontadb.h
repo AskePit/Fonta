@@ -41,17 +41,17 @@ enum_interface
     static QString toString(type t) {
         switch(t) {
             default:
-            case NO:                 return "No Info";            break;
-            case OLDSTYLE_SERIF:     return "Oldstyle Serif";     break;
-            case TRANSITIONAL_SERIF: return "Transitional Serif"; break;
-            case MODERN_SERIF:       return "Modern Serif";       break;
-            case CLARENDON_SERIF:    return "Clarendon Serif";    break;
-            case SLAB_SERIF:         return "Slab Serif";         break;
-            case FREEFORM_SERIF:     return "Freeform Serif";     break;
-            case SANS_SERIF:         return "Sans Serif";         break;
-            case ORNAMENTAL:         return "Decorative";         break;
-            case SCRIPT:             return "Script";             break;
-            case SYMBOL:             return "Symbolic";           break;
+            case NO:                 return QCoreApplication::translate("fonta", "No Info");            break;
+            case OLDSTYLE_SERIF:     return QCoreApplication::translate("fonta", "Oldstyle Serif");     break;
+            case TRANSITIONAL_SERIF: return QCoreApplication::translate("fonta", "Transitional Serif"); break;
+            case MODERN_SERIF:       return QCoreApplication::translate("fonta", "Modern Serif");       break;
+            case CLARENDON_SERIF:    return QCoreApplication::translate("fonta", "Clarendon Serif");    break;
+            case SLAB_SERIF:         return QCoreApplication::translate("fonta", "Slab Serif");         break;
+            case FREEFORM_SERIF:     return QCoreApplication::translate("fonta", "Freeform Serif");     break;
+            case SANS_SERIF:         return QCoreApplication::translate("fonta", "Sans Serif");         break;
+            case ORNAMENTAL:         return QCoreApplication::translate("fonta", "Decorative");         break;
+            case SCRIPT:             return QCoreApplication::translate("fonta", "Script");             break;
+            case SYMBOL:             return QCoreApplication::translate("fonta", "Symbolic");           break;
         }
     }
 

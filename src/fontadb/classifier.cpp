@@ -2,123 +2,110 @@
 
 #include <QStringList>
 #include <QVector>
-#include <QFile>
+#include <QDir>
 #include <QDebug>
 
 namespace fonta {
 
 static const QStringList prefixes = {
-    "Adobe",
-    "AR",
-    "AG",
-    "ATC",
-    "ITC",
-    "Libra",
-    "Libre",
-    "Microsoft",
-    "PF",
-    "TT",
-    "v",
+	QStringLiteral("Adobe"),
+	QStringLiteral("AR"),
+	QStringLiteral("AG"),
+	QStringLiteral("ATC"),
+	QStringLiteral("ITC"),
+	QStringLiteral("Libra"),
+	QStringLiteral("Libre"),
+	QStringLiteral("Microsoft"),
+	QStringLiteral("PF"),
+	QStringLiteral("TT"),
+	QStringLiteral("v"),
 };
 
 static const QStringList postfixes = {
-    "Pro",
-    "Std",
-    "Standard",
-
-    "Regular",
-    "Normal",
-    "Medium",
-    "R",
-    "Rg",
-    "Reg",
-    "Md",
-    "Med",
-
-    "Black",
-    "Heavy",
-    "Bk",
-    "Blk",
-    "Hv",
-
-    "Bold",
-    "B",
-    "Bd",
-    "Semibold",
-    "Demibold",
-    "Smbd",
-    "SeBd",
-    "DmBd",
-
-    "Thin",
-    "XThin",
-
-    "Light",
-    "Lite",
-    "Semilight",
-    "L",
-    "LT",
-    "Lt",
-
-    "Italic",
-    "Oblique",
-    "Rounded",
-    "Hair",
-    "Sketch",
-
-    "Poster",
-    "Compressed",
-    "Condensed",
-    "Cond",
-    "Dsp",
-    "Cn",
-    "Narrow",
-    "Demo",
-    "Extended",
-    "Tit",
-    "Txt",
-    "Ext",
-    "Text",
-    "Caption",
-    "Display",
-    "Subhead",
-    "SmText",
-    "FF",
-
-    "Demi",
-    "Semi",
-    "Extra",
-    "Ultra",
-
-    "Personal",
-
-    "Cyr",
-    "Cyrl",
-    "CYR",
-
-    "SC",
-
-    "BT",
-    "MT",
-    "MS",
-    "ITC",
-
-    "Armenian",
-    "Devanagari",
-    "Ethiopic",
-    "Georgian",
-    "Hebrew",
-    "Heiti",
-    "Khmer",
-    "Lao",
-    "Tamil",
-    "Thai",
-    "Khmer",
+	QStringLiteral("Pro"),
+	QStringLiteral("Std"),
+	QStringLiteral("Standard"),
+	QStringLiteral("Regular"),
+	QStringLiteral("Normal"),
+	QStringLiteral("Medium"),
+	QStringLiteral("R"),
+	QStringLiteral("Rg"),
+	QStringLiteral("Reg"),
+	QStringLiteral("Md"),
+	QStringLiteral("Med"),
+	QStringLiteral("Black"),
+	QStringLiteral("Heavy"),
+	QStringLiteral("Bk"),
+	QStringLiteral("Blk"),
+	QStringLiteral("Hv"),
+	QStringLiteral("Bold"),
+	QStringLiteral("B"),
+	QStringLiteral("Bd"),
+	QStringLiteral("Semibold"),
+	QStringLiteral("Demibold"),
+	QStringLiteral("Smbd"),
+	QStringLiteral("SeBd"),
+	QStringLiteral("DmBd"),
+	QStringLiteral("Thin"),
+	QStringLiteral("XThin"),
+	QStringLiteral("Light"),
+	QStringLiteral("Lite"),
+	QStringLiteral("Semilight"),
+	QStringLiteral("L"),
+	QStringLiteral("LT"),
+	QStringLiteral("Lt"),
+	QStringLiteral("Italic"),
+	QStringLiteral("Oblique"),
+	QStringLiteral("Rounded"),
+	QStringLiteral("Hair"),
+	QStringLiteral("Sketch"),
+	QStringLiteral("Poster"),
+	QStringLiteral("Compressed"),
+	QStringLiteral("Condensed"),
+	QStringLiteral("Cond"),
+	QStringLiteral("Dsp"),
+	QStringLiteral("Cn"),
+	QStringLiteral("Narrow"),
+	QStringLiteral("Demo"),
+	QStringLiteral("Extended"),
+	QStringLiteral("Tit"),
+	QStringLiteral("Txt"),
+	QStringLiteral("Ext"),
+	QStringLiteral("Text"),
+	QStringLiteral("Caption"),
+	QStringLiteral("Display"),
+	QStringLiteral("Subhead"),
+	QStringLiteral("SmText"),
+	QStringLiteral("FF"),
+	QStringLiteral("Demi"),
+	QStringLiteral("Semi"),
+	QStringLiteral("Extra"),
+	QStringLiteral("Ultra"),
+	QStringLiteral("Personal"),
+	QStringLiteral("Cyr"),
+	QStringLiteral("Cyrl"),
+	QStringLiteral("CYR"),
+	QStringLiteral("SC"),
+	QStringLiteral("BT"),
+	QStringLiteral("MT"),
+	QStringLiteral("MS"),
+	QStringLiteral("ITC"),
+	QStringLiteral("Armenian"),
+	QStringLiteral("Devanagari"),
+	QStringLiteral("Ethiopic"),
+	QStringLiteral("Georgian"),
+	QStringLiteral("Hebrew"),
+	QStringLiteral("Heiti"),
+	QStringLiteral("Khmer"),
+	QStringLiteral("Lao"),
+	QStringLiteral("Tamil"),
+	QStringLiteral("Thai"),
+	QStringLiteral("Khmer"),
 };
 
 static const QStringList sansHints = {
-    " sans serif",
-    " sans",
+    QStringLiteral(" sans serif"),
+    QStringLiteral(" sans"),
 };
 
 static const QStringList serifHints = {
@@ -126,22 +113,22 @@ static const QStringList serifHints = {
 };
 
 static const QStringList scriptHints = {
-    " script",
-    " brush",
-    " pen",
-    " marker",
+    QStringLiteral(" script"),
+    QStringLiteral(" brush"),
+    QStringLiteral(" pen"),
+    QStringLiteral(" marker"),
 };
 
 static const QStringList modernHints = {
-    " didone",
+    QStringLiteral(" didone"),
 };
 
 static const QStringList slabHints = {
-    " slab",
+    QStringLiteral(" slab"),
 };
 
 static const QStringList monospacedHints = {
-    " mono",
+    QStringLiteral(" mono"),
 };
 
 static QVector<QStringRef> split(CStringRef str) {
@@ -227,7 +214,7 @@ bool Classifier::load(CStringRef dbPath)
 
 bool Classifier::loadFontType(FontType::type type)
 {
-    QFile file(m_dbPath + "/" + FontType::fileName(type));
+    QFile file(m_dbPath + QDir::separator() + FontType::fileName(type));
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
@@ -242,7 +229,7 @@ bool Classifier::loadFontType(FontType::type type)
     file.close();
 
     list.removeDuplicates();
-    list.removeOne("");
+    list.removeOne(QStringLiteral(""));
 
     return true;
 }
@@ -250,11 +237,11 @@ bool Classifier::loadFontType(FontType::type type)
 void Classifier::store()
 {
     if(!m_changed) {
-        qDebug() << "Did not changed. Do nothing";
+        qDebug() << QCoreApplication::translate("fonta::Classifier", "Did not changed. Do nothing");
         return;
     }
 
-    qDebug() << "Changed. Store";
+    qDebug() << QCoreApplication::translate("fonta::Classifier", "Changed. Store");
 
     for(cauto type : FontType::enumerate()) {
         storeFontType(type);
@@ -263,7 +250,7 @@ void Classifier::store()
 
 bool Classifier::storeFontType(FontType::type type)
 {
-    QFile file(m_dbPath + "/" + FontType::fileName(type));
+    QFile file(m_dbPath + QDir::separator() + FontType::fileName(type));
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         return false;
@@ -274,7 +261,7 @@ bool Classifier::storeFontType(FontType::type type)
 
     QTextStream textStream(&file);
     for(CStringRef str : m_db[type]) {
-        textStream << str << "\n";
+        textStream << str << QLatin1String("\n");
     }
 
     file.close();
@@ -324,7 +311,7 @@ void Classifier::_addFontInfo(CStringRef family, int info)
     for(cauto type : FontType::enumerate()) {
         if(info & type) {
             if(!m_db[type].contains(family)) {
-                qDebug() << family << "added";
+                qDebug() << family << QStringLiteral("added");
                 m_db[type] << family;
             }
         }

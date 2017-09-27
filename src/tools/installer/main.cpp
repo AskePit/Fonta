@@ -20,7 +20,7 @@
 #define OPEN_VAL PROGRAMS "fonta.exe %1"
 #define ICON_VAL PROGRAMS "file_icon.ico"
 
-#define SET_DEFAULT_REG(p, v) QSettings((p), QSettings::NativeFormat).setValue(".", QString(v))
+#define SET_DEFAULT_REG(p, v) QSettings((p), QSettings::NativeFormat).setValue(QStringLiteral("."), QString(v))
 
 static bool copyFileForced(const QString &from, const QString &to)
 {
@@ -50,7 +50,7 @@ static bool copyRecursively(const QString &srcDir, const QString &dstDir)
         QDir sourceDir(srcDir);
         QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
         for(const QString &fileName : fileNames) {
-            const QString postfix = "/" + fileName;
+            const QString postfix = QDir::separator() + fileName;
             const QString newSrc = srcDir + postfix;
             const QString newDst = dstDir + postfix;
             if (!copyRecursively(newSrc, newDst)) {
@@ -74,33 +74,33 @@ int main()
     /// Copy stuff
     ///////////////////////
 
-    if(!copyRecursively(BIN, PROGRAMS)) {
-        qWarning() << QString("Copy from %1 to %2 has failed!").arg(BIN, PROGRAMS);
+    if(!copyRecursively(QStringLiteral(BIN), QStringLiteral(PROGRAMS))) {
+        qWarning() << QString("Copy from %1 to %2 has failed!").arg(QStringLiteral(BIN), QStringLiteral(PROGRAMS));
         return 0;
     }
 
-    if(!QDir().mkpath(DATA)) {
-        qWarning() << QString("Could not create %1 path. Maybe you have no enough rights").arg(DATA);
+    if(!QDir().mkpath(QStringLiteral(DATA))) {
+        qWarning() << QString("Could not create %1 path. Maybe you have no enough rights").arg(QStringLiteral(DATA));
         return 0;
     }
 
-    QFile::remove(PROGRAMS "INSTALL.exe");
+    QFile::remove(QStringLiteral(PROGRAMS "INSTALL.exe"));
 
 
     ///////////////////////
     /// PATH
     ///////////////////////
 
-    QSettings pathReg(PATH_REG, QSettings::NativeFormat);
-    QString path = pathReg.value("Path", "").toString();
+    QSettings pathReg(QStringLiteral(PATH_REG), QSettings::NativeFormat);
+    QString path = pathReg.value(QStringLiteral("Path"), QStringLiteral("")).toString();
 
     if(!path.contains(PROGRAMS)) {
         if(!path.endsWith(';')) {
             path += ';';
         }
-        path += PROGRAMS;
+        path += QStringLiteral(PROGRAMS);
 
-        pathReg.setValue("Path", path);
+        pathReg.setValue(QStringLiteral("Path"), path);
         SendMessageA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Environment");
     }
 
@@ -109,24 +109,24 @@ int main()
     /// .fonta ext
     ///////////////////////
 
-    SET_DEFAULT_REG(FONTA_EXT_REG, EXT_HANDLER);
-    SET_DEFAULT_REG(DESC_REG, "Fonta File");
-    SET_DEFAULT_REG(ICON_REG, ICON_VAL);
-    SET_DEFAULT_REG(OPEN_REG, OPEN_VAL);
+    SET_DEFAULT_REG(QStringLiteral(FONTA_EXT_REG), QStringLiteral(EXT_HANDLER));
+    SET_DEFAULT_REG(QStringLiteral(DESC_REG), QStringLiteral("Fonta File"));
+    SET_DEFAULT_REG(QStringLiteral(ICON_REG), QStringLiteral(ICON_VAL));
+    SET_DEFAULT_REG(QStringLiteral(OPEN_REG), QStringLiteral(OPEN_VAL));
 
 
     ///////////////////////
     /// links
     ///////////////////////
 
-    QDir().mkpath(STARTUP);
+    QDir().mkpath(QStringLiteral(STARTUP));
 
-    QFile fonta_bin(PROGRAMS "fonta.exe");
-    fonta_bin.link(STARTUP "Fonta.lnk");
+    QFile fonta_bin(QStringLiteral(PROGRAMS "fonta.exe"));
+    fonta_bin.link(QStringLiteral(STARTUP "Fonta.lnk"));
 
     auto desktops = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation);
     if(desktops.count()) {
-        fonta_bin.link(desktops[0] + "\\Fonta.lnk");
+        fonta_bin.link(desktops[0] + QLatin1String("\\Fonta.lnk"));
     }
 
     qDebug() << "Finished";

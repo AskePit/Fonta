@@ -147,8 +147,8 @@ void WorkArea::on_currentFieldChanged()
 
 void WorkArea::save(QJsonObject &json) const
 {
-    json["id"] = id();
-    json["name"] = name();
+    json[QLatin1String("id")] = id();
+    json[QLatin1String("name")] = name();
 
     QJsonArray fields;
     for(auto field : m_fields) {
@@ -156,15 +156,15 @@ void WorkArea::save(QJsonObject &json) const
         field->save(fieldObj);
         fields.append(fieldObj);
     }
-    json["fields"] = fields;
+    json[QLatin1String("fields")] = fields;
 
-    json["currField"] = m_currField->id();
+    json[QLatin1String("currField")] = m_currField->id();
 
     QJsonArray sizesArr;
     for(int s : sizes()) {
         sizesArr.append(s);
     }
-    json["sizes"] = sizesArr;
+    json[QLatin1String("sizes")] = sizesArr;
 }
 
 void WorkArea::loadSample(CStringRef jsonTxt)
@@ -174,7 +174,7 @@ void WorkArea::loadSample(CStringRef jsonTxt)
     QByteArray data = jsonTxt.toUtf8();
     QJsonObject json = QJsonDocument::fromJson(data).object();
 
-    QJsonArray fields = json["fields"].toArray();
+    QJsonArray fields = json[QLatin1String("fields")].toArray();
     for(const QJsonValue& fieldVal : fields) {
         Field* field = addField();
         field->load(fieldVal.toObject());
@@ -184,7 +184,7 @@ void WorkArea::loadSample(CStringRef jsonTxt)
         m_fields.at(0)->setFocus();
     }
 
-    QJsonArray sizes = json["sizes"].toArray();
+    QJsonArray sizes = json[QLatin1String("sizes")].toArray();
     QList<int> sizesList;
     for(const QJsonValue& size : sizes) {
         sizesList << size.toInt(50);
@@ -196,21 +196,21 @@ void WorkArea::load(const QJsonObject &json)
 {
     clear();
 
-    m_id = json["id"].toInt(0);
-    m_name = json["name"].toString("");
+    m_id = json[QLatin1String("id")].toInt(0);
+    m_name = json[QLatin1String("name")].toString("");
 
-    QJsonArray fields = json["fields"].toArray();
+    QJsonArray fields = json[QLatin1String("fields")].toArray();
     for(const QJsonValue& fieldVal : fields) {
         Field* field = addField();
         field->load(fieldVal.toObject());
     }
 
     if(m_fields.length()) {
-        int fieldId = json["currField"].toInt(0);
+        int fieldId = json[QLatin1String("currField")].toInt(0);
         m_currField = m_fields.at(fieldId);
     }
 
-    QJsonArray sizes = json["sizes"].toArray();
+    QJsonArray sizes = json[QLatin1String("sizes")].toArray();
     QList<int> sizesList;
     for(const QJsonValue& size : sizes) {
         sizesList << size.toInt(50);

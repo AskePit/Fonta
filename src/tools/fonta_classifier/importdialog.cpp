@@ -23,7 +23,7 @@ ImportDialog::~ImportDialog()
 
 void ImportDialog::on_pushButton_clicked()
 {
-    ui->lineEdit->setText(QFileDialog::getOpenFileName(this, "Select import file", "."));
+    ui->lineEdit->setText(QFileDialog::getOpenFileName(this, tr("Select import file"), QStringLiteral(".")));
 }
 
 QString ImportDialog::fileName() const

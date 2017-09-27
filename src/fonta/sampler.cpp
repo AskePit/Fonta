@@ -31,8 +31,8 @@ Sampler *Sampler::instance() {
 Sampler::Sampler()
 {
     // try to fetch rss news
-    fetchNews(textsEng, "http://feeds.bbci.co.uk/news/world/rss.xml", "description");
-    fetchNews(textsRus, "http://tass.ru/rss/v2.xml", "title");
+    fetchNews(textsEng, QStringLiteral("http://feeds.bbci.co.uk/news/world/rss.xml"), QStringLiteral("description"));
+    fetchNews(textsRus, QStringLiteral("http://tass.ru/rss/v2.xml"), QStringLiteral("title"));
 
     for(const Sample& p : preSamples) {
         if(Family::exists(p.family1) && Family::exists(p.family2)) {
@@ -42,70 +42,70 @@ Sampler::Sampler()
 }
 
 const QStringList Sampler::names = {
-    "Severin",
-    "Alois",
-    "Teo",
-    "Tess",
-    "Noel",
-    "Noah",
-    "Liam",
-    "Alice",
-    "Bob",
-    "Aske",
-    "Olga",
-    "Tilda",
-    "Vespa",
-    "Solly",
-    "Pit",
-    "Kurt",
-    "Sharona",
-    "Melissa",
+    QStringLiteral("Severin"),
+    QStringLiteral("Alois"),
+    QStringLiteral("Teo"),
+    QStringLiteral("Tess"),
+    QStringLiteral("Noel"),
+    QStringLiteral("Noah"),
+    QStringLiteral("Liam"),
+    QStringLiteral("Alice"),
+    QStringLiteral("Bob"),
+    QStringLiteral("Aske"),
+    QStringLiteral("Olga"),
+    QStringLiteral("Tilda"),
+    QStringLiteral("Vespa"),
+    QStringLiteral("Solly"),
+    QStringLiteral("Pit"),
+    QStringLiteral("Kurt"),
+    QStringLiteral("Sharona"),
+    QStringLiteral("Melissa"),
 };
 
 QStringList Sampler::textsEng = {
-    "Before 1960 95% of soft drinks sold in the U.S. are furnished in reusable bottles.",
-    "Ernest Hemmingway commits suicide with shotgun.",
-    "American U-2 spy plane, piloted by Francis Gary Powers, shot down over Russia",
-    "Kennedy was assassinated in Dallas, Texas, on November 22, 1963",
-    "Donald Trump promises to dissolve his Trump Foundation charity, which is still under investigation.",
-    "Senator Leila de Lima says the charges are an attempt to silence her criticism of the drug war.",
-    "Councillors unhappy about absence of sausage stalls at German Earth Day festival.",
-    "A pay ruling triggers a passionate backlash about the rights of hospitality and retails workers.",
-    "A Canadian hospital will study the effects cannabis oil on a severe form of epilepsy",
-    "A distribution company says many of the 251 Freedom handsets it paid for have not been delivered.",
-    "Organiser says the ironic event is a protest against fake news.",
-    "More fruit and veg might prevent nearly eight million premature deaths each year, researchers say.",
-    "The advance marks the first time troops enter an urban district in latest phase of campaign.",
-    /*"",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",*/
+    QStringLiteral("Before 1960 95% of soft drinks sold in the U.S. are furnished in reusable bottles."),
+    QStringLiteral("Ernest Hemmingway commits suicide with shotgun."),
+    QStringLiteral("American U-2 spy plane, piloted by Francis Gary Powers, shot down over Russia"),
+    QStringLiteral("Kennedy was assassinated in Dallas, Texas, on November 22, 1963"),
+    QStringLiteral("Donald Trump promises to dissolve his Trump Foundation charity, which is still under investigation."),
+    QStringLiteral("Senator Leila de Lima says the charges are an attempt to silence her criticism of the drug war."),
+    QStringLiteral("Councillors unhappy about absence of sausage stalls at German Earth Day festival."),
+    QStringLiteral("A pay ruling triggers a passionate backlash about the rights of hospitality and retails workers."),
+    QStringLiteral("A Canadian hospital will study the effects cannabis oil on a severe form of epilepsy"),
+    QStringLiteral("A distribution company says many of the 251 Freedom handsets it paid for have not been delivered."),
+    QStringLiteral("Organiser says the ironic event is a protest against fake news."),
+    QStringLiteral("More fruit and veg might prevent nearly eight million premature deaths each year, researchers say."),
+    QStringLiteral("The advance marks the first time troops enter an urban district in latest phase of campaign."),
+    /*QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),*/
 };
 
 QStringList Sampler::textsRus = {
-    "Шифровальщица попросту забыла ряд ключевых множителей и тэгов",
-    "Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства",
-    "Подъём с затонувшего эсминца легкобьющейся древнегреческой амфоры сопряжён с техническими трудностями",
-    "Лыжник Червоткин завоевал первое золото для сборной России на Военных играх - 2017",
-    "Советник президента США опровергла данные о запрете ей давать телеинтервью",
-    "Полиция Филиппин арестовала сенатора, критиковавшую президента",
-    "Дождь, порывистый ветер и до 5 градусов тепла ожидаются в Московском регионе",
-    "\"Прогресс МС-05\" пристыковался к МКС в автоматическом режиме",
-    "Рок-музыкант признал свою вину в проносе пистолета на борт самолета",
-    /*"",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",*/
+    QStringLiteral("Шифровальщица попросту забыла ряд ключевых множителей и тэгов"),
+    QStringLiteral("Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства"),
+    QStringLiteral("Подъём с затонувшего эсминца легкобьющейся древнегреческой амфоры сопряжён с техническими трудностями"),
+    QStringLiteral("Лыжник Червоткин завоевал первое золото для сборной России на Военных играх - 2017"),
+    QStringLiteral("Советник президента США опровергла данные о запрете ей давать телеинтервью"),
+    QStringLiteral("Полиция Филиппин арестовала сенатора, критиковавшую президента"),
+    QStringLiteral("Дождь, порывистый ветер и до 5 градусов тепла ожидаются в Московском регионе"),
+    QStringLiteral("\"Прогресс МС-05\" пристыковался к МКС в автоматическом режиме"),
+    QStringLiteral("Рок-музыкант признал свою вину в проносе пистолета на борт самолета"),
+    /*QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),
+    QStringLiteral(""),*/
 };
 
 bool Family::exists(type t)
@@ -137,36 +137,36 @@ QString Family::name(type t)
 }
 
 const QMap<Family::type, QStringList> Family::familyMap = {
-    { Arial, {"Arial"} },
-    { ArialBlack, {"Arial Black"} },
-    { ArialNarrow, {"Arial Narrow"} },
-    { BaskervilleOldFace, {"Baskerville Old Face", "Baskerville Old Face", "Mrs Eaves", "Baskerville" } },
-    { BloggerSans, { "Blogger Sans" } },
-    { Bodoni, {"Bodoni MT", "Bodoni", "Bodoni Antiqua", "Bodoni Old Face", "ITC Bodoni Seventy Two", "ITC Bodoni Six", "ITC Bodoni Twelve", "LTC Bodoni 175", "WTC Our Bodoni", "Bodoni EF", "Bodoni Classico", "TS Bodoni"} },
-    { Calibri, {"Calibri"} },
-    { Caslon, {"Centaur", "Adobe Caslon", "Adobe Caslon Pro", "Adobe Caslon Std", "Williams Caslon Text", "LTC Caslon", "Caslon Old Face", "Caslon" } },
-    { CenturyGothic, {"Century Gothic"} },
-    { CenturySchoolbook, {"Century Schoolbook", "Old Standard"} },
-    { Chaparral, {"Chaparral Pro", "Chapparal Std", "Chapparal"} },
-    { Clarendon, {"Clarendon"} },
-    { Coolvetica, {"Coolvetica", "Coolvetica Rg"} },
-    { CooperBlack, {"Cooper Black"} },
-    { FranklinGothicBook, {"Franklin Gothic Book"} },
-    { FranklinGothicDemi, {"Franklin Gothic Demi"} },
-    { FranklinGothicDemiCond, {"Franklin Gothic Demi Cond"} },
-    { Futura, {"Futura", "Futura PT", "FuturaLight", "Futura Bk BT"} },
-    { Garamond, {"Garamond"} },
-    { Georgia, {"Georgia"} },
-    { GillSans, {"Gill Sans MT"} },
-    { GillSansCondenced, {"Gill Sans MT Condensed"} },
-    { Helvetica, {"Helvetica"} },
-    { Impact, {"Impact"} },
-    { NotoSans, {"Noto Sans"} },
-    { Tahoma, {"Tahoma"} },
-    { TimesNewRoman, {"Times New Roman"} },
-    { Trebuchet, {"Trebuchet MS", "Trebuchet"} },
-    { SegoeUI, {"Segoe UI"} },
-    { Verdana, {"Verdana"} },
+    { Arial, {QStringLiteral("Arial")} },
+    { ArialBlack, {QStringLiteral("Arial Black")} },
+    { ArialNarrow, {QStringLiteral("Arial Narrow")} },
+    { BaskervilleOldFace, {QStringLiteral("Baskerville Old Face"), QStringLiteral("Baskerville Old Face"), QStringLiteral("Mrs Eaves"), QStringLiteral("Baskerville")} },
+    { BloggerSans, {QStringLiteral("Blogger Sans")} },
+    { Bodoni, {QStringLiteral("Bodoni MT"), QStringLiteral("Bodoni"), QStringLiteral("Bodoni Antiqua"), QStringLiteral("Bodoni Old Face"), QStringLiteral("ITC Bodoni Seventy Two"), QStringLiteral("ITC Bodoni Six"), QStringLiteral("ITC Bodoni Twelve"), QStringLiteral("LTC Bodoni 175"), QStringLiteral("WTC Our Bodoni"), QStringLiteral("Bodoni EF"), QStringLiteral("Bodoni Classico"), QStringLiteral("TS Bodoni")} },
+    { Calibri, {QStringLiteral("Calibri")} },
+    { Caslon, {QStringLiteral("Centaur"), QStringLiteral("Adobe Caslon"), QStringLiteral("Adobe Caslon Pro"), QStringLiteral("Adobe Caslon Std"), QStringLiteral("Williams Caslon Text"), QStringLiteral("LTC Caslon"), QStringLiteral("Caslon Old Face"), QStringLiteral("Caslon")} },
+    { CenturyGothic, {QStringLiteral("Century Gothic")} },
+    { CenturySchoolbook, {QStringLiteral("Century Schoolbook"), QStringLiteral("Old Standard")} },
+    { Chaparral, {QStringLiteral("Chaparral Pro"), QStringLiteral("Chapparal Std"), QStringLiteral("Chapparal")} },
+    { Clarendon, {QStringLiteral("Clarendon")} },
+    { Coolvetica, {QStringLiteral("Coolvetica"), QStringLiteral("Coolvetica Rg")} },
+    { CooperBlack, {QStringLiteral("Cooper Black")} },
+    { FranklinGothicBook, {QStringLiteral("Franklin Gothic Book")} },
+    { FranklinGothicDemi, {QStringLiteral("Franklin Gothic Demi")} },
+    { FranklinGothicDemiCond, {QStringLiteral("Franklin Gothic Demi Cond")} },
+    { Futura, { QStringLiteral("Futura"), QStringLiteral("Futura PT"), QStringLiteral("FuturaLight"), QStringLiteral("Futura Bk BT")} },
+    { Garamond, {QStringLiteral("Garamond")} },
+    { Georgia, {QStringLiteral("Georgia")} },
+    { GillSans, {QStringLiteral("Gill Sans MT")} },
+    { GillSansCondenced, {QStringLiteral("Gill Sans MT Condensed")} },
+    { Helvetica, {QStringLiteral("Helvetica")} },
+    { Impact, {QStringLiteral("Impact")} },
+    { NotoSans, {QStringLiteral("Noto Sans")} },
+    { Tahoma, {QStringLiteral("Tahoma")} },
+    { TimesNewRoman, {QStringLiteral("Times New Roman")} },
+    { Trebuchet, {QStringLiteral("Trebuchet MS"), QStringLiteral("Trebuchet")} },
+    { SegoeUI, {QStringLiteral("Segoe UI")} },
+    { Verdana, {QStringLiteral("Verdana")} },
 };
 
 const QVector<Sample> Sampler::preSamples = {
@@ -282,7 +282,8 @@ void Sampler::fetchNewsSlot()
     while(r.readNextStartElement());
     while(!r.atEnd()) {
         r.readNext();
-        if(r.name() == "item") {
+        if(r.name() ==
+    QStringLiteral("item")) {
             while(!r.atEnd()) {
                 r.readNext();
                 if(r.name() == tag) {
@@ -312,7 +313,7 @@ QSet<int> Sampler::textsRusPool;
 QSet<int> Sampler::samplesPool;
 
 static int getPoolsValue(QSet<int>& pool, int length)
-{    
+{
     int r = rand()%length;
 
     if(!pool.contains(r)) {
@@ -340,24 +341,24 @@ static int getPoolsValue(QSet<int>& pool, int length)
     }
 }
 
-static const QString engPangram = "The quick brown fox jumps over the lazy dog. 1234567890";
-static const QString rusPangram = "Съешь же ещё этих мягких французских булок да выпей чаю. The quick brown fox jumps over the lazy dog. 1234567890";
+static const QString engPangram("The quick brown fox jumps over the lazy dog. 1234567890");
+static const QString rusPangram("Съешь же ещё этих мягких французских булок да выпей чаю. The quick brown fox jumps over the lazy dog. 1234567890");
 
 static const QString engLoremIpsum =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent nisi elit, imperdiet at rhoncus ultricies, semper non leo. Sed venenatis sem eu dolor molestie pellentesque. Aenean viverra ligula vel mollis imperdiet. Curabitur quis lacus placerat, porta justo a, maximus neque. Mauris mattis luctus neque, vitae porttitor nunc dignissim eget. Curabitur nec enim augue. Praesent lectus nibh, mollis vel ligula sed, molestie dapibus odio. Donec eu nisl lobortis, sodales erat sit amet, lobortis tellus. Vestibulum iaculis sed ligula in porta. Aenean non nunc vitae eros auctor consequat ac ut libero. Praesent tristique a sapien quis porttitor. Nam interdum nisi luctus metus eleifend eleifend. Ut vehicula, sapien sit amet porttitor posuere, magna nibh mattis sem, a facilisis lectus purus et augue.\n\n"
+        QStringLiteral("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent nisi elit, imperdiet at rhoncus ultricies, semper non leo. Sed venenatis sem eu dolor molestie pellentesque. Aenean viverra ligula vel mollis imperdiet. Curabitur quis lacus placerat, porta justo a, maximus neque. Mauris mattis luctus neque, vitae porttitor nunc dignissim eget. Curabitur nec enim augue. Praesent lectus nibh, mollis vel ligula sed, molestie dapibus odio. Donec eu nisl lobortis, sodales erat sit amet, lobortis tellus. Vestibulum iaculis sed ligula in porta. Aenean non nunc vitae eros auctor consequat ac ut libero. Praesent tristique a sapien quis porttitor. Nam interdum nisi luctus metus eleifend eleifend. Ut vehicula, sapien sit amet porttitor posuere, magna nibh mattis sem, a facilisis lectus purus et augue.\n\n"
         "Vestibulum sed diam imperdiet, finibus mauris quis, efficitur massa. Phasellus ornare blandit pellentesque. Maecenas ex lectus, semper ut aliquam a, ullamcorper at leo. Nullam consectetur tempor iaculis. Morbi dignissim velit ac lorem condimentum pharetra. Etiam eget purus ac mi porta condimentum. Vestibulum ultricies ullamcorper erat, a blandit lorem accumsan a. Aliquam pretium pellentesque magna nec varius. Aliquam posuere risus in tellus condimentum, id dapibus turpis condimentum. Nunc fermentum orci ac mollis fringilla.\n\n"
         "Aenean diam neque, bibendum a urna at, accumsan volutpat nunc. Nulla ullamcorper molestie efficitur. Nam urna nibh, tempor ornare quam sed, tincidunt blandit elit. Duis iaculis pretium lectus, ut imperdiet purus dictum in. Suspendisse condimentum porttitor rutrum. Proin id tellus quis turpis convallis imperdiet. Cras fringilla feugiat odio, sed scelerisque justo consectetur in. Curabitur at sem et sapien sodales tincidunt. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nulla sit amet ullamcorper velit. Morbi ut metus ac lacus finibus dignissim. Nam a mi ac mi consequat molestie in sit amet odio. Cras ornare lorem nec est faucibus luctus.\n\n"
         "Nullam convallis ante nec enim sollicitudin fermentum. Aliquam id porttitor elit, vitae volutpat arcu. Nunc ultricies sapien purus, sed aliquet lorem consectetur sed. Vivamus at lectus ullamcorper, tristique odio vitae, varius dui. Aliquam tempor auctor erat sit amet mollis. Morbi in elit vitae massa imperdiet semper et nec dolor. Suspendisse potenti. Praesent viverra arcu id leo egestas, sed iaculis nibh congue. Fusce eu finibus metus. Duis id suscipit nisl, non hendrerit purus. Etiam eu lobortis velit. Nam aliquet nisi in iaculis dignissim.\n\n"
-        "Phasellus consectetur, massa id mollis porttitor, lorem quam placerat magna, nec accumsan nibh nunc id nisi. Aenean porta id ex id hendrerit. Vestibulum porta interdum rhoncus. In malesuada leo sem, a congue sem tempor nec. In hac habitasse platea dictumst. Praesent interdum vehicula urna, et dictum velit malesuada non. Cras eget pharetra ante. Integer suscipit in arcu laoreet pulvinar. Integer nec ex faucibus mi elementum dapibus. Phasellus blandit nisi nec neque hendrerit, eu pellentesque ante eleifend. Mauris sit amet neque vel magna egestas mattis. Nunc magna mauris, aliquam dictum tincidunt in, tempor vitae ex. Nam placerat nunc quis aliquet blandit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.\n\n";
+        "Phasellus consectetur, massa id mollis porttitor, lorem quam placerat magna, nec accumsan nibh nunc id nisi. Aenean porta id ex id hendrerit. Vestibulum porta interdum rhoncus. In malesuada leo sem, a congue sem tempor nec. In hac habitasse platea dictumst. Praesent interdum vehicula urna, et dictum velit malesuada non. Cras eget pharetra ante. Integer suscipit in arcu laoreet pulvinar. Integer nec ex faucibus mi elementum dapibus. Phasellus blandit nisi nec neque hendrerit, eu pellentesque ante eleifend. Mauris sit amet neque vel magna egestas mattis. Nunc magna mauris, aliquam dictum tincidunt in, tempor vitae ex. Nam placerat nunc quis aliquet blandit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.\n\n");
 
 static const QString rusLoremIpsum =
-        "Идейные соображения высшего порядка, а также сложившаяся структура организации позволяет выполнять важные задания по разработке систем массового участия. Идейные соображения высшего порядка, а также рамки и место обучения кадров влечет за собой процесс внедрения и модернизации существенных финансовых и административных условий. Главным образом укрепление и развитие структуры влечет за собой процесс внедрения и модернизации систем массового участия. Товарищи! рамки и место обучения кадров в значительной степени обуславливает создание позиций, занимаемых участниками в отношении поставленных задач. Разнообразный и богатый опыт начало повседневной работы по формированию позиции позволяет оценить значение форм развития. Задача организации, в особенности же рамки и место обучения кадров обеспечивает широкому кругу (специалистов) участие в формировании форм развития.\n\n"
+        QStringLiteral("Идейные соображения высшего порядка, а также сложившаяся структура организации позволяет выполнять важные задания по разработке систем массового участия. Идейные соображения высшего порядка, а также рамки и место обучения кадров влечет за собой процесс внедрения и модернизации существенных финансовых и административных условий. Главным образом укрепление и развитие структуры влечет за собой процесс внедрения и модернизации систем массового участия. Товарищи! рамки и место обучения кадров в значительной степени обуславливает создание позиций, занимаемых участниками в отношении поставленных задач. Разнообразный и богатый опыт начало повседневной работы по формированию позиции позволяет оценить значение форм развития. Задача организации, в особенности же рамки и место обучения кадров обеспечивает широкому кругу (специалистов) участие в формировании форм развития.\n\n"
         "Идейные соображения высшего порядка, а также рамки и место обучения кадров играет важную роль в формировании направлений прогрессивного развития. Задача организации, в особенности же начало повседневной работы по формированию позиции обеспечивает широкому кругу (специалистов) участие в формировании новых предложений. Не следует, однако забывать, что укрепление и развитие структуры требуют определения и уточнения направлений прогрессивного развития. Задача организации, в особенности же реализация намеченных плановых заданий в значительной степени обуславливает создание новых предложений. Разнообразный и богатый опыт консультация с широким активом способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям. Разнообразный и богатый опыт рамки и место обучения кадров требуют определения и уточнения дальнейших направлений развития.\n\n"
         "Разнообразный и богатый опыт реализация намеченных плановых заданий позволяет оценить значение системы обучения кадров, соответствует насущным потребностям. Товарищи! новая модель организационной деятельности влечет за собой процесс внедрения и модернизации новых предложений. Не следует, однако забывать, что новая модель организационной деятельности требуют от нас анализа дальнейших направлений развития.\n\n"
         "Главным образом консультация с широким активом обеспечивает широкому кругу (специалистов) участие в формировании систем массового участия. С другой стороны новая модель организационной деятельности позволяет выполнять важные задания по разработке соответствующий условий активизации.\n\n"
-        "Товарищи! новая модель организационной деятельности представляет собой интересный эксперимент проверки существенных финансовых и административных условий. Идейные соображения высшего порядка, а также сложившаяся структура организации требуют определения и уточнения модели развития. Разнообразный и богатый опыт сложившаяся структура организации требуют от нас анализа модели развития. Разнообразный и богатый опыт начало повседневной работы по формированию позиции играет важную роль в формировании систем массового участия. Разнообразный и богатый опыт реализация намеченных плановых заданий играет важную роль в формировании форм развития. Товарищи! рамки и место обучения кадров в значительной степени обуславливает создание позиций, занимаемых участниками в отношении поставленных задач.\n\n";
+        "Товарищи! новая модель организационной деятельности представляет собой интересный эксперимент проверки существенных финансовых и административных условий. Идейные соображения высшего порядка, а также сложившаяся структура организации требуют определения и уточнения модели развития. Разнообразный и богатый опыт сложившаяся структура организации требуют от нас анализа модели развития. Разнообразный и богатый опыт начало повседневной работы по формированию позиции играет важную роль в формировании систем массового участия. Разнообразный и богатый опыт реализация намеченных плановых заданий играет важную роль в формировании форм развития. Товарищи! рамки и место обучения кадров в значительной степени обуславливает создание позиций, занимаемых участниками в отношении поставленных задач.\n\n");
 
-static const QString nothing = QString::null;
+static const QString nothing(QString::null);
 
 CStringRef Sampler::getName()
 {

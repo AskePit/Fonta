@@ -17,9 +17,9 @@ public:
     CStringRef get() const;
     const QString operator[](CStringRef key) const;
 
-    void set(CStringRef key, CStringRef val, CStringRef unit = "");
-    void set(CStringRef key, int val, CStringRef unit = "");
-    void set(CStringRef key, float val, CStringRef unit = "");
+    void set(CStringRef key, CStringRef val, CStringRef unit = QStringLiteral(""));
+    void set(CStringRef key, int val, CStringRef unit = QStringLiteral(""));
+    void set(CStringRef key, float val, CStringRef unit = QStringLiteral(""));
     void set(CStringRef key, int r, int g, int b);
     void addPiece(CStringRef piece);
 

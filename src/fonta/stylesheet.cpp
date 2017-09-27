@@ -16,16 +16,16 @@ CStringRef StyleSheet::get() const
     }
 
     sheet = className;
-    sheet += "{";
+    sheet += QStringLiteral("{");
 
     for (QHash<QString, QString>::const_iterator attr = attributes.begin(); attr != attributes.end(); ++attr) {
         sheet += attr.key();
-        sheet += ": ";
+        sheet += QStringLiteral(": ");
         sheet += attr.value();
-        sheet += "; ";
+        sheet += QStringLiteral("; ");
     }
 
-    sheet += "}";
+    sheet += QStringLiteral("}");
 
     sheet += pieces.join(' ');
 
@@ -35,7 +35,7 @@ CStringRef StyleSheet::get() const
 
 const QString StyleSheet::operator[](CStringRef key) const
 {
-    return attributes.value(key, "");
+    return attributes.value(key, QStringLiteral(""));
 }
 
 
@@ -70,7 +70,7 @@ static QString to2Hex(int val) {
 
 void StyleSheet::set(CStringRef key, int r, int g, int b)
 {
-    attributes[key] = QString("#") + to2Hex(r) + to2Hex(g) + to2Hex(b);
+    attributes[key] = QStringLiteral("#") + to2Hex(r) + to2Hex(g) + to2Hex(b);
     changed = true;
 }
 

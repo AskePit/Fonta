@@ -23,7 +23,7 @@
 
 namespace fonta {
 
-#define CACHE_FILE "C:\\ProgramData\\PitM\\Fonta\\cache.dat"
+#define CACHE_FILE (QStringLiteral("C:\\ProgramData\\PitM\\Fonta\\cache.dat"))
 
 const TTF TTF::null = TTF();
 
@@ -31,14 +31,14 @@ static void getFontFiles(QStringList &out)
 {
     cauto fontsDirs = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
     for(CStringRef dir : fontsDirs) {
-        QDirIterator it(dir, {"*.ttf", "*.otf", "*.ttc", "*.otc", "*.fon"} , QDir::Files, QDirIterator::Subdirectories);
+        QDirIterator it(dir, {QStringLiteral("*.ttf"), QStringLiteral("*.otf"), QStringLiteral("*.ttc"), QStringLiteral("*.otc"), QStringLiteral("*.fon")} , QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             it.next();
             QString fileName = it.filePath();
 
             // if file is planned tobe deleted - do not include it to list of font files
-            QSettings fontaReg("PitM", "Fonta");
-            QStringList filesToDelete = fontaReg.value("FilesToDelete").toStringList();
+            QSettings fontaReg(QStringLiteral("PitM"), QStringLiteral("Fonta"));
+            QStringList filesToDelete = fontaReg.value(QStringLiteral("FilesToDelete")).toStringList();
             if(!filesToDelete.contains(fileName)) {
                 out << it.filePath();
             }
@@ -251,9 +251,9 @@ void FontReader::readFile(CStringRef fileName)
         return;
     }
 
-    if(fileName.endsWith(".ttc", Qt::CaseInsensitive)) {
+    if(fileName.endsWith(QLatin1String(".ttc"), Qt::CaseInsensitive)) {
         readTTC();
-    } else if(fileName.endsWith(".fon", Qt::CaseInsensitive)) {
+    } else if(fileName.endsWith(QLatin1String(".fon"), Qt::CaseInsensitive)) {
         readFON();
     } else {
         readTTF();
@@ -297,17 +297,17 @@ void FontReader::readFON()
         }
     }
 
-    int i = nameRef.indexOf("Font for ");
+    int i = nameRef.indexOf(QLatin1String("Font for "));
     if(i != -1) {
         nameRef.truncate(i);
     }
 
-    i = nameRef.indexOf(" Font ");
+    i = nameRef.indexOf(QLatin1String(" Font "));
     if(i != -1) {
         nameRef.truncate(i);
     }
 
-    i = nameRef.indexOf(" for ");
+    i = nameRef.indexOf(QLatin1String(" for "));
     if(i != -1) {
         nameRef.truncate(i);
     }
@@ -646,13 +646,13 @@ static u64 fontsDirsSize()
 void DB::load()
 {
     QtDB = new QFontDatabase;
-    classifier.load(":/known_fonts");
+    classifier.load(QStringLiteral(":/known_fonts"));
 
     updateUninstalledFonts();
 
-    QSettings fontaReg("PitM", "Fonta");
+    QSettings fontaReg(QStringLiteral("PitM"), QStringLiteral("Fonta"));
     u64 hash = fontsDirsSize();
-    bool hash_exists = fontaReg.contains("FontsDirHash");
+    bool hash_exists = fontaReg.contains(QStringLiteral("FontsDirHash"));
     bool cache_exists = QFileInfo(CACHE_FILE).exists();
     if(cache_exists) {
         QFile file(CACHE_FILE);
@@ -668,7 +668,7 @@ void DB::load()
 
     if(cache_exists &&
        hash_exists  &&
-       fontaReg.value("FontsDirHash", static_cast<u64>(-1)) == hash) {
+       fontaReg.value(QStringLiteral("FontsDirHash"), static_cast<u64>(-1)) == hash) {
 
 #ifdef FONTA_MEASURES
         qDebug() << "cache load";
@@ -741,7 +741,7 @@ void DB::load()
             TTF.linkedFonts.remove(fontName.first); // remove itself
         }
 
-        fontaReg.setValue("FontsDirHash", hash);
+        fontaReg.setValue(QStringLiteral("FontsDirHash"), hash);
 
         QFile file(CACHE_FILE);
         file.open(QIODevice::WriteOnly);
@@ -775,8 +775,8 @@ DB::~DB()
 
 void DB::updateUninstalledFonts()
 {
-    QSettings fontaReg("PitM", "Fonta");
-    QStringList uninstalledFonts = fontaReg.value("FontaUninstalledFonts").toStringList();
+    QSettings fontaReg(QStringLiteral("PitM"), QStringLiteral("Fonta"));
+    QStringList uninstalledFonts = fontaReg.value(QStringLiteral("FontaUninstalledFonts")).toStringList();
     for(int i = 0; i<uninstalledFonts.count(); ++i) {
         CStringRef f = uninstalledFonts[i];
 
@@ -787,7 +787,7 @@ void DB::updateUninstalledFonts()
     }
 
     // files that couldn't be deleted go back to registry
-    fontaReg.setValue("FontaUninstalledFonts", uninstalledFonts);
+    fontaReg.setValue(QStringLiteral("FontaUninstalledFonts"), uninstalledFonts);
 }
 
 QStringList DB::families() const
@@ -840,8 +840,8 @@ void DB::uninstall(CStringRef family)
     uninstalledList << linkedFonts(family);
     uninstalledList.removeDuplicates();
 
-    QSettings uninstalledReg("PitM", "Fonta");
-    uninstalledReg.setValue("FontaUninstalledFonts", uninstalledList);
+    QSettings uninstalledReg(QStringLiteral("PitM"), QStringLiteral("Fonta"));
+    uninstalledReg.setValue(QStringLiteral("FontaUninstalledFonts"), uninstalledList);
 
     // Register Files to Remove
     cauto files = fontaDB().fontFiles(family); // "C:/Windows/Fonts/arial.ttf"
@@ -850,26 +850,26 @@ void DB::uninstall(CStringRef family)
     filesToDeleteList << files;
     filesToDeleteList.removeDuplicates();
 
-    QSettings fontaReg("PitM", "Fonta");
-    fontaReg.setValue("FilesToDelete", filesToDeleteList);
+    QSettings fontaReg(QStringLiteral("PitM"), QStringLiteral("Fonta"));
+    fontaReg.setValue(QStringLiteral("FilesToDelete"), filesToDeleteList);
 
     // Call external fonts_cleaner.exe tool to actually remove fonts.
     // This tool requests admin privileges to perform it's actions.
     QProcess p;
-    p.start("cmd.exe", QStringList() << "/c" << "fonts_cleaner.bat");
+    p.start(QStringLiteral("cmd.exe"), QStringList() << QStringLiteral("/c") << QStringLiteral("fonts_cleaner.bat"));
     p.waitForFinished();
 }
 
 QStringList DB::uninstalled() const
 {
-    QSettings uninstalledReg("PitM", "Fonta");
-    return uninstalledReg.value("FontaUninstalledFonts", QStringList()).toStringList();
+    QSettings uninstalledReg(QStringLiteral("PitM"), QStringLiteral("Fonta"));
+    return uninstalledReg.value(QStringLiteral("FontaUninstalledFonts"), QStringList()).toStringList();
 }
 
 QStringList DB::filesToDelete() const
 {
-    QSettings fontaReg("PitM", "Fonta");
-    return fontaReg.value("FilesToDelete", QStringList()).toStringList();
+    QSettings fontaReg(QStringLiteral("PitM"), QStringLiteral("Fonta"));
+    return fontaReg.value(QStringLiteral("FilesToDelete"), QStringList()).toStringList();
 }
 
 const TTF &DB::getTTF(CStringRef family) const {

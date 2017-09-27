@@ -189,20 +189,20 @@ GeneralPage::GeneralPage(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Choose font categories"));
-    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(QStringLiteral(":/pic/filter/intro.jpg")));
 
     serifButton = new QCheckBox(tr("Serif"));
     sansButton = new QCheckBox(tr("Sans"));
     scriptButton = new QCheckBox(tr("Script"));
     displayButton = new QCheckBox(tr("Display"));
     symbolicButton = new QCheckBox(tr("Symbolic"));
-    QLabel *detailsLink = makeLink("./html/fonts_guide/classes.html");
+    QLabel *detailsLink = makeLink(QStringLiteral("./html/fonts_guide/classes.html"));
 
-    registerField("serif", serifButton);
-    registerField("sans", sansButton);
-    registerField("script", scriptButton);
-    registerField("display", displayButton);
-    registerField("symbolic", symbolicButton);
+    registerField(QStringLiteral("serif"), serifButton);
+    registerField(QStringLiteral("sans"), sansButton);
+    registerField(QStringLiteral("script"), scriptButton);
+    registerField(QStringLiteral("display"), displayButton);
+    registerField(QStringLiteral("symbolic"), symbolicButton);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addStretch(1);
@@ -218,8 +218,8 @@ GeneralPage::GeneralPage(QWidget *parent)
 
 int GeneralPage::nextId() const
 {
-    bool serif = field("serif").toBool();
-    bool sans = field("sans").toBool();
+    bool serif = field(QStringLiteral("serif")).toBool();
+    bool sans = field(QStringLiteral("sans")).toBool();
 
     if(serif) {
         return FilterWizard::Page_SerifFamily;
@@ -234,18 +234,18 @@ SerifFamilyPage::SerifFamilyPage(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Choose serif families"));
-    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(QStringLiteral(":/pic/filter/intro.jpg")));
 
     oldstyle = new QCheckBox(tr("Oldstyle Serif"));
     transitional = new QCheckBox(tr("Transitional Serif"));
     modern = new QCheckBox(tr("Modern Serif"));
     slab = new QCheckBox(tr("Slab Serif"));
-    QLabel *detailsLink = makeLink("./html/fonts_guide/serif.html");
+    QLabel *detailsLink = makeLink(QStringLiteral("./html/fonts_guide/serif.html"));
 
-    registerField("oldstyle", oldstyle);
-    registerField("transitional", transitional);
-    registerField("modern", modern);
-    registerField("slab", slab);
+    registerField(QStringLiteral("oldstyle"), oldstyle);
+    registerField(QStringLiteral("transitional"), transitional);
+    registerField(QStringLiteral("modern"), modern);
+    registerField(QStringLiteral("slab"), slab);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addStretch(1);
@@ -260,7 +260,7 @@ SerifFamilyPage::SerifFamilyPage(QWidget *parent)
 
 int SerifFamilyPage::nextId() const
 {
-    bool sans = field("sans").toBool();
+    bool sans = field(QStringLiteral("sans")).toBool();
     return sans ? FilterWizard::Page_SansFamily : FilterWizard::Page_Finish;
 }
 
@@ -268,16 +268,16 @@ SansFamilyPage::SansFamilyPage(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Choose sans families"));
-    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(QStringLiteral(":/pic/filter/intro.jpg")));
 
     grotesque = new QCheckBox(tr("Grotesque Sans"));
     geometric = new QCheckBox(tr("Geometric Sans"));
     humanist = new QCheckBox(tr("Humanist Sans"));
-    QLabel *detailsLink = makeLink("./html/fonts_guide/sans.html");
+    QLabel *detailsLink = makeLink(QStringLiteral("./html/fonts_guide/sans.html"));
 
-    registerField("grotesque", grotesque);
-    registerField("geometric", geometric);
-    registerField("humanist", humanist);
+    registerField(QStringLiteral("grotesque"), grotesque);
+    registerField(QStringLiteral("geometric"), geometric);
+    registerField(QStringLiteral("humanist"), humanist);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addStretch(1);
@@ -298,15 +298,15 @@ FinishPage::FinishPage(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Last step..."));
-    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/pic/filter/intro.jpg"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(QStringLiteral(":/pic/filter/intro.jpg")));
 
     QLabel* topLabel = new QLabel(tr("Specify additional options if you wish.\nHope you'll be satisfied with results!"));
 
     cyrillicBox = new QCheckBox(tr("Cyrillic support"));
     monospacedBox = new QCheckBox(tr("Monospaced"));
 
-    registerField("cyrillic", cyrillicBox);
-    registerField("monospaced", monospacedBox);
+    registerField(QStringLiteral("cyrillic"), cyrillicBox);
+    registerField(QStringLiteral("monospaced"), monospacedBox);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(topLabel);

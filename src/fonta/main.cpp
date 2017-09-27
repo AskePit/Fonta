@@ -33,11 +33,11 @@ int main(int argc, char *argv[])
 {
     using namespace fonta;
 
-    QApplication::setStyle(QStyleFactory::create("Fusion"));
+    QApplication::setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
     srand(time(NULL));
 
     QApplication a(argc, argv);
-    a.setWindowIcon(QIcon(":/pic/logo.png"));
+    a.setWindowIcon(QIcon(QStringLiteral(":/pic/logo.png")));
 
     cauto args = getArgs(a);
 
