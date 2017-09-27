@@ -290,7 +290,7 @@ void FontReader::readFON()
         nameRef.truncate(ipareth);
     } else if(icomma != -1) {
         for(int i = icomma-1; i>=0; --i) {
-            if(!nameRef[i].isDigit()) {
+            if(!nameRef.at(i).isDigit()) {
                 nameRef.truncate(i+1);
                 break;
             }
