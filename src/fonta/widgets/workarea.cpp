@@ -174,7 +174,7 @@ void WorkArea::loadSample(CStringRef jsonTxt)
     QByteArray data = jsonTxt.toUtf8();
     QJsonObject json = QJsonDocument::fromJson(data).object();
 
-    QJsonArray fields = json[QLatin1String("fields")].toArray();
+    const QJsonArray fields = json[QLatin1String("fields")].toArray();
     for(const QJsonValue& fieldVal : fields) {
         Field* field = addField();
         field->load(fieldVal.toObject());
@@ -184,7 +184,7 @@ void WorkArea::loadSample(CStringRef jsonTxt)
         m_fields.at(0)->setFocus();
     }
 
-    QJsonArray sizes = json[QLatin1String("sizes")].toArray();
+    const QJsonArray sizes = json[QLatin1String("sizes")].toArray();
     QList<int> sizesList;
     for(const QJsonValue& size : sizes) {
         sizesList << size.toInt(50);
@@ -199,7 +199,7 @@ void WorkArea::load(const QJsonObject &json)
     m_id = json[QLatin1String("id")].toInt(0);
     m_name = json[QLatin1String("name")].toString("");
 
-    QJsonArray fields = json[QLatin1String("fields")].toArray();
+    const QJsonArray fields = json[QLatin1String("fields")].toArray();
     for(const QJsonValue& fieldVal : fields) {
         Field* field = addField();
         field->load(fieldVal.toObject());
@@ -210,7 +210,7 @@ void WorkArea::load(const QJsonObject &json)
         m_currField = m_fields.at(fieldId);
     }
 
-    QJsonArray sizes = json[QLatin1String("sizes")].toArray();
+    const QJsonArray sizes = json[QLatin1String("sizes")].toArray();
     QList<int> sizesList;
     for(const QJsonValue& size : sizes) {
         sizesList << size.toInt(50);

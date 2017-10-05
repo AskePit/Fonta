@@ -350,7 +350,8 @@ void MainWindow::closeTab(int id)
     m_workAreas.removeAt(id);
     ui->tabWidget->removeTab(id);
 
-    for(int i = id; i<m_workAreas.length(); ++i) {
+    auto size = m_workAreas.size();
+    for(int i = id; i<size; ++i) {
         m_workAreas[i]->setId(i);
     }
     m_currWorkArea = id < m_workAreas.length() ? m_workAreas[id] : m_workAreas.last();
@@ -377,7 +378,8 @@ void MainWindow::closeOtherTabs()
 
     WorkArea* onlyArea = m_currWorkArea;
 
-    for(int i = 0; i<m_workAreas.size(); ++i) {
+    auto size = m_workAreas.size();
+    for(int i = 0; i<size; ++i) {
         if(m_workAreas[i] != onlyArea) {
             closeTab(i);
             --i;
@@ -393,7 +395,7 @@ void MainWindow::cloneCurrTab()
 
     addTab(InitType::Empty);
 
-    for(const Field* protoField : protoArea) {
+    for(const Field* protoField : std::as_const(protoArea)) {
         Field* field = protoField->clone();
         m_currWorkArea->addField(field);
         makeFieldConnected(field);
@@ -420,7 +422,7 @@ void MainWindow::makeFieldConnected(Field* field) {
 }
 
 void MainWindow::makeFieldsConnected() {
-    for(auto *field : *m_currWorkArea) {
+    for(auto *field : std::as_const(*m_currWorkArea)) {
         makeFieldConnected(field);
     }
 }
@@ -524,13 +526,15 @@ void MainWindow::enableContextGroup()
 
 void MainWindow::disableContextGroup()
 {
+    auto buttons = contextGroup->buttons();
+
     contextGroup->setExclusive(false);
-    for(auto *b : contextGroup->buttons()) {
+    for(auto *b : buttons) {
         b->setChecked(false);
     }
     contextGroup->setExclusive(true);
 
-    for(auto *b : contextGroup->buttons()) {
+    for(auto *b : buttons) {
         b->setDisabled(true);
     }
 }
@@ -750,7 +754,7 @@ void MainWindow::load(CStringRef fileName)
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     QJsonObject json = loadDoc.object();
 
-    QJsonArray workAreas = json[QLatin1String("workAreas")].toArray();
+    const QJsonArray workAreas = json[QLatin1String("workAreas")].toArray();
     for(const QJsonValue& workArea : workAreas) {
         addTab(InitType::Empty);
         QJsonObject areaJson = workArea.toObject();

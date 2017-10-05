@@ -355,7 +355,7 @@ void FontReader::readTTC()
     std::vector<u32> offsets(offsetTablesCount);
     f.read((char*)offsets.data(), offsetTablesCount*sizeof(u32));
 
-    for(u32 offset : offsets) {
+    for(u32 offset : std::as_const(offsets)) {
         swap(offset);
         if(Q_LIKELY(f.seek(offset))) {
             readTTF();
@@ -614,11 +614,11 @@ static u64 dirSize(CStringRef dirName)
 
     QDir dir(info.absoluteFilePath());
     dir.setFilter(QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files);
-    QFileInfoList list = dir.entryInfoList();
+    const QFileInfoList list = dir.entryInfoList();
 
     u64 size = 0;
 
-    for(QFileInfo &info : list) {
+    for(const QFileInfo &info : list) {
         if(info.isDir()) {
             size += dirSize(info.absoluteFilePath());
             continue;
@@ -733,7 +733,7 @@ void DB::load()
 #endif
 
         // analyse fonts on common files
-        for(cauto fontName : TTFs) {
+        for(cauto fontName : std::as_const(TTFs)) {
             auto &TTF = TTFs[fontName.first];
             for(cauto f : TTF.files) {
                 TTF.linkedFonts.unite(File2Fonts[f]);
@@ -793,7 +793,7 @@ void DB::updateUninstalledFonts()
 QStringList DB::families() const
 {
     QStringList fonts = QtDB->families();
-    QStringList uninstalledList = uninstalled();
+    const QStringList uninstalledList = uninstalled();
     for(cauto f : uninstalledList) {
         fonts.removeAll(f);
     }

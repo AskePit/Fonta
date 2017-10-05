@@ -272,7 +272,7 @@ void MainWindow::on_actionImport_triggered()
     list.removeOne(QStringLiteral(""));
 
     int info = d.info();
-    for(CStringRef family : list) {
+    for(CStringRef family : std::as_const(list)) {
         m_classifier.addFontInfo(family, info);
     }
 

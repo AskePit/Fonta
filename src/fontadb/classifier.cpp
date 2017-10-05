@@ -152,7 +152,7 @@ static QVector<QStringRef> split(CStringRef str) {
 
     QVector<QStringRef> res;
     last = indexes.length()-1;
-    for(int i = 0; i<indexes.length(); ++i) {
+    for(int i = 0; i<last+1; ++i) {
         int pos = indexes[i];
         int l = (i != last) ? indexes[i+1] - pos : -1;
         res.push_back(s.mid(pos, l));
@@ -189,7 +189,7 @@ QString trim(CStringRef name)
     }
 
     QString res;
-    for(cauto ref : v) {
+    for(cauto ref : std::as_const(v)) {
         res += getSharedQString(ref) + ' ';
     }
     res.truncate(res.length()-1);
@@ -260,7 +260,7 @@ bool Classifier::storeFontType(FontType::type type)
     m_db[type].removeDuplicates();
 
     QTextStream textStream(&file);
-    for(CStringRef str : m_db[type]) {
+    for(CStringRef str : std::as_const(m_db[type])) {
         textStream << str << QLatin1String("\n");
     }
 
@@ -292,7 +292,7 @@ int Classifier::fontInfo(CStringRef family, SearchType searchType) const
         };
 
         for(cauto pair : hintsMap) {
-            for(CStringRef hint : pair.second) {
+            for(CStringRef hint : std::as_const(pair.second)) {
                 if(trimmed.contains(hint)) {
                     info |= pair.first;
                     break;

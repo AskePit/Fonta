@@ -34,7 +34,7 @@ int main()
     QStringList files = fontaReg.value(QStringLiteral("FilesToDelete")).toStringList();
 
     report(QCoreApplication::translate("GLOBAL", "Reg phase"));
-    for(CStringRef f : files) {
+    for(CStringRef f : std::as_const(files)) {
         // WinAPI deletion
         report(QCoreApplication::translate("GLOBAL", "RemoveFontResourceW for %1...").arg(f));
         bool did = RemoveFontResourceW(f.toStdWString().c_str());

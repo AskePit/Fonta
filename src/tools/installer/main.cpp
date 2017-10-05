@@ -48,7 +48,7 @@ static bool copyRecursively(const QString &srcDir, const QString &dstDir)
             return false;
         }
         QDir sourceDir(srcDir);
-        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        const QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
         for(const QString &fileName : fileNames) {
             const QString postfix = QDir::separator() + fileName;
             const QString newSrc = srcDir + postfix;
