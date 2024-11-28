@@ -9,18 +9,6 @@
 #include "panose.h"
 #include "classifier.h"
 
-namespace std
-{
-    template <>
-    struct hash<QString>
-    {
-        size_t operator()(const QString& s) const
-        {
-            return qHash(s);
-        }
-    };
-}
-
 namespace fonta {
 
 enum_class (FamilyClass) {

@@ -15,11 +15,11 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QFileDialog>
-#include <QDesktopWidget>
 #include <QColorDialog>
 #include <QMessageBox>
 #include <QTranslator>
 #include <QLibraryInfo>
+#include <QActionGroup>
 
 #include <QDebug>
 

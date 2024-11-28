@@ -2,10 +2,10 @@
 
 #include <QMessageBox>
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QScreen>
 
 int getDPI() {
-    static int dpi = QApplication::desktop()->logicalDpiX();
+    static int dpi = QApplication::primaryScreen()->logicalDotsPerInchX();
     return dpi;
 }
 

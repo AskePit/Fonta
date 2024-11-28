@@ -280,7 +280,7 @@ void FontReader::readFON()
 
     delete [] bytes;
 
-    QStringRef nameRef(&name);
+    QStringView nameRef(name);
     nameRef = nameRef.mid(name.indexOf(':') + 1);
 
     const int ipareth = nameRef.indexOf('(');
@@ -808,7 +808,7 @@ QStringList DB::linkedFonts(CStringRef family) const
         return QStringList();
     }
 
-    return ttf.linkedFonts.toList();
+    return ttf.linkedFonts.values();
 }
 
 QStringList DB::fontFiles(CStringRef family) const
@@ -818,7 +818,7 @@ QStringList DB::fontFiles(CStringRef family) const
         return QStringList();
     }
 
-    return ttf.files.toList();
+    return ttf.files.values();
 }
 
 void DB::uninstall(CStringRef family)

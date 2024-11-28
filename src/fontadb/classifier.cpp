@@ -1,6 +1,7 @@
 #include "classifier.h"
 
 #include <QStringList>
+#include <QStringView>
 #include <QVector>
 #include <QDir>
 #include <QDebug>
@@ -131,8 +132,8 @@ static const QStringList monospacedHints = {
     QStringLiteral(" mono"),
 };
 
-static QVector<QStringRef> split(CStringRef str) {
-    QStringRef s(&str);
+static QVector<QStringView> split(CStringRef str) {
+    QStringView s(str);
 
     QVector<int> indexes{0};
     int last = s.length()-1;
@@ -150,7 +151,7 @@ static QVector<QStringRef> split(CStringRef str) {
         }
     }
 
-    QVector<QStringRef> res;
+    QVector<QStringView> res;
     last = indexes.length()-1;
     for(int i = 0; i<last+1; ++i) {
         int pos = indexes[i];
@@ -168,34 +169,6 @@ static QVector<QStringRef> split(CStringRef str) {
 
 //! Force a deep copy of string. Usually used for QStrings created by getSharedQString function
 #define getCopiedQString(str) QString::fromUtf16(str.utf16())
-
-QString trim(CStringRef name)
-{
-    QString str = name.simplified();
-    str.remove('-');
-    str.remove('_');
-
-    QVector<QStringRef> v = str.contains(' ') ? QStringRef(&str).split(' ', QString::SkipEmptyParts) : split(str);
-
-    while(v.length() > 1 && prefixes.contains(getSharedQString(v[0]))) {
-        v.pop_front();
-    }
-
-    for(int i = 1; i<v.length(); ++i) {
-        QString fromRef(getSharedQString(v[i]));
-        if(postfixes.contains(fromRef, Qt::CaseInsensitive)) {
-            v.remove(i, v.length()-i);
-        }
-    }
-
-    QString res;
-    for(cauto ref : std::as_const(v)) {
-        res += getSharedQString(ref) + ' ';
-    }
-    res.truncate(res.length()-1);
-
-    return res.toLower();
-}
 
 bool Classifier::load(CStringRef dbPath)
 {
@@ -272,7 +245,7 @@ int Classifier::fontInfo(CStringRef family, SearchType searchType) const
 {
     int info = 0;
 
-    QString trimmed = trim(family);
+    QString trimmed = family.trimmed();
 
     for(cauto type : FontType::enumerate()) {
         if(m_db[type].contains(trimmed)) {
@@ -326,7 +299,7 @@ void Classifier::addFontInfo(CStringRef family, int info)
         return;
     }
 
-    QString trimmed = trim(family);
+    QString trimmed = family.trimmed();
 
     _addFontInfo(trimmed, info);
 }
@@ -337,7 +310,7 @@ void Classifier::rewriteFontInfo(CStringRef family, int info)
         return;
     }
 
-    QString trimmed = trim(family);
+    QString trimmed = family.trimmed();
 
     for(cauto type : FontType::enumerate()) {
         m_db[type].removeOne(trimmed);

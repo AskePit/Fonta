@@ -11,7 +11,7 @@ struct Args {
     QString file;
 
     Args()
-        : file(QString::null)
+        : file(QString())
     {}
 };
 

@@ -10,8 +10,6 @@
 #include <QtWidgets/QWizard>
 #include <windows.h>
 #include <qatomic.h>
-#include <qtypetraits.h>
 #include <limits.h>
-#include <qisenum.h>
 #include <QDebug>
 #endif

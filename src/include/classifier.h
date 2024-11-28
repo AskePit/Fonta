@@ -81,8 +81,6 @@ enum_interface
     }
 };
 
-QString trim(CStringRef name);
-
 class Classifier
 {
 public:
